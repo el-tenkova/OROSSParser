@@ -1,0 +1,26 @@
+HKCR
+{
+    OROSSParser.OROSSParser.1 = s 'OROSSParser Class'
+    {
+        CLSID = s '{14712ED3-9863-4501-8DB5-E8769D44D4D8}'
+    }
+    OROSSParser.OROSSParser = s 'OROSSParser Class'
+    {
+        CLSID = s '{14712ED3-9863-4501-8DB5-E8769D44D4D8}'
+        CurVer = s 'OROSSParser.OROSSParser.1'
+    }
+    NoRemove CLSID
+    {
+    	ForceRemove {14712ED3-9863-4501-8DB5-E8769D44D4D8} = s 'OROSSParser Class'
+    	{
+    		ProgID = s 'OROSSParser.OROSSParser.1'
+    		VersionIndependentProgID = s 'OROSSParser.OROSSParser'
+    		ForceRemove 'Programmable'
+    		InprocServer32 = s '%MODULE%'
+    		{
+    		}
+    		'TypeLib' = s '{81947C63-F771-4EE8-9340-90861817047E}'
+    	}
+    }
+    
+}

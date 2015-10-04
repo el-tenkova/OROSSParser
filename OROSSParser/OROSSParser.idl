@@ -1,0 +1,56 @@
+// OROSSParser.idl : IDL source for OROSSParser
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (OROSSParser.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+    [
+        object,
+        uuid(6B3F19E1-5F18-48B2-B49D-C411B990AAAF),
+        dual,
+        helpstring("IOROSSParser Interface"),
+        pointer_default(unique),
+    ]
+    interface IOROSSParser : IDispatch
+    {
+        [id(1), helpstring("method Init")] HRESULT Init([out, retval] long *hRes );
+        [id(2), helpstring("method Terminate")] HRESULT Terminate([out, retval] long *hRes );
+        [id(3), helpstring("method AddPart")] HRESULT AddPart( BSTR Name, [out, retval] long *hRes );
+        [id(4), helpstring("method AddTile")] HRESULT AddTile( BSTR Name, [out, retval] long *hRes );
+        [id(5), helpstring("method AppendTile")] HRESULT AppendTile( BSTR Str, [out, retval] long *hRes );
+        [id(6), helpstring("method AddPara")] HRESULT AddPara( long Num, BSTR Para, [out, retval] long *hRes );
+        [id(7), helpstring("method AddExamplesToPara")] HRESULT AddExamplesToPara( BSTR Examples, [out, retval] long *hRes );
+        [id(8), helpstring("method AddRule")] HRESULT AddRule( BSTR Num, BSTR Rule, [out, retval] long *hRes );
+        [id(9), helpstring("method AddOrthogr")] HRESULT AddOrthogr( BSTR Orthogr, BSTR Formula, BSTR Example, BSTR Rest, long IsActive, long IsPrefix, [out, retval] long *hRes );
+        [id(10), helpstring("method AddArticle")] HRESULT AddArticle( BSTR Title, BSTR Article, [out, retval] long *hRes );
+/*        [id(5), helpstring("method GetNextHomonym")] HRESULT GetNextHomonym( [in, out] SAFEARRAY( short ) *lpHomonym );
+        [id(6), helpstring("method Normalize")] HRESULT Normalize( BSTR InputWord, [in, out] SAFEARRAY( short ) *lpHomonym );
+        [id(7), helpstring("method AddKhakSent")] HRESULT AddKhakSent( BSTR InputSent, [out, retval] long *hRes );
+        [id(8), helpstring("method AddRusSent")] HRESULT AddRusSent( BSTR InputSent, [out, retval] long *hRes );
+        [id(9), helpstring("method SaveToELAN")] HRESULT SaveToELAN( BSTR ElanPath, [out, retval] long *hRes );
+        */
+    };
+
+[
+    uuid(81947C63-F771-4EE8-9340-90861817047E),
+    version(1.0),
+]
+
+library OROSSParserLib
+{
+        importlib("stdole32.tlb");
+        importlib("stdole2.tlb");
+        [
+            uuid(14712ED3-9863-4501-8DB5-E8769D44D4D8),
+            helpstring("OROSSParser Class")
+        ]
+
+        coclass OROSSParser
+        {
+            [default] interface IOROSSParser;
+
+        };
+};
