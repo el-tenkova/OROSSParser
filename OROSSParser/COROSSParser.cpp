@@ -376,14 +376,29 @@ void COROSSParser::prepareForSearch(std::wstring& ortho)
     tags.push_back(L".");
     tags.push_back(L"/");
     tags.push_back(L"#");
+    tags.push_back(L"<");
+    tags.push_back(L">");
+
     std::vector<std::wstring>::iterator it = tags.begin();
+    size_t pos = 0;
     for (it; it != tags.end(); ++it) {
-        size_t pos = ortho.find(*it);
+        pos = ortho.find(*it);
         while (pos != std::wstring::npos) {
             ortho.insert(pos, L"\\");
             pos = ortho.find(*it, pos + 2);
         }
     }
+    pos = ortho.find(L"\\(\\<i\\>слово\\<\\/i\\>\\)");
+    if (pos != std::wstring::npos) {
+        ortho.replace(pos, wcslen(L"\\(\\<i\\>слово\\<\\/i\\>\\)"), L"\\(\\<i\\>.+\\<\\/i\\>\\)");
+    }
+    else {
+        pos = ortho.find(L"\\(\\<i\\>слово - слово\\<\\/i\\>\\)");
+        if (pos != std::wstring::npos) {
+            ortho.replace(pos, wcslen(L"\\(\\<i\\>слово - слово\\<\\/i\\>\\)"), L"\\(\\<i\\>.+\\<\\/i\\>\\)");
+        }
+    }
+
 }
 
 size_t COROSSParser::getParaNum(const std::wstring& rest)
@@ -446,14 +461,13 @@ STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]
     for (kit; kit != keys.end(); ++kit) {
         prepareOrthoKey(*kit);
     }
+    prepareOrthoKey(title);
+    keys.push_back(title);
     keys.erase(std::remove(keys.begin(), keys.end(), L""), keys.end());
-    std::vector<std::wstring>::iterator it = std::unique (keys.begin(), keys.end());
+    std::sort(keys.begin(), keys.end());
+    std::vector<std::wstring>::iterator it = std::unique(keys.begin(), keys.end());
     keys.resize( std::distance(keys.begin(), it) );
 
-    if (keys.size() > 1) {
-        prepareOrthoKey(title);
-        keys.push_back(title);
-    }
     for (kit = keys.begin(); kit != keys.end(); ++kit) {
         std::wstring key = *kit;
         wordMap::iterator wit = words.find(key);
@@ -568,6 +582,27 @@ std::wstring COROSSParser::getFormulas(const std::wstring& article, const std::v
                 len += cm.str().length() + cm.prefix().length();
                 a = cm.suffix().str();
                 // to do : check formula for ortho, use regex_match
+                formMap::iterator fit = oit->second.formulas.begin();
+        //        std::wstring formula(L"(\\s*\\:\\s*<b>нтс <\\/b>на стыке основы на <b>нт)(.*)");
+                for (fit; fit != oit->second.formulas.end(); ++fit) {
+                    std::wstring formula(fit->second.name); //L"(\\s*\\:\\s*");
+//                    formula.append(fit->second.name);
+                    prepareForSearch(formula);
+                    formula.append(L")(.*)");
+                    formula.insert(0, L"(\\s*\\:\\s*");
+                    std::wregex f(formula);
+                    if (std::regex_match(a, f)) {
+                        //int a = 0;
+                        //a++;
+                        break;
+                    }
+                }
+                if (fit == oit->second.formulas.end()) {
+                    error.write(L"Formula wasn't found:", wcslen(L"Formula wasn't found:"));
+                    error.write(a.c_str(), a.length());
+//                    error.write(tmp.c_str(), tmp.length());
+                    error.write(L"\n", wcslen(L"\n"));
+                }
             }
         }
     }
