@@ -50,7 +50,7 @@ Sub ParseOROSS()
     Set objRegExpRuleSimp = ruleSimpRegEx()
     
     Dim theDoc As Document
-    Set theDoc = Documents.Open("c:\IRYA\Справочник 7-28 апр весь и сод.doc")
+    Set theDoc = Documents.Open("c:\IRYA\Справочник 7-28 апр весь и сод.doc") '"c:\IRYA\Справочник-test.doc")
 
     Dim para As Paragraph
     
@@ -71,7 +71,7 @@ Sub ParseOROSS()
 
  '   End If
     
-    Set theDoc = Documents.Open("c:\IRYA\errors.doc") 'c:\IRYA\OROS_2014 15май Романов.doc
+    Set theDoc = Documents.Open("c:\IRYA\errors.doc") '"c:\IRYA\OROS_2014 15май Романов.doc"
 
     Set para = theDoc.Paragraphs.item(1)
     cp = theDoc.Paragraphs.count
@@ -273,8 +273,10 @@ Function IsRule(para As Paragraph) As Long
         IsRule = 0
     End If
 End Function
-Function ConvertText(para As Paragraph, start As Integer, finish As Integer) As String
+Function ConvertText(para As Paragraph, start As Integer, finish As Integer, Optional noAccent As Boolean = False) As String
     wc = para.Range.Words.count
+    Dim length1 As Integer
+    Dim length2 As Integer
     text = ""
     If finish = 0 Then
         finish = wc
@@ -289,21 +291,34 @@ Function ConvertText(para As Paragraph, start As Integer, finish As Integer) As 
             End If
 '            If para.Range.Words.item(j).Underline Then
                 For i = 1 To para.Range.Words.item(j).Characters.count
-                    If para.Range.Words.item(j).Characters(i).Underline Then
-                        text = text + "<u>" + para.Range.Words.item(j).Characters(i).text + "</u>"
+                    If para.Range.Words.item(j).Characters(i).text <> " " Then
+                        If para.Range.Words.item(j).Characters(i).Underline Then
+                            text = text + "<u>" + para.Range.Words.item(j).Characters(i).text + "</u>"
+                        Else
+                            Code = AscW(para.Range.Words.item(j).Characters(i).text)
+                            text = text + para.Range.Words.item(j).Characters(i).text
+                        End If
+                        If Not noAccent And para.Range.Words.item(j).Characters(i).Font.name = "Times Roman Cyr Acsent" Then
+                            text = text + "&#x301"
+                        End If
                     Else
-                        Code = AscW(para.Range.Words.item(j).Characters(i).text)
                         text = text + para.Range.Words.item(j).Characters(i).text
                     End If
                 Next i
  '           Else
  '               text = text + para.Range.Words.item(j).text
  '           End If
+            length1 = Len(text)
+            text = Trim$(text)
+            length2 = Len(text)
             If para.Range.Words.item(j).Italic Then
                 text = text + "</i>"
             End If
             If para.Range.Words.item(j).Bold Then
                 text = text + "</b>"
+            End If
+            If (length1 > length2) Then
+                text = text & " "
             End If
         End If
     Next j
@@ -334,8 +349,16 @@ Function ConvertText(para As Paragraph, start As Integer, finish As Integer) As 
     text = Replace(text, "</i>/<i>", "/")
     text = Replace(text, "</b>[<b>", "[")
     text = Replace(text, "</b>]<b>", "]")
+    text = Replace(text, "</b>]/[<b>", "]/[")
+    text = Replace(text, "[<b>", "<b>[")
+    text = Replace(text, "</b>]", "]</b>")
+    text = Replace(text, "(<b>", "<b>(")
+    text = Replace(text, "</b>)", ")</b>")
+    text = Replace(text, "<b>,", ",<b>")
+    text = Replace(text, ",</b>", "</b>,")
     text = Replace(text, "</i>[<i>", "[")
     text = Replace(text, "</i>]<i>", "]")
+    text = Replace(text, "</i>]/[<i>", "]/[")
     text = Replace(text, "</b>(<b>", "(")
     text = Replace(text, "</b>)<b>", ")")
     text = Replace(text, "</i>(<i>", "(")
@@ -393,7 +416,8 @@ Sub addFormula(para As Paragraph, prefix As Boolean, objParser As Object)
     ex = False
     Dim rst As Boolean
     rst = False
-    
+    Dim propverka As Boolean
+    proverka = False
     act = 1
     If Not para.Range.Words(1).Italic And Trim$(para.Range.Words(1).text) <> "(" Then
         act = 0
@@ -410,7 +434,12 @@ Sub addFormula(para As Paragraph, prefix As Boolean, objParser As Object)
 '                If Trim$(para.Range.Words(i).text) = "(" Then
                 If InStr(Trim$(para.Range.Words(i).text), "(") Then
                     If para.Range.Words(i + 1).Italic And Trim$(para.Range.Words(i + 1).text) <> "слово" Then
-                        orthogr = ConvertText(para, 1, i - 1)
+                        If Trim$(para.Range.Words(i - 1).text) = ":" And (Trim$(para.Range.Words(i - 2).text) = "проверка" And i - 4 > 1) Then
+                            orthogr = ConvertText(para, 1, i - 4)
+                            proverka = True
+                        Else
+                            orthogr = ConvertText(para, 1, i - 1)
+                        End If
                         ex = True
                         Exit For
                     End If
@@ -425,6 +454,9 @@ Sub addFormula(para As Paragraph, prefix As Boolean, objParser As Object)
         End If
     Next i
     
+    If proverka Then
+        i = i - 3
+    End If
     j = i
     If Not ex And Not rst Then
         For j = i + 1 To wc - 1
@@ -435,7 +467,12 @@ Sub addFormula(para As Paragraph, prefix As Boolean, objParser As Object)
 '                If Trim$(para.Range.Words(j).text) = "(" Then
                 If InStr(Trim$(para.Range.Words(j).text), "(") Then
                     If para.Range.Words(j + 1).Italic And Trim$(para.Range.Words(j + 1).text) <> "слово" Then
-                        formula = ConvertText(para, i + 1, j - 1)
+                        If Trim$(para.Range.Words(j - 1).text) = ":" And (Trim$(para.Range.Words(j - 2).text) = "проверка" And j - 4 > i + 1) Then
+                            formula = ConvertText(para, i + 1, j - 4)
+                            proverka = True
+                        Else
+                          formula = ConvertText(para, i + 1, j - 1)
+                        End If
                         ex = True
                         Exit For
                     End If
@@ -446,6 +483,9 @@ Sub addFormula(para As Paragraph, prefix As Boolean, objParser As Object)
         j = i
     End If
     Dim k As Integer
+    If proverka Then
+        j = j - 3
+    End If
     k = j
     If ex Then
         For k = j + 1 To wc - 1
@@ -466,10 +506,12 @@ Function CheckArticle(para As Paragraph, oParser As Object) As Paragraph
     Dim Title As String
     Dim nextPara As Paragraph
     Dim i As Integer
+    Dim noAccent As Boolean
     If wc > 2 Then
         For i = 1 To wc
-            If Not para.Range.Words(i).Bold Then
-                Title = ConvertText(para, 1, i - 1)
+            If Not para.Range.Words(i).Bold And Not Trim$(para.Range.Words(i)) = "," And Not Trim$(para.Range.Words(i)) = "-" Then
+                noAccent = True
+                Title = ConvertText(para, 1, i - 1, noAccent)
                 Exit For
             End If
         Next i
