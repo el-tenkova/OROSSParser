@@ -2,9 +2,13 @@ Attribute VB_Name = "OROSS"
 Dim tile As Boolean
 Dim tileName As String
 Dim orthoWait As Boolean
+Dim rule As Boolean
+Dim ruleNum As String
 
 Dim objRegExpRule As Object
 Dim objRegExpRuleSimp As Object
+Dim objRegExpSubRule As Object
+
 Public Function ruleRegEx() As Object
     ' Create a regular expression object.
     Set objRegExp = New RegExp
@@ -40,6 +44,24 @@ Public Function ruleSimpRegEx() As Object
     
 End Function
 
+Public Function subRuleRegEx() As Object
+    ' Create a regular expression object.
+    Set objRegExp = New RegExp
+
+    'Set the pattern by using the Pattern property.
+    objRegExp.Pattern = "^\s*(\d+)\)\s*"
+
+    ' Set Case Insensitivity.
+    objRegExp.IgnoreCase = False
+
+    'Set global applicability.
+    objRegExp.Global = True
+
+    'Test whether the String can be compared.
+     Set subRuleRegEx = objRegExp
+    
+End Function
+
 Sub ParseOROSS()
    
     Dim objParser As Object
@@ -48,9 +70,10 @@ Sub ParseOROSS()
     
     Set objRegExpRule = ruleRegEx()
     Set objRegExpRuleSimp = ruleSimpRegEx()
+    Set objRegExpSubRule = subRuleRegEx()
     
     Dim theDoc As Document
-    Set theDoc = Documents.Open("c:\IRYA\Справочник 7-28 апр весь и сод.doc") '"c:\IRYA\Справочник-test.doc")
+    Set theDoc = Documents.Open("c:\IRYA\Справочник 7-28 апр весь и сод.doc") '"c:\IRYA\Справочник-test1.doc")
 
     Dim para As Paragraph
     
@@ -62,7 +85,7 @@ Sub ParseOROSS()
     
 '    If orthoWait Then
     
-    For i = 1 To 0 'cp
+    For i = 1 To cp
         If para.Range.Characters.count > 1 Then
             Call CheckPara(para, objParser)
         End If
@@ -71,7 +94,7 @@ Sub ParseOROSS()
 
  '   End If
     
-    Set theDoc = Documents.Open("c:\IRYA\errors.doc") '"c:\IRYA\OROS_2014 15май Романов.doc"
+    Set theDoc = Documents.Open("c:\IRYA\errors.doc") '"c:\IRYA\OROS_2014 15май Романов.doc")
 
     Set para = theDoc.Paragraphs.item(1)
     cp = theDoc.Paragraphs.count
@@ -101,20 +124,23 @@ Sub CheckPara(para As Paragraph, oParser As Object)
         orthoWait = False
     End If
     If IsPart(para) Then
+        rule = False
         res = oParser.addPart(Mid$(para.Range.text, 1, Len(para.Range.text) - 1))
     Else
         If IsTile(para) Then
             tileName = Mid$(para.Range.text, 1, Len(para.Range.text) - 1)
             tile = True
+            rule = False
         Else
             If IsPara(para) Then
+                rule = False
                 If tile Then
                     res = oParser.addTile(tileName)
                     tile = False
                     tileName = ""
                 End If
                 Num = Trim$(para.Range.Words.item(2))
-                If Num = "30" Then
+                If Num = "14" Then
                     Debug.Print "para 40"
                 End If
                 Call AddPara(Num, para, oParser)
@@ -138,15 +164,32 @@ Sub CheckPara(para As Paragraph, oParser As Object)
                     'If Num = "П" Then
                     '    Num = "0"
                     'End If
-                    rule = ""
+                    ruleText = ""
                     If addPrev Then
-                        rule = ConvertText(para.Previous(), 1, 0) & "</p></p>"
+                        ruleText = ConvertText(para.Previous(), 1, 0) & "</p></p>"
                     End If
-                    rule = rule & ConvertText(para, 1, para.Range.Words.count)
-                    res = oParser.addRule(CLng(Num), rule) 'Mid$(para.Range.text, ruleLen, Len(para.Range.text) - 1))
+                    ruleText = ruleText & ConvertText(para, 1, para.Range.Words.count)
+                    res = oParser.addRule(CLng(Num), ruleText) 'Mid$(para.Range.text, ruleLen, Len(para.Range.text) - 1))
+                    rule = True
+                    ruleNum = Num
                 Else
-                    If IsOrthogr(para) Then
-                        orthoWait = True
+                    subLen = IsSubRule(para)
+                    If rule And subLen <> 0 Then
+          '              Num = Trim$(para.Range.Words.item(1))
+                        ruleText = ConvertText(para, 1, para.Range.Words.count)
+                        Num = Trim$(Mid$(para.Range.text, 1, subLen))
+                        res = oParser.addRule(ruleNum & "." & Num, ruleText) 'Mid$(para.Range.text, ruleLen, Len(para.Range.text) - 1))
+                        rule = True
+                    Else
+                        If IsOrthogr(para) Then
+                            orthoWait = True
+                            rule = False
+                        Else
+                            If rule Then
+                                ruleText = ConvertText(para, 1, para.Range.Words.count)
+                                res = oParser.AddInfoToRule(ruleText)
+                            End If
+                        End If
                     End If
                 End If
             End If
@@ -273,6 +316,24 @@ Function IsRule(para As Paragraph) As Long
         IsRule = 0
     End If
 End Function
+Function IsSubRule(para As Paragraph) As Long
+    Dim prev As Paragraph
+    Dim text As String
+    text = para.Range.text
+    Dim simple As Boolean
+    simple = False
+    Set colMatches = objRegExpSubRule.Execute(text) ' Execute search.
+    If colMatches.count > 0 Then
+        For Each objMatch In colMatches   ' Iterate Matches collection.
+            IsSubRule = objMatch.length
+            Exit For
+        Next objMatch
+    Else
+        IsSubRule = 0
+    End If
+End Function
+
+
 Function ConvertText(para As Paragraph, start As Integer, finish As Integer, Optional noAccent As Boolean = False) As String
     wc = para.Range.Words.count
     Dim length1 As Integer
@@ -292,14 +353,18 @@ Function ConvertText(para As Paragraph, start As Integer, finish As Integer, Opt
 '            If para.Range.Words.item(j).Underline Then
                 For i = 1 To para.Range.Words.item(j).Characters.count
                     If para.Range.Words.item(j).Characters(i).text <> " " Then
-                        If para.Range.Words.item(j).Characters(i).Underline Then
-                            text = text + "<u>" + para.Range.Words.item(j).Characters(i).text + "</u>"
-                        Else
-                            Code = AscW(para.Range.Words.item(j).Characters(i).text)
-                            text = text + para.Range.Words.item(j).Characters(i).text
-                        End If
-                        If Not noAccent And para.Range.Words.item(j).Characters(i).Font.name = "Times Roman Cyr Acsent" Then
+                        If para.Range.Words.item(j).Characters(i) = "#" Then
                             text = text + "&#x301"
+                        Else
+                            If para.Range.Words.item(j).Characters(i).Underline Then
+                                text = text + "<u>" + para.Range.Words.item(j).Characters(i).text + "</u>"
+                            Else
+                                Code = AscW(para.Range.Words.item(j).Characters(i).text)
+                                text = text + para.Range.Words.item(j).Characters(i).text
+                            End If
+                            If Not noAccent And para.Range.Words.item(j).Characters(i).Font.name = "Times Roman Cyr Acsent" Then
+                                text = text + "&#x301"
+                            End If
                         End If
                     Else
                         text = text + para.Range.Words.item(j).Characters(i).text
@@ -342,28 +407,59 @@ Function ConvertText(para As Paragraph, start As Integer, finish As Integer, Opt
     text = Replace(text, ChrW(&H7), "")
     text = Replace(text, ChrW(&H1A), "-")
 '    text = Replace(text, ChrW$(&H7), "")
-    text = Replace(text, "</b><b>", "")
-    text = Replace(text, "</i><i>", "")
-    text = Replace(text, "</u><u>", "")
-    text = Replace(text, "</b>/<b>", "/")
-    text = Replace(text, "</i>/<i>", "/")
-    text = Replace(text, "</b>[<b>", "[")
-    text = Replace(text, "</b>]<b>", "]")
-    text = Replace(text, "</b>]/[<b>", "]/[")
-    text = Replace(text, "[<b>", "<b>[")
-    text = Replace(text, "</b>]", "]</b>")
-    text = Replace(text, "(<b>", "<b>(")
-    text = Replace(text, "</b>)", ")</b>")
-    text = Replace(text, "<b>,", ",<b>")
-    text = Replace(text, ",</b>", "</b>,")
-    text = Replace(text, "</i>[<i>", "[")
-    text = Replace(text, "</i>]<i>", "]")
-    text = Replace(text, "</i>]/[<i>", "]/[")
-    text = Replace(text, "</b>(<b>", "(")
-    text = Replace(text, "</b>)<b>", ")")
-    text = Replace(text, "</i>(<i>", "(")
-    text = Replace(text, "</i>)<i>", ")")
+    For i = 1 To 3
+        ch = "b"
+        If i = 2 Then
+            ch = "i"
+        End If
+        If i = 3 Then
+            ch = "u"
+        End If
+        ' remove </b><b>, </i><i>, </u><u>
+        a = "</" & ch & "><" & ch & ">"
+        text = Replace(text, a, "")
+        ' do not mark non-alphabetic
+        '[
+        text = Replace(text, "</" & ch & ">[<" & ch & ">", "[")
+        ']
+        text = Replace(text, "</" & ch & ">]<" & ch & ">", "]")
+        '(
+        text = Replace(text, "</" & ch & ">(<" & ch & ">", "(")
+        ')
+        text = Replace(text, "</" & ch & ">)<" & ch & ">", ")")
+        
+        '<b>[ => [<b>
+        '<b>] => ]<b>
+        text = Replace(text, "<" & ch & ">[", "[<" & ch & ">")
+        text = Replace(text, "<" & ch & ">]", "]<" & ch & ">")
+        ']</b> => </b>]
+        '[</b> => </b>[
+        text = Replace(text, "]</" & ch & ">", "</" & ch & ">]")
+        text = Replace(text, "[</" & ch & ">", "</" & ch & ">[")
+        '<b>( => (<b>
+        ')<b> => <b>)
+        text = Replace(text, "<" & ch & ">(", "(<" & ch & ">")
+        text = Replace(text, ")<" & ch & ">", "<" & ch & ">)")
+        '</b>) => )</b>
+        '(</b> => </b>(
+        text = Replace(text, "</" & ch & ">)", ")</" & ch & ">")
+        text = Replace(text, "(</" & ch & ">)", "</" & ch & ">(")
+        '<b>, => ,<b>
+        text = Replace(text, "<" & ch & ">,", ",<" & ch & ">")
+        ',</b> => </b>,
+        text = Replace(text, ",</" & ch & ">", "</" & ch & ">,")
+        '<b>: => :<b>
+        text = Replace(text, "<" & ch & ">:", ":<" & ch & ">")
+        ',</b> => </b>,
+        text = Replace(text, ":</" & ch & ">", "</" & ch & ">:")
+        '/
+        text = Replace(text, "</" & ch & ">/<" & ch & ">", "/")
+        '-
+        text = Replace(text, "</" & ch & ">-<" & ch & ">", "-")
+        ']/[
+        text = Replace(text, "</" & ch & ">]/[<" & ch & ">", "]/[")
     
+    Next i
     text = Trim$(text)
     
     ConvertText = text

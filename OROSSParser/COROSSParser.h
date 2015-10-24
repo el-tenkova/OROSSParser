@@ -22,7 +22,10 @@ typedef std::map<size_t, subst> substMap;
 struct article {
     size_t id;
     std::wstring text;
+    std::vector<size_t> formulas;
+    std::vector<size_t> orthos;
 };
+
 typedef std::map<size_t, article> artMap;
 typedef std::vector<size_t> artIdVct;
 typedef std::map<std::wstring, artIdVct> wordMap;
@@ -30,6 +33,7 @@ typedef std::map<std::wstring, artIdVct> wordMap;
 struct formula {
     size_t id;
     std::wstring name;
+    std::wstring search;
     std::wstring example;
     std::wstring rest;
     size_t is_prefix;
@@ -46,6 +50,7 @@ struct orthogr {
     size_t para;
     size_t active;
     std::wstring name;
+    std::wstring search;
     formMap formulas;
 };
 typedef std::map<std::wstring, orthogr> orthoMap;
@@ -53,10 +58,12 @@ typedef std::map<std::wstring, orthogr> orthoMap;
 struct rule {
     size_t id;
     size_t para;
+    size_t parent;
 //    size_t tile;
 //    size_t part;
     std::wstring num;
     std::wstring text;
+    std::wstring info;
     std::wstring exc_rule;
     std::wstring examples;
     std::vector<std::wstring> excVct;
@@ -130,6 +137,7 @@ public:
     STDMETHOD(AddRule)( BSTR Num, BSTR Rule, /*[out, retval]*/ long *hRes );
     STDMETHOD(AddOrthogr)( BSTR Orthogr, BSTR Formula, BSTR Example, BSTR Rest, long IsActive, long IsPrefix, /*[out, retval]*/ long *hRes );
     STDMETHOD(AddArticle)( BSTR Title, BSTR Article, /*[out, retval]*/ long *hRes );
+    STDMETHOD(AddInfoToRule)( BSTR Info, /*[out, retval]*/ long *hRes );
 
 protected:
     partMap parts;
@@ -166,16 +174,18 @@ protected:
     void makeArticlesTable(std::wofstream& result);
 
     void prepareOrthoKey(std::wstring& key);
-    void prepareForSearch(std::wstring& ortho);
+    std::wstring prepareForSearch(const std::wstring& ortho);
     std::wstring prepareRest(const std::wstring& Rest);
     void correctText(std::wstring& text);
 
     size_t getParaNum(const std::wstring& rest);
-    size_t getRuleNum(const std::wstring& rest);
+    std::wstring getRuleNum(const std::wstring& rest);
     std::wstring getPara(const std::wstring& a, std::vector<size_t>& paraVct);
-    std::wstring getFormulas(const std::wstring& a, const std::vector<size_t>& paraVct);
+    std::wstring getFormulas(const std::wstring& article, const std::vector<size_t>& paraVct, std::vector<size_t>& orthos, std::vector<size_t>& formulas);
     void getTags(const std::wstring& text, const std::wstring& tag, std::vector<size_t>& tagsVct);
     size_t getRuleId(const size_t& para, const std::wstring& Num);
+    size_t getParentRule(const std::wstring& Num);
+    std::wstring getRestForPara(const std::wstring& Rest, const size_t& id_para);
 
 };
 

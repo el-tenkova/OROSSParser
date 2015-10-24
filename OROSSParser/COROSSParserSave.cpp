@@ -85,21 +85,22 @@ void COROSSParser::saveData()
                                 result.write(o.name.c_str(), o.name.length());
                                 formMap::iterator ft = o.formulas.begin();
                                 for (ft; ft != o.formulas.end(); ++ft) {
-                                    result.write(o.name.c_str(), o.name.length());
-                                    result.write(ft->second.name.c_str(), ft->second.name.length());
-                                    result.write(ft->second.example.c_str(), ft->second.example.length());
+                                   // rest.write(o.name.c_str(), o.name.length());
+                                    rest.write(ft->second.name.c_str(), ft->second.name.length());
+                                    rest.write(caret.c_str(), caret.length());
+                                   // result.write(ft->second.example.c_str(), ft->second.example.length());
 //                                    rest.write(ft->second.rest.c_str(), ft->second.rest.length());
 //                                    rest.write(caret.c_str(), caret.length());
                                 }
                                 result.write(caret.c_str(), caret.length());
                             }
-                            restMap::iterator rit = parait->second.links.begin();
+/*                            restMap::iterator rit = parait->second.links.begin();
                             for (; rit != parait->second.links.end(); ++rit)
                             {
                                 rest.write(rit->first.c_str(), rit->first.length());
                                 rest.write(rit->second.c_str(), rit->second.length());
                                 rest.write(caret.c_str(), caret.length());
-                            }
+                            } */
 
                         }
                     }
@@ -289,8 +290,10 @@ void COROSSParser::makeRuleTable(std::wofstream& result)
     std::wstring str(L"\nCREATE TABLE IF NOT EXISTS rules (\n\
     id int(11) NOT NULL,\n\
     id_para int(11) NOT NULL,\n\
+    id_parent int(11) NOT NULL,\n\
     num VARCHAR(10) NOT NULL, \n\
     text TEXT NOT NULL,\n\
+    info TEXT NOT NULL,\n\
     PRIMARY KEY (id) \n\
     );\n\n");
 
@@ -300,15 +303,19 @@ void COROSSParser::makeRuleTable(std::wofstream& result)
     for (; ruleit != rules.end(); ++ruleit)
     {
         str.clear();
-        str.append(L"INSERT INTO rules (id, id_para, num, text) \n\
+        str.append(L"INSERT INTO rules (id, id_para, id_parent, num, text, info) \n\
     VALUES (");
         str.append(std::to_wstring(ruleit->id));
         str.append(L",");
         str.append(std::to_wstring(ruleit->para));
+        str.append(L",");
+        str.append(std::to_wstring(ruleit->parent));
         str.append(L",'");
         str.append(ruleit->num);
         str.append(L"','");
         str.append(ruleit->text);
+        str.append(L"','");
+        str.append(ruleit->info);
         str.append(L"');\n");
         result.write(str.c_str(), str.length());
     }
@@ -453,6 +460,14 @@ void COROSSParser::makeArticlesTable(std::wofstream& result)
     result.write(str.c_str(), str.length());
 
     str.clear();
+    str.append(L"\nCREATE TABLE IF NOT EXISTS articles_formulas (\n\
+    id int(11) NOT NULL,\n\
+    id_formula int(11) NOT NULL,\n\
+    PRIMARY KEY (id, id_formula) \n\
+    );\n\n");
+    result.write(str.c_str(), str.length());
+
+    str.clear();
     str.append(L"\nCREATE TABLE IF NOT EXISTS articles_orthos (\n\
     id int(11) NOT NULL,\n\
     id_ortho int(11) NOT NULL,\n\
@@ -518,6 +533,17 @@ VALUES (");
                 str.append(L");\n");
                 result.write(str.c_str(), str.length());
             }
+        }
+        std::vector<size_t>::iterator fit = ait->second.formulas.begin();
+        for (fit; fit != ait->second.formulas.end(); ++fit) {
+            str.clear();
+            str.append(L"INSERT INTO articles_formulas (id, id_formula) \n\
+                        VALUES (");
+            str.append(std::to_wstring(ait->second.id));
+            str.append(L",");
+            str.append(std::to_wstring(*fit));
+            str.append(L");\n");
+            result.write(str.c_str(), str.length());
         }
     }
 }

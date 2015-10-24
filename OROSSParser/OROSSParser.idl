@@ -26,12 +26,7 @@ import "ocidl.idl";
         [id(8), helpstring("method AddRule")] HRESULT AddRule( BSTR Num, BSTR Rule, [out, retval] long *hRes );
         [id(9), helpstring("method AddOrthogr")] HRESULT AddOrthogr( BSTR Orthogr, BSTR Formula, BSTR Example, BSTR Rest, long IsActive, long IsPrefix, [out, retval] long *hRes );
         [id(10), helpstring("method AddArticle")] HRESULT AddArticle( BSTR Title, BSTR Article, [out, retval] long *hRes );
-/*        [id(5), helpstring("method GetNextHomonym")] HRESULT GetNextHomonym( [in, out] SAFEARRAY( short ) *lpHomonym );
-        [id(6), helpstring("method Normalize")] HRESULT Normalize( BSTR InputWord, [in, out] SAFEARRAY( short ) *lpHomonym );
-        [id(7), helpstring("method AddKhakSent")] HRESULT AddKhakSent( BSTR InputSent, [out, retval] long *hRes );
-        [id(8), helpstring("method AddRusSent")] HRESULT AddRusSent( BSTR InputSent, [out, retval] long *hRes );
-        [id(9), helpstring("method SaveToELAN")] HRESULT SaveToELAN( BSTR ElanPath, [out, retval] long *hRes );
-        */
+        [id(11), helpstring("method AddInfoToRule")] HRESULT AddInfoToRule( BSTR Info, [out, retval] long *hRes );
     };
 
 [
