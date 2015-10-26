@@ -30,6 +30,14 @@ typedef std::map<size_t, article> artMap;
 typedef std::vector<size_t> artIdVct;
 typedef std::map<std::wstring, artIdVct> wordMap;
 
+struct footnote {
+    size_t id;
+    size_t para;
+    size_t rule;
+    std::wstring text;
+};
+typedef std::map<size_t, footnote> footMap;
+
 struct formula {
     size_t id;
     std::wstring name;
@@ -79,6 +87,7 @@ struct para {
     size_t tile;
     size_t part;
     std::wstring name;
+    std::wstring title;
     std::wstring examples;
     orthoMap orthos;
     std::vector<size_t> rules;
@@ -138,6 +147,7 @@ public:
     STDMETHOD(AddOrthogr)( BSTR Orthogr, BSTR Formula, BSTR Example, BSTR Rest, long IsActive, long IsPrefix, /*[out, retval]*/ long *hRes );
     STDMETHOD(AddArticle)( BSTR Title, BSTR Article, /*[out, retval]*/ long *hRes );
     STDMETHOD(AddInfoToRule)( BSTR Info, /*[out, retval]*/ long *hRes );
+    STDMETHOD(AddFootNote)( long ID, BSTR Text, /*[out, retval]*/ long *hRes );
 
 protected:
     partMap parts;
@@ -146,6 +156,8 @@ protected:
     ruleVct rules;
     wordMap words;
     artMap articles;
+    footMap footnotes;
+
   //  orthoMap orthos;
     std::wofstream error;
 
@@ -170,6 +182,7 @@ protected:
     void makeRuleTable(std::wofstream& result);
     void makeOrthogrTable(std::wofstream& result);
     void makeFormulaTable(std::wofstream& result);
+    void makeFootNotesTable(std::wofstream& result);
     void makeWordsTable(std::wofstream& result);
     void makeArticlesTable(std::wofstream& result);
 

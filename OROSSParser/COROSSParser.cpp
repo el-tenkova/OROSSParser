@@ -122,6 +122,9 @@ STDMETHODIMP COROSSParser::AddPara( long Num, BSTR Name, /* [out, retval]*/ long
         }
         paraId = Num;
     }
+    else {
+        curPara->second.title.append(Name);
+    }
 /*    else {
         if (curPara->second.name.length() > wcslen(Name)) {
             std::wstring ex = curPara->second.name.substr(wcslen(Name));
@@ -192,9 +195,27 @@ STDMETHODIMP COROSSParser::AddRule( BSTR Num, BSTR Name, /* [out, retval]*/ long
 STDMETHODIMP COROSSParser::AddInfoToRule( BSTR Info, /*[out, retval]*/ long *hRes )
 {
     ruleVct::iterator rit = rules.end() - 1;
-    rit->info.append(L"<div><p>");
+    rit->info.append(L"<p>");
     rit->info.append(Info);
-    rit->info.append(L"</div></p>");
+    rit->info.append(L"</p>");
+    *hRes = S_OK;
+    return S_OK;
+}
+
+STDMETHODIMP COROSSParser::AddFootNote( long ID, BSTR Text, /*[out, retval]*/ long *hRes )
+{
+    std::wstring text(Text);
+    footnote cf = {size_t(ID), 0, 0, Text};
+    footMap::iterator fit = footnotes.find(ID);
+    if (fit == footnotes.end())
+    {
+        footnotes.insert(std::pair<size_t, footnote>((size_t)ID, cf));
+    }
+    else {
+        fit->second.para = curPara->second.id;
+        if (rules.size() > 0)
+            fit->second.rule = (rules.end() - 1)->id;
+    }
     *hRes = S_OK;
     return S_OK;
 }
@@ -435,6 +456,18 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
         tmp.append(cm.prefix().str());
         tmp.append(L"([^\\(\\)]*\\)");
 //        tmp.append(cm.suffix().str());
+        search = cm.suffix().str();
+    }
+    tmp.append(search);
+
+    search.clear();
+    cm.empty();
+    search.append(tmp);
+    std::wregex e2(L"(\\<sup\\>.+\\>)");
+    tmp.clear();
+    while (std::regex_search(search.cbegin(), search.cend(), cm, e2)) {
+        tmp.append(cm.prefix().str());
+        tmp.append(L"");
         search = cm.suffix().str();
     }
     tmp.append(search);

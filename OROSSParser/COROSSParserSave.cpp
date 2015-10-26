@@ -149,6 +149,7 @@ void COROSSParser::makeSQL()
         makeFormulaTable(result); 
         makeWordsTable(result);
         makeArticlesTable(result);
+        makeFootNotesTable(result);
         result.close();
     }
 }
@@ -229,6 +230,7 @@ void COROSSParser::makeParaTable(std::wofstream& result)
     std::wstring str(L"\nCREATE TABLE IF NOT EXISTS paras (\n\
     id int(11) NOT NULL,\n\
     name TEXT NOT NULL,\n\
+    title TEXT NOT NULL,\n\
     examples TEXT NOT NULL,\n\
     PRIMARY KEY (id) \n\
     );\n\n");
@@ -244,11 +246,13 @@ void COROSSParser::makeParaTable(std::wofstream& result)
     for (; parait != paras.end(); ++parait)
     {
         str.clear();
-        str.append(L"INSERT INTO paras (id, name, examples) \n\
+        str.append(L"INSERT INTO paras (id, name, title, examples) \n\
     VALUES (");
         str.append(std::to_wstring(parait->second.id));
         str.append(L",'");
         str.append(parait->second.name);
+        str.append(L"', '");
+        str.append(parait->second.title);
         str.append(L"', '");
         str.append(parait->second.examples);
         str.append(L"');\n");
@@ -560,5 +564,60 @@ void COROSSParser::getTags(const std::wstring& text, const std::wstring& tag, st
         if (std::find(tagsVct.begin(), tagsVct.end(), std::stol(cm[1])) == tagsVct.end())
             tagsVct.push_back(std::stol(cm[1]));
         a = cm.suffix().str();
+    }
+}
+
+void COROSSParser::makeFootNotesTable(std::wofstream& result)
+{
+    std::wstring str(L"\nCREATE TABLE IF NOT EXISTS footnotes (\n\
+    id int(11) NOT NULL,\n\
+    text TEXT NOT NULL,\n\
+    PRIMARY KEY (id) \n\
+    );\n\n");
+    result.write(str.c_str(), str.length());
+
+    str.clear();
+    str.append(L"\nCREATE TABLE IF NOT EXISTS footnotes_paras (\n\
+    id int(11) NOT NULL,\n\
+    id_para int(11) NOT NULL,\n\
+    PRIMARY KEY (id, id_para) \n\
+    );\n\n");
+    result.write(str.c_str(), str.length());
+
+    str.clear();
+    str.append(L"\nCREATE TABLE IF NOT EXISTS footnotes_rules (\n\
+    id int(11) NOT NULL,\n\
+    id_rule int(11) NOT NULL,\n\
+    PRIMARY KEY (id, id_rule) \n\
+    );\n\n");
+    result.write(str.c_str(), str.length());
+    footMap::iterator rit = footnotes.begin();
+    for (rit; rit != footnotes.end(); ++rit) {
+        str.clear();
+        str.append(L"INSERT INTO footnotes (id, text) \n\
+VALUES (");
+        str.append(std::to_wstring(rit->second.id));
+        str.append(L",'");
+        str.append(rit->second.text);
+        str.append(L"');\n");
+        result.write(str.c_str(), str.length());
+
+        str.clear();
+        str.append(L"INSERT INTO footnotes_paras (id, id_para) \n\
+VALUES (");
+        str.append(std::to_wstring(rit->second.id));
+        str.append(L",");
+        str.append(std::to_wstring(rit->second.para));
+        str.append(L");\n");
+        result.write(str.c_str(), str.length());
+
+        str.clear();
+        str.append(L"INSERT INTO footnotes_rules (id, id_rule) \n\
+VALUES (");
+        str.append(std::to_wstring(rit->second.id));
+        str.append(L",");
+        str.append(std::to_wstring(rit->second.rule));
+        str.append(L");\n");
+        result.write(str.c_str(), str.length());
     }
 }

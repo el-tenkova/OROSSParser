@@ -27,6 +27,7 @@ import "ocidl.idl";
         [id(9), helpstring("method AddOrthogr")] HRESULT AddOrthogr( BSTR Orthogr, BSTR Formula, BSTR Example, BSTR Rest, long IsActive, long IsPrefix, [out, retval] long *hRes );
         [id(10), helpstring("method AddArticle")] HRESULT AddArticle( BSTR Title, BSTR Article, [out, retval] long *hRes );
         [id(11), helpstring("method AddInfoToRule")] HRESULT AddInfoToRule( BSTR Info, [out, retval] long *hRes );
+        [id(12), helpstring("method AddFootNote")] HRESULT AddFootNote( long ID, BSTR Text, [out, retval] long *hRes );
     };
 
 [
