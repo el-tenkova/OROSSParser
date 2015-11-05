@@ -33,7 +33,7 @@ Public Function ruleSimpRegEx() As Object
     Set objRegExp = New RegExp
 
     'Set the pattern by using the Pattern property.
-    objRegExp.Pattern = "^\s*(П\sр\sа\sв\sи\sл\sо\.\s*)"
+    objRegExp.Pattern = "^\s*(П\s*р\s*а\s*в\s*и\s*л\s*о\.\s*)"
 
     ' Set Case Insensitivity.
     objRegExp.IgnoreCase = False
@@ -75,8 +75,7 @@ Sub ParseOROSS()
     Set objRegExpSubRule = subRuleRegEx()
     
     Dim theDoc As Document
-    Set theDoc = Documents.Open("c:\IRYA\Справочник-test1.doc") 'c:\IRYA\Справочник 7-28 апр весь и сод.doc")
-
+    Set theDoc = Documents.Open("c:\IRYA\Справочник 7-28 апр весь и сод.doc") '"c:\IRYA\Справочник-test1.doc")
     Dim para As Paragraph
     
     Set para = theDoc.Paragraphs.item(1)
@@ -94,6 +93,9 @@ Sub ParseOROSS()
             Call CheckPara(para, objParser)
         End If
         Set para = para.Next()
+        If para Is Nothing Then
+            Exit For
+        End If
     Next i
 
  '   End If
@@ -211,7 +213,8 @@ Sub CheckPara(para As Paragraph, oParser As Object)
                             rule = False
                         Else
                             If rule Then
-                                ruleText = ConvertText(para.Range.words, 1, para.Range.words.count)
+                                ruleText = CheckText(para)
+'                                ruleText = ConvertText(para.Range.words, 1, para.Range.words.count)
                                 res = oParser.AddInfoToRule(ruleText)
                             End If
                         End If
@@ -476,14 +479,22 @@ Function ConvertText(words As words, start As Integer, finish As Integer, Option
                                 If words.item(j).Characters(i) = "#" Then
                                     text = text + "&#x301"
                                 Else
-                                    If words.item(j).Characters(i).Underline Then
-                                        text = text + "<u>" + words.item(j).Characters(i).text + "</u>"
+                                    If words.item(j).Characters(i).Font.Superscript <> 0 Then
+                                        text = text + "<sup>" + words.item(j).Characters(i).text + "</sup>"
                                     Else
-                                        Code = AscW(words.item(j).Characters(i).text)
-                                        text = text + words.item(j).Characters(i).text
-                                    End If
-                                    If Not noAccent And words.item(j).Characters(i).Font.name = "Times Roman Cyr Acsent" Then
-                                        text = text + "&#x301"
+                                        If words.item(j).Characters(i).Font.Subscript <> 0 Then
+                                            text = text + "<sub>" + words.item(j).Characters(i).text + "</sub>"
+                                        Else
+                                            If words.item(j).Characters(i).Underline Then
+                                                text = text + "<u>" + words.item(j).Characters(i).text + "</u>"
+                                            Else
+                                                Code = AscW(words.item(j).Characters(i).text)
+                                                text = text + words.item(j).Characters(i).text
+                                            End If
+                                            If Not noAccent And words.item(j).Characters(i).Font.name = "Times Roman Cyr Acsent" Then
+                                                text = text + "&#x301"
+                                            End If
+                                        End If
                                     End If
                                 End If
                             End If
@@ -530,8 +541,8 @@ End Function
 
 Sub addOrthogr(table As table, objParser As Object)
     Dim tpara As Paragraph
-    cp = table.Cell(1, 1).Range.Paragraphs.count
-    Set tpara = table.Cell(1, 1).Range.Paragraphs(1)
+    cp = table.cell(1, 1).Range.Paragraphs.count
+    Set tpara = table.cell(1, 1).Range.Paragraphs(1)
     Dim prefix As Boolean
     prefix = False
     For i = 1 To cp
@@ -676,3 +687,87 @@ Function CheckArticle(para As Paragraph, oParser As Object) As Paragraph
     Set CheckArticle = para
 End Function
 
+Function CheckText(ByRef para As Paragraph) As String
+    Dim ruleText As String
+    Dim cell As cell
+    Dim table As table
+    Dim cellpara As Paragraph
+    Dim tmp As cell
+    ruleText = ""
+    Dim rowspan As Integer
+    Dim colspan As Integer
+    If para.Range.Tables.count <> 0 Then
+        ruleText = "<table class=" & Chr(34) & "table table-bordered" & Chr(34) & ">"
+        idx = 1
+        Set table = para.Range.Tables(1)
+        w = 100 / table.Columns.count
+        For i = 1 To table.Columns.count
+            ruleText = ruleText & "<col width=" & Chr(34) & Trim$(str$(w)) & Chr(34) & " >"
+        Next i
+        ruleText = ruleText & "<tr>"
+        Set cell = table.cell(1, 1)
+        Do While Not cell Is Nothing
+            
+            If cell.RowIndex <> idx Then
+                ruleText = ruleText & "</tr>"
+                idx = cell.RowIndex
+            End If
+        
+            rowspan = 1
+            Set tmp = cell.Next
+            Do While Not tmp Is Nothing
+                If cell.ColumnIndex = tmp.ColumnIndex Then
+                    rowspan = tmp.RowIndex - cell.RowIndex
+                    Set tmp = Nothing
+                Else
+                    Set tmp = tmp.Next
+                End If
+            Loop
+            colspan = 1
+            Set tmp = cell.Next
+            Do While Not tmp Is Nothing
+                If cell.RowIndex = tmp.RowIndex Then
+                    colspan = tmp.ColumnIndex - cell.ColumnIndex
+                    Set tmp = Nothing
+                Else
+                    If cell.RowIndex <> tmp.RowIndex Then
+                        colspan = table.Columns.count - cell.ColumnIndex + 1
+                        Set tmp = Nothing
+                    Else
+                        Set tmp = tmp.Next
+                    End If
+                End If
+            Loop
+            If rowspan > 1 And colspan > 1 Then
+                ruleText = ruleText & "<td rowspan=" & Chr(34) & Trim$(str$(rowspan)) & Chr(34)
+                ruleText = ruleText & " colspan=" & Chr(34) & Trim$(str$(colspan)) & Chr(34) & " >"
+            Else
+                If rowspan > 1 Then
+                    ruleText = ruleText & "<td rowspan=" & Chr(34) & Trim$(str$(rowspan)) & Chr(34) & ">"
+                Else
+                    If colspan > 1 Then
+                        ruleText = ruleText & "<td colspan=" & Chr(34) & Trim$(str$(colspan)) & Chr(34) & " >"
+                    Else
+                        ruleText = ruleText & "<td>"
+                    End If
+                End If
+            End If
+            Set cellpara = cell.Range.Paragraphs.first
+            cp = cell.Range.Paragraphs.count
+            For i = 1 To cp
+                ruleText = ruleText & "<p>" & ConvertText(cellpara.Range.words, 1, 0) & "</p>"
+                Set cellpara = cellpara.Next
+            Next i
+            ruleText = ruleText & "</td>"
+            
+            Set cell = cell.Next
+            
+        Loop
+        ruleText = ruleText & "</tr></table>"
+        Set para = table.Range.Paragraphs.Last
+        
+    Else
+        ruleText = ConvertText(para.Range.words, 1, para.Range.words.count)
+    End If
+    CheckText = ruleText
+End Function

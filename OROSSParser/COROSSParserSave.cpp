@@ -500,21 +500,14 @@ void COROSSParser::makeArticlesTable(std::wofstream& result)
     for (; ait != articles.end(); ++ait)
     {
         str.clear();
-        str.append(L"INSERT INTO articles (id, text) \n\
-VALUES (");
-        str.append(std::to_wstring(ait->second.id));
-        str.append(L",'");
-        str.append(ait->second.text);
-        str.append(L"');\n");
-        result.write(str.c_str(), str.length());
         //
         for (size_t i = 0; i < 3; i++) {
             std::vector<size_t> tags;
             std::wstring pattern(L"");
             switch (i) {
                 case 0: pattern.append(L"formulas"); break;
-                case 1: pattern.append(L"rules"); break;
-                case 2: pattern.append(L"paras"); break;
+                case 1: pattern.append(L"rules_"); break;
+                case 2: pattern.append(L"paras_"); break;
             }
             getTags(ait->second.text, pattern, tags);
             std::vector<size_t>::iterator it = tags.begin();
@@ -549,6 +542,26 @@ VALUES (");
             str.append(L");\n");
             result.write(str.c_str(), str.length());
         }
+        str.clear();
+        str.append(L"INSERT INTO articles (id, text) \n\
+VALUES (");
+        str.append(std::to_wstring(ait->second.id));
+        str.append(L",'");
+        std::wstring a(ait->second.text);
+        size_t pos = a.find(L"#rules_");
+        while (pos != std::wstring::npos) {
+            a.insert(pos + 6, std::to_wstring(ait->second.id));
+            pos = a.find(L"#rules_", pos + 6);
+        }
+        pos = a.find(L"#paras_");
+        while (pos != std::wstring::npos) {
+            a.insert(pos + 6, std::to_wstring(ait->second.id));
+            pos = a.find(L"#paras_", pos + 6);
+        }
+        str.append(a);//ait->second.text);
+        str.append(L"');\n");
+        result.write(str.c_str(), str.length());
+
     }
 }
 

@@ -70,6 +70,7 @@ struct rule {
 //    size_t tile;
 //    size_t part;
     std::wstring num;
+    std::wstring title;
     std::wstring text;
     std::wstring info;
     std::wstring exc_rule;
@@ -80,7 +81,11 @@ struct rule {
 };
 typedef std::vector<rule> ruleVct;
 
-typedef std::map<std::wstring, std::wstring> restMap;
+struct pararest {
+    std::wstring link;
+    std::wstring search;
+};
+typedef std::map<std::wstring, pararest> restMap;
 
 struct para {
     size_t id;
@@ -190,11 +195,12 @@ protected:
     std::wstring prepareForSearch(const std::wstring& ortho);
     std::wstring prepareRest(const std::wstring& Rest);
     void correctText(std::wstring& text);
+    std::wstring getPureArticle(const std::wstring& art);
 
     size_t getParaNum(const std::wstring& rest);
     std::wstring getRuleNum(const std::wstring& rest);
     std::wstring getPara(const std::wstring& a, std::vector<size_t>& paraVct);
-    std::wstring getFormulas(const std::wstring& article, const std::vector<size_t>& paraVct, std::vector<size_t>& orthos, std::vector<size_t>& formulas);
+    std::wstring getFormulas(const std::wstring& article, const std::wstring& pure, const std::vector<size_t>& paraVct, std::vector<size_t>& orthos, std::vector<size_t>& formulas);
     void getTags(const std::wstring& text, const std::wstring& tag, std::vector<size_t>& tagsVct);
     size_t getRuleId(const size_t& para, const std::wstring& Num);
     size_t getParentRule(const std::wstring& Num);
