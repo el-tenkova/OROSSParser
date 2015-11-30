@@ -8,7 +8,7 @@
 #include "OROSSParser_i.h"
 #include "COROSSParser.h"
 
-void COROSSParser::saveData()
+void COROSSParser::saveData(bool saveSearch)
 {
     std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
     std::wofstream result(L"c:\\IRYA\\result.txt", std::wofstream::binary);
@@ -110,6 +110,11 @@ void COROSSParser::saveData()
         result.close();
         examples.close();
     } 
+
+    if (saveSearch) {
+        saveForSearch();
+    }
+
     if (arts.is_open()) {
         arts.imbue(loc);
         examples.imbue(loc);
@@ -132,25 +137,131 @@ void COROSSParser::saveData()
     }
 }
 
+void COROSSParser::saveForSearch()
+{
+    std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
+    // save data for search in articles
+    std::wofstream pararest(L"c:\\IRYA\\pararest.txt", std::wofstream::binary|std::wofstream::trunc);
+    std::wofstream formulas(L"c:\\IRYA\\formulas.txt", std::wofstream::binary|std::wofstream::trunc);
+    std::wofstream orthos(L"c:\\IRYA\\orthos.txt", std::wofstream::binary|std::wofstream::trunc);
+
+    if (pararest.is_open()) {
+        pararest.imbue(loc);
+        paraMap::iterator parait = paras.begin();
+        std::wstring str(L"");
+        for (; parait != paras.end(); ++parait) {
+            restMap::iterator rit = parait->second.links.begin();
+            for (rit; rit != parait->second.links.end(); ++rit) {
+                str.clear();
+                // paraId
+                str.append(std::to_wstring(parait->second.id));
+                str.append(L"\t");
+                // rest as is
+                str.append(rit->first);
+                str.append(L"\t");
+                // link
+                str.append(rit->second.link);
+                str.append(L"\t");
+                // search
+                str.append(rit->second.search);
+                str.append(L"\n");
+                pararest.write(str.c_str(), str.length());
+            }
+        }
+        pararest.close();
+    }
+
+    if (orthos.is_open()) {
+        orthos.imbue(loc);
+        paraMap::iterator parait = paras.begin();
+        std::wstring str(L"");
+        for (; parait != paras.end(); ++parait) {
+            orthoMap::iterator oit = parait->second.orthos.begin();
+            for (oit; oit != parait->second.orthos.end(); ++oit) {
+                str.clear();
+                // paraId
+                str.append(std::to_wstring(parait->second.id));
+                str.append(L"\t");
+                // orthoId
+                str.append(std::to_wstring(oit->second.id));
+                str.append(L"\t");
+                // ortho key
+                str.append(oit->first);
+                str.append(L"\t");
+                // name
+                str.append(oit->second.name);
+                str.append(L"\t");
+                // search
+                str.append(oit->second.search);
+                str.append(L"\t");
+                // active
+                str.append(std::to_wstring(oit->second.active));
+                str.append(L"\n");
+                orthos.write(str.c_str(), str.length());
+            }
+        }
+        orthos.close();
+    }
+    if (formulas.is_open()) {
+        formulas.imbue(loc);
+        paraMap::iterator parait = paras.begin();
+        std::wstring str(L"");
+        for (; parait != paras.end(); ++parait) {
+            orthoMap::iterator oit = parait->second.orthos.begin();
+            for (oit; oit != parait->second.orthos.end(); ++oit) {
+                formMap::iterator fit = oit->second.formulas.begin();
+                for (fit; fit != oit->second.formulas.end(); ++fit) {
+                    str.clear();
+                    // paraId
+                    str.append(std::to_wstring(parait->second.id));
+                    str.append(L"\t");
+                    // orthoId
+                    str.append(std::to_wstring(oit->second.id));
+                    str.append(L"\t");
+                    // formulaId
+                    str.append(std::to_wstring(fit->second.id));
+                    str.append(L"\t");
+                    // ortho key
+                    str.append(fit->first);
+                    str.append(L"\t");
+                    // name
+                    str.append(fit->second.name);
+                    str.append(L"\t");
+                    // search
+                    str.append(fit->second.search);
+                    str.append(L"\n");
+                    formulas.write(str.c_str(), str.length());
+                }
+            }
+        }
+        formulas.close();
+    }
+
+}
+
 void COROSSParser::makeSQL()
 {
     std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
+    std::wofstream result_contents(L"c:\\IRYA\\import_contents.sql", std::wofstream::binary);
     std::wofstream result(L"c:\\IRYA\\import.sql", std::wofstream::binary);
-    
+
     std::wstring caret(L"\n");
 
-    if (result.is_open()) {
+    if (result.is_open() && result_contents.is_open()) {
         result.imbue(loc);
-        makePartsTable(result);
-        makeTileTable(result);
-        makeParaTable(result);
-        makeRuleTable(result);
-        makeOrthogrTable(result);
-        makeFormulaTable(result); 
+        result_contents.imbue(loc);
+        makePartsTable(result_contents);
+        makeTileTable(result_contents);
+        makeParaTable(result_contents);
+        makeRuleTable(result_contents);
+        makeOrthogrTable(result_contents);
+        makeFormulaTable(result_contents); 
+        makeFootNotesTable(result_contents);
+        makeHistoricTable(result_contents);
         makeWordsTable(result);
         makeArticlesTable(result);
-        makeFootNotesTable(result);
         result.close();
+        result_contents.close();
     }
 }
 
@@ -364,7 +475,7 @@ void COROSSParser::makeFormulaTable(std::wofstream& result)
     id_ortho int(11) NOT NULL,\n\
     id_para int(11) NOT NULL,\n\
     id_rule int(11) NOT NULL,\n\
-    name varchar(256) NOT NULL,\n\
+    name varchar(1024) NOT NULL,\n\
     example varchar(256),\n\
     rest varchar(256),\n\
     is_prefix BOOLEAN, \n\
@@ -459,6 +570,9 @@ void COROSSParser::makeArticlesTable(std::wofstream& result)
     std::wstring str(L"\nCREATE TABLE IF NOT EXISTS articles (\n\
     id int(11) NOT NULL,\n\
     text TEXT NOT NULL,\n\
+    rtf TEXT NOT NULL,\n\
+    src TEXT NOT NULL,\n\
+    comment_id int(11) NOT NULL,\n\
     PRIMARY KEY (id) \n\
     );\n\n");
     result.write(str.c_str(), str.length());
@@ -492,6 +606,14 @@ void COROSSParser::makeArticlesTable(std::wofstream& result)
     id int(11) NOT NULL,\n\
     id_rule int(11) NOT NULL,\n\
     PRIMARY KEY (id, id_rule) \n\
+    );\n\n");
+    result.write(str.c_str(), str.length());
+
+    str.clear();
+    str.append(L"\nCREATE TABLE IF NOT EXISTS articles_historic (\n\
+    id int(11) NOT NULL,\n\
+    id_historic int(11) NOT NULL,\n\
+    PRIMARY KEY (id, id_historic) \n\
     );\n\n");
     result.write(str.c_str(), str.length());
 
@@ -542,8 +664,20 @@ void COROSSParser::makeArticlesTable(std::wofstream& result)
             str.append(L");\n");
             result.write(str.c_str(), str.length());
         }
+        std::vector<size_t>::iterator hit = ait->second.historic.begin();
+        for (hit; hit != ait->second.historic.end(); ++hit) {
+            str.clear();
+            str.append(L"INSERT INTO articles_historic (id, id_historic) \n\
+                        VALUES (");
+            str.append(std::to_wstring(ait->second.id));
+            str.append(L",");
+            str.append(std::to_wstring(*hit));
+            str.append(L");\n");
+            result.write(str.c_str(), str.length());
+        }
+
         str.clear();
-        str.append(L"INSERT INTO articles (id, text) \n\
+        str.append(L"INSERT INTO articles (id, text, rtf, src, comment_id) \n\
 VALUES (");
         str.append(std::to_wstring(ait->second.id));
         str.append(L",'");
@@ -559,7 +693,13 @@ VALUES (");
             pos = a.find(L"#paras_", pos + 6);
         }
         str.append(a);//ait->second.text);
-        str.append(L"');\n");
+        str.append(L"','");
+        str.append(ait->second.rtf);
+        str.append(L"','");
+        str.append(ait->second.src);
+        str.append(L"',");
+        str.append(std::to_wstring(ait->second.comment_id));
+        str.append(L");\n");
         result.write(str.c_str(), str.length());
 
     }
@@ -632,5 +772,62 @@ VALUES (");
         str.append(std::to_wstring(rit->second.rule));
         str.append(L");\n");
         result.write(str.c_str(), str.length());
+    }
+}
+
+void COROSSParser::makeHistoricTable(std::wofstream& result)
+{
+    std::wstring str(L"\nCREATE TABLE IF NOT EXISTS historic (\n\
+    id int(11) NOT NULL,\n\
+    name varchar(200) NOT NULL,\n\
+    abbr varchar(200) NOT NULL,\n\
+    PRIMARY KEY (id) \n\
+    );\n\n");
+    result.write(str.c_str(), str.length());
+
+    histMap::iterator hit = historic.begin();
+    for (hit; hit != historic.end(); ++hit) {
+        str.clear();
+        str.append(L"INSERT INTO historic (id, name, abbr) \n\
+VALUES (");
+        str.append(std::to_wstring(hit->second.id));
+        str.append(L",'");
+        str.append(hit->second.name);
+        str.append(L"','");
+        std::vector<std::wstring>::iterator it = hit->second.abbr.begin();
+        for (it; it != hit->second.abbr.end(); ++it) {
+            str.append(*it);
+            if (it + 1 != hit->second.abbr.end())
+                str.append(L",");
+        }
+        str.append(L"');\n");
+        result.write(str.c_str(), str.length());
+    }
+}
+
+void COROSSParser::presaveArticles() {
+    std::wstring sm_komment(L"\\s[С|с]м\\.\\s*коммент\\.\\s*к\\s*");
+//    std::wstring sm(L"\s[С|с]м\.\s*");
+    artMap::iterator it = articles.begin();
+    std::wregex search_komm(sm_komment);
+    for (it; it != articles.end(); ++it) {
+        std::wsmatch sm;
+        if (std::regex_search(it->second.src, sm, search_komm)) {
+            std::wstring word = sm.suffix();
+            word.substr(0, word.find_first_of(L" .,"));
+            prepareOrthoKey(word);
+            wordMap::iterator wit = words.find(word);
+            if (wit != words.end()) {
+                artIdVct::iterator ait = wit->second.begin();
+                for (ait; ait != wit->second.end(); ++ait) {
+                    if (articles[(*ait)].hasComment) {
+                        if (word.compare(0, word.length(), articles[(*ait)].title, 0, articles[(*ait)].title.length()) == 0) {
+                            it->second.comment_id = (*ait);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
 }

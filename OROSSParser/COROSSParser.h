@@ -13,22 +13,41 @@
 #include <fstream>
 #include <codecvt>
 
+#define ORTHO_SUBST 1
+#define FORMULA_SUBST 2
 struct subst {
+    size_t type; // 1 - ortho, 2 - formula
+    size_t id; // ortho or formula id
     size_t len;
     std::wstring substitution;
+    char ok;
 };
 typedef std::map<size_t, subst> substMap;
 
 struct article {
     size_t id;
+    std::wstring title;
     std::wstring text;
+    std::wstring src;
+    std::wstring rtf;
+    bool hasComment;
+    size_t comment_id;
     std::vector<size_t> formulas;
     std::vector<size_t> orthos;
+    std::vector<size_t> historic;
 };
 
 typedef std::map<size_t, article> artMap;
 typedef std::vector<size_t> artIdVct;
 typedef std::map<std::wstring, artIdVct> wordMap;
+
+struct hist {
+    size_t id;
+    std::wstring name;
+    std::vector<std::wstring> abbr;
+    std::vector<std::wstring> search;
+};
+typedef std::map<std::wstring, hist> histMap;
 
 struct footnote {
     size_t id;
@@ -48,8 +67,9 @@ struct formula {
     size_t ortho;
     size_t para;
     size_t rule;
-    size_t exc;
-    size_t exc_rule;
+    size_t art_count;
+//    size_t exc;
+//    size_t exc_rule;
 };
 typedef std::map<std::wstring, formula> formMap;
 
@@ -59,6 +79,7 @@ struct orthogr {
     size_t active;
     std::wstring name;
     std::wstring search;
+    size_t art_count;
     formMap formulas;
 };
 typedef std::map<std::wstring, orthogr> orthoMap;
@@ -162,6 +183,7 @@ protected:
     wordMap words;
     artMap articles;
     footMap footnotes;
+    histMap historic;
 
   //  orthoMap orthos;
     std::wofstream error;
@@ -178,7 +200,16 @@ protected:
     tileMap::iterator curTile;
     paraMap::iterator curPara;
 
-    void saveData();
+    std::vector<std::wstring> rtfReplacements;
+    std::vector<std::wstring> tagsBI;
+    std::vector<std::wstring> tagsSpecial;
+
+    void saveData(bool saveSearch = false);
+    void saveForSearch();
+    void presaveArticles();
+
+    void loadSearchData(bool loadSearch = false);
+    void loadHistoric();
 
     void makeSQL();
     void makePartsTable(std::wofstream& result);
@@ -188,6 +219,7 @@ protected:
     void makeOrthogrTable(std::wofstream& result);
     void makeFormulaTable(std::wofstream& result);
     void makeFootNotesTable(std::wofstream& result);
+    void makeHistoricTable(std::wofstream& result);
     void makeWordsTable(std::wofstream& result);
     void makeArticlesTable(std::wofstream& result);
 
@@ -200,12 +232,17 @@ protected:
     size_t getParaNum(const std::wstring& rest);
     std::wstring getRuleNum(const std::wstring& rest);
     std::wstring getPara(const std::wstring& a, std::vector<size_t>& paraVct);
-    std::wstring getFormulas(const std::wstring& article, const std::wstring& pure, const std::vector<size_t>& paraVct, std::vector<size_t>& orthos, std::vector<size_t>& formulas);
+    void getOrthos(const std::wstring& article, const std::wstring& pure, const std::vector<size_t>& paraVct, std::vector<size_t>& orthos, substMap& substs);
+    void getFormulas(const std::wstring& article, const std::wstring& pure, const std::vector<size_t>& paraVct, std::vector<size_t>& orthos, std::vector<size_t>& formulas, substMap& substs);
+    void getHistoric(const std::wstring& pure, std::vector<size_t>& histvct);
     void getTags(const std::wstring& text, const std::wstring& tag, std::vector<size_t>& tagsVct);
     size_t getRuleId(const size_t& para, const std::wstring& Num);
     size_t getParentRule(const std::wstring& Num);
     std::wstring getRestForPara(const std::wstring& Rest, const size_t& id_para);
 
+    std::vector<std::wstring> split(const std::wstring& str, const wchar_t delim);
+    size_t shiftLeft(const std::wstring& afull, size_t start);
+    std::wstring toRTF(const std::wstring& article);
 };
 
 #endif //__KHPARSER_H_

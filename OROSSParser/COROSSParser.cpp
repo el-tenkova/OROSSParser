@@ -11,6 +11,10 @@
 #define PART_END    3
 #define PART_LAST   2
 #define SL_D_RAZD   L"<i>слитно/дефисно/раздельно</i>"
+#define PROVER_GLASN L"<i>проверяемая гласная</i>"
+#define PARA21  21
+#define SAVE_SEARCH false
+#define LOAD_SEARCH true
 
 STDMETHODIMP COROSSParser::Init( long* hRes )
 {
@@ -19,44 +23,57 @@ STDMETHODIMP COROSSParser::Init( long* hRes )
     if (error.is_open()) {
         error.imbue(loc);
     }
-/*    Terminate( hRes );
-    dict = std::wstring(dictPath);
-    notfound = std::wstring(notfoundPath);
+    tagsBI.push_back(L"<b>");
+    tagsBI.push_back(L"</b>");
+    tagsBI.push_back(L"<i>");
+    tagsBI.push_back(L"</i>");
+    tagsBI.push_back(L"<u>");
+    tagsBI.push_back(L"</u>");
 
-    safeArraySize = cSafeArr;
-    *hRes = pIXMLHTTPRequest.CreateInstance("Msxml2.ServerXMLHTTP");
-    
-    repl.insert(std::pair<short, short>(L'a', 0x0430));
-    repl.insert(std::pair<short, short>(L'c', 0x0441));
-    repl.insert(std::pair<short, short>(L'e', 0x0435));
-    repl.insert(std::pair<short, short>(L'i', 0x0456));
-    repl.insert(std::pair<short, short>(L'o', 0x043E));
-    repl.insert(std::pair<short, short>(L'p', 0x0440));
-    repl.insert(std::pair<short, short>(L'x', 0x0445));
-    repl.insert(std::pair<short, short>(L'y', 0x0443));
-    repl.insert(std::pair<short, short>(0xF6, 0x04E7));
-    repl.insert(std::pair<short, short>(0xFF, 0x04F1));
-    repl.insert(std::pair<short, short>(0x04B7, 0x04CC)); 
+    tagsSpecial.push_back(L"[");
+    tagsSpecial.push_back(L"]");
+    tagsSpecial.push_back(L"(");
+    tagsSpecial.push_back(L")");
+    tagsSpecial.push_back(L".");
+    tagsSpecial.push_back(L"/");
+    tagsSpecial.push_back(L"#");
+    tagsSpecial.push_back(L":");
+    tagsSpecial.push_back(L"+");
+    tagsSpecial.push_back(L"&");
 
-    char locale_name[32] = "";
-    locale_name[0] = '.';
-    _ui64toa_s(1251, locale_name + 1, sizeof(locale_name) - 1, 10);
-    locinfo = _create_locale(LC_ALL, locale_name);
-    */
+    rtfReplacements.push_back(L"<b>");
+    rtfReplacements.push_back(L"\\\\b");
+    rtfReplacements.push_back(L"</b>");
+    rtfReplacements.push_back(L"\\\\b0");
+    rtfReplacements.push_back(L"<i>");
+    rtfReplacements.push_back(L"\\\\i");
+    rtfReplacements.push_back(L"</i>");
+    rtfReplacements.push_back(L"\\\\i0");
+    rtfReplacements.push_back(L"<u>");
+    rtfReplacements.push_back(L"\\\\ul");
+    rtfReplacements.push_back(L"</u>");
+    rtfReplacements.push_back(L"\\\\ulnone");
+    rtfReplacements.push_back(L"<p>");
+    rtfReplacements.push_back(L"\\\\par");
+    rtfReplacements.push_back(L"</p>");
+    rtfReplacements.push_back(L"");
+    rtfReplacements.push_back(L"<f0>");
+    rtfReplacements.push_back(L"\\\\f0");
+    rtfReplacements.push_back(L"<f1>");
+    rtfReplacements.push_back(L"\\\\f1");
+
+    loadSearchData(LOAD_SEARCH);
+    loadHistoric();
+
     return *hRes;
 }
 
 STDMETHODIMP COROSSParser::Terminate( long* hRes )
 {
-    saveData();
+    saveData(SAVE_SEARCH);
+    presaveArticles();
     makeSQL();
     error.close();
-/*    saveResults();
-    if (pIXMLHTTPRequest != NULL)
-        pIXMLHTTPRequest.Release();
-    repl.clear();
-    if (locinfo != 0)
-        _free_locale(locinfo); */
     return S_OK;
 }
 
@@ -114,12 +131,25 @@ STDMETHODIMP COROSSParser::AddPara( long Num, BSTR Name, /* [out, retval]*/ long
         curPara = paras.find(Num);
         curTile->second.paras.push_back(Num);
         if (partId == PART_END) {
-            orthogr co = {orthoId, Num, 0, SL_D_RAZD, prepareForSearch(SL_D_RAZD)};
+            orthogr co = {orthoId, Num, 0, SL_D_RAZD, prepareForSearch(SL_D_RAZD), 0};
             std::wstring key(SL_D_RAZD);
             prepareOrthoKey(key);
             curPara->second.orthos.insert(std::pair<std::wstring, orthogr>(key, co));
             orthoId++;
         }
+        else if (Num == 21) {
+            orthogr co = {orthoId, Num, 0, PROVER_GLASN, prepareForSearch(PROVER_GLASN), 0};
+            std::wstring key(PROVER_GLASN);
+            prepareOrthoKey(key);
+            curPara->second.orthos.insert(std::pair<std::wstring, orthogr>(key, co));
+            orthoId++;
+        }
+        std::wstring rest(L"§ ");
+        rest.append(std::to_wstring((size_t)Num));
+        std::wstring link = prepareRest(rest);
+        pararest pr = {prepareRest(rest), prepareForSearch(rest)};
+        curPara->second.links.insert(std::pair<std::wstring, pararest>(rest, pr));
+
         paraId = Num;
     }
     else {
@@ -235,8 +265,19 @@ STDMETHODIMP COROSSParser::AddOrthogr( BSTR Orthogr, BSTR Formula, BSTR Example,
     correctText(rest);
 
 //    orthogr co = {orthoId, 0, IsActive, ortho, prepareForSearch(ortho)};
-    orthogr co = {orthoId, 0, IsActive, curPart->second.id != PART_LAST ? ortho : SL_D_RAZD, prepareForSearch(co.name)};
-    std::wstring key(curPart->second.id != PART_LAST ? ortho : SL_D_RAZD);
+    orthogr co = {orthoId, 0, IsActive};//, curPart->second.id != PART_LAST ? ortho : SL_D_RAZD, prepareForSearch(co.name)};
+    if (curPart->second.id != PART_LAST) {
+        if (curPara->second.id == PARA21)
+            co.name = PROVER_GLASN;
+        else
+            co.name = ortho;
+    }
+    else {
+        co.name = SL_D_RAZD;
+    }
+    co.search = prepareForSearch(co.name);
+    co.art_count = 0;
+    std::wstring key(co.name); //curPart->second.id != PART_LAST ? ortho : SL_D_RAZD);
     prepareOrthoKey(key);
     orthoMap::iterator ot = curPara->second.orthos.find(key);
 
@@ -262,7 +303,15 @@ STDMETHODIMP COROSSParser::AddOrthogr( BSTR Orthogr, BSTR Formula, BSTR Example,
     }
     size_t rule_id = getRuleId(num, rule);
 //    formula cf = {formulaId, curPart->second.id != PART_LAST ? form : ortho, example, rest, IsPrefix, ot->second.id, num, rule_id};
-    formula cf = {formulaId, curPart->second.id != PART_LAST ? form : ortho, prepareForSearch(cf.name), example, Rest, IsPrefix, ot->second.id, num, rule_id};
+//    formula cf = {formulaId, curPart->second.id != PART_LAST ? form : ortho, prepareForSearch(cf.name), example, Rest, IsPrefix, ot->second.id, num, rule_id};
+    formula cf = {formulaId, L"", L"", example, Rest, IsPrefix, ot->second.id, num, rule_id};
+    if (curPart->second.id != PART_LAST && curPara->second.id != PARA21) {
+        cf.name = form;
+    }
+    else {
+        cf.name = ortho;
+    }
+    cf.search = prepareForSearch(cf.name);
     key.empty();
     key.append(cf.name);
     prepareOrthoKey(key);
@@ -282,311 +331,6 @@ STDMETHODIMP COROSSParser::AddOrthogr( BSTR Orthogr, BSTR Formula, BSTR Example,
     return S_OK;
 }
 
-#define RULE L"п."
-std::wstring COROSSParser::prepareRest(const std::wstring& Rest)
-{
-    std::wstring result;
-    std::wstring a(Rest);
-    size_t pos = a.find(L'§');
-    while (pos != std::wstring::npos) {
-        result.append(a, 0, pos + 1);
-        a = a.substr(pos + 1);
-        size_t count = 0;
-        size_t num = 0;
-        size_t rule = 1;
-        for (size_t i = 0; i < 3; i++) {
-            if (a.length() == 0)
-                break;
-            count = 0;
-            while (count < a.length() && (a[count] == L'\x20' || a[count] == L'\xA0')) {
-                count++;
-            }
-            result.append(a, 0, count);
-            a = a.substr(count);
-            switch (i) {
-                case 0: { // paragraph
-                    num = std::stoi(a);
-                    result.append(L"<a class=\"accordion-toggle\" href=\"#paras_");
-                    result.append(std::to_wstring(num));
-                    result.append(L"\" data-parent=\"#accordionParas\" data-toggle=\"collapse\" style=\"text-transform:none\">");
-                   // result.append(L"<a id=\"para");
-                   // result.append(std::to_wstring(num));
-                   // result.append(L"\" onclick=\"paraFillModal(this)\" href=\"#para");
-                   // result.append(std::to_wstring(num));
-                   // result.append(L"\" data-toggle=\"modal\" data-target=\"#tutorialModal\" >");
-                    result.append(std::to_wstring(num));
-                    result.append(L"</a >");
-                    count = 0;
-                    while (count < a.length() && a[count] >= L'0' && a[count] <= '9')
-                        count++;
-                    a = a.substr(count);
-                    break;
-                }
-                case 1:
-                case 2:
-                    // искл.|искл.-подпр.|п.|прим.|
-                    if (a.compare(0, wcslen(RULE), RULE) == 0) { // rule
-                        result.append(a, 0, wcslen(RULE));
-                        a = a.substr(wcslen(RULE));
-                        count = 0;
-                        while (count < a.length() && (a[count] == L'\x20' || a[count] == L'\xA0')) {
-                            count++;
-                        }
-                        result.append(a, 0, count);
-                        if (count == 0)
-                            result.append(L" ");
-                        a = a.substr(count);
-                        count = 0;
-                        while (count < a.length() && ((a[count] >= L'0' && a[count] <= '9') || a[count] == L'.' || a[count] == L')')) {
-                            count++;
-                        }
-                        std::wstring rule(a.substr(0, count));
-                        size_t rule_id = getRuleId(num, rule);
-                        if (rule_id == 0)
-                            result.append(a, 0, count);
-                        else {
-                            result.append(L"<a class=\"accordion-toggle\" href=\"#rules_");
-                            result.append(std::to_wstring(rule_id));
-                            result.append(L"\" data-parent=\"#accordionParas\" data-toggle=\"collapse\" style=\"text-transform:none\">");
-                           // result.append(L"<a id=\"rule");
-                           // result.append(std::to_wstring(rule_id));
-                           // result.append(L"\" onclick=\"ruleFillModal(this)\" href=\"#rule");
-                           // result.append(std::to_wstring(rule_id));
-                           // result.append(L"\" data-toggle=\"modal\" data-target=\"#tutorialModal\" >");
-                            result.append(a, 0, count);
-                            result.append(L"</a >");
-                        }
-                        a = a.substr(count);
-                    }
-            }
-        }
-        pos = a.find(L'§');
-    }
-    result.append(a);
-    return result;
-}
-
-void COROSSParser::prepareOrthoKey(std::wstring& key)
-{
-    std::vector<std::wstring> tags;
-    tags.push_back(L"<i>");
-    tags.push_back(L"</i>");
-    tags.push_back(L"<b>");
-    tags.push_back(L"</b>");
-    tags.push_back(L"<u>");
-    tags.push_back(L"</u>");
-    tags.push_back(L" ");
-    tags.push_back(L".");
-    tags.push_back(L"-");
-    tags.push_back(L"\u00B9");
-    tags.push_back(L"\u00B3");
-    tags.push_back(L"\u00B2");
-    tags.push_back(L"\u2026");
-    std::vector<std::wstring>::iterator it = tags.begin();
-    for (it; it != tags.end(); ++it) {
-        size_t pos = key.find(*it);
-        while (pos != std::wstring::npos) {
-            key.replace(pos, (*it).length(), L"");
-            pos = key.find(*it);
-        }
-    }
-/*    correctText(key);
-    
-    size_t pos = key.find(L"\u001e");
-    while (pos != std::wstring::npos) {
-        key.replace(pos, 1, L"-");
-        pos = key.find(L"\u001e");
-    }*/
-
-}
-
-void COROSSParser::correctText(std::wstring& text)
-{
-    size_t pos = text.find(L"\u001e");
-    while (pos != std::wstring::npos) {
-        text.replace(pos, 1, L"-");
-        pos = text.find(L"\u001e");
-    }
-}
-
-std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
-{
-    std::vector<std::wstring> tags;
-    std::wstring tmp(ortho);
-
-    // remove Bold and Italic
-    tags.push_back(L"<b>");
-    tags.push_back(L"</b>");
-    tags.push_back(L"<i>");
-    tags.push_back(L"</i>");
-    tags.push_back(L"<u>");
-    tags.push_back(L"</u>");
-
-    std::vector<std::wstring>::iterator it = tags.begin();
-    size_t pos = 0;
-    for (it; it != tags.end(); ++it) {
-        pos = tmp.find(*it);
-        while (pos != std::wstring::npos) {
-            tmp.replace(pos, (*it).length(), L" ");
-            pos = tmp.find(*it, pos + 1);
-        }
-    }
-    if (tmp.length() > 0) {
-        size_t sp = 0;
-        while (tmp[sp] == L' ')
-            sp++;
-        // trim left
-        tmp = tmp.substr(sp);
-    }
-    tags.clear();
-    tags.push_back(L"[");
-    tags.push_back(L"]");
-    tags.push_back(L"(");
-    tags.push_back(L")");
-    tags.push_back(L".");
-    tags.push_back(L"/");
-    tags.push_back(L"#");
-    tags.push_back(L":");
-    tags.push_back(L"+");
-    tags.push_back(L"&");
-//    tags.push_back(L"<");
-//    tags.push_back(L">");
-
-    std::wstring search(tmp);//ortho);
-
-    //std::vector<std::wstring>::iterator 
-    it = tags.begin();
-    //size_t 
-    pos = 0;
-    for (it; it != tags.end(); ++it) {
-        pos = search.find(*it);
-        while (pos != std::wstring::npos) {
-            search.insert(pos, L"\\");
-            pos = search.find(*it, pos + 2);
-        }
-    }
-
-//    std::wregex e(L"\\([<i>]*слово[^\\(\\)]*\\)");
-    std::wregex e(L"\\(\\s*слово[^\\(\\)]*\\)");
-    std::wsmatch cm;
-//    std::wstring tmp(L"");
-    tmp.clear();
-    while (std::regex_search(search.cbegin(), search.cend(), cm, e)) {
-        tmp.append(cm.prefix(), 0, cm.prefix().length() - 1);
-        tmp.append(L"(\\([^\\(\\)]*\\))*");
-//        tmp.append(cm.suffix().str());
-        search = cm.suffix();
-    }
-    tmp.append(search);
-
-    search.clear();
-    cm.empty();
-    search.append(tmp);
-//    std::wregex e1(L"\\([<b>]*буква[^\\(\\)]*\\)");
-    std::wregex e1(L"\\(\\s*буква[^\\(\\)]*\\)");
-    tmp.clear();
-    while (std::regex_search(search.cbegin(), search.cend(), cm, e1)) {
-        tmp.append(cm.prefix().str());
-        tmp.append(L"([^\\(\\)]*\\)*");
-//        tmp.append(cm.suffix().str());
-        search = cm.suffix().str();
-    }
-    tmp.append(search);
-
-    search.clear();
-    cm.empty();
-    search.append(tmp);
-    std::wregex e2(L"(\\<sup\\>.+\\>)");
-    tmp.clear();
-    while (std::regex_search(search.cbegin(), search.cend(), cm, e2)) {
-        tmp.append(cm.prefix().str());
-        tmp.append(L"");
-        search = cm.suffix().str();
-    }
-    tmp.append(search);
-
-    pos = tmp.find(L' ');
-    while (pos != std::wstring::npos) {
-        size_t count = 1;
-        while (pos + count < tmp.length() && tmp[pos + count] == L' ')
-            count++;
-        tmp.replace(pos, count, L"\\s*");
-        pos = tmp.find(L' ', pos + 1);
-    }
-    
-    pos = tmp.find(L'-');
-    while (pos != std::wstring::npos) {
-        tmp.replace(pos, 1, L"\\-*\\u2013*\\u2014*");
-        pos = tmp.find(L' ', pos + 1);
-    }
-
-    pos = tmp.find(L'\u2013');
-    while (pos != std::wstring::npos) {
-        tmp.replace(pos, 1, L"\\-*\\u2013*\\u2014*");
-        pos = tmp.find(L' ', pos + 1);
-    }
-
-    pos = tmp.find(L'\u2014');
-    while (pos != std::wstring::npos) {
-        tmp.replace(pos, 1, L"\\-*\\u2013*\\u2014*");
-        pos = tmp.find(L' ', pos + 1);
-    }
-
-
-    // Bold
-/*    pos = tmp.find(L"<b>");
-    while (pos != std::wstring::npos) {
-        tmp.replace(pos, 3, L"(<b>)*");
-        pos = tmp.find(L"<b>", pos + 6);
-    }
-    pos = tmp.find(L"<\\/b>");
-    while (pos != std::wstring::npos) {
-        tmp.replace(pos, 5, L"(<\\/b>)*");
-        pos = tmp.find(L"<\\/b>", pos + 8);
-    }
-    // Italic
-    pos = tmp.find(L"<i>");
-    while (pos != std::wstring::npos) {
-        tmp.replace(pos, 3, L"(<i>)*");
-        pos = tmp.find(L"<i>", pos + 6);
-    }
-    pos = tmp.find(L"<\\/i>");
-    while (pos != std::wstring::npos) {
-        tmp.replace(pos, 5, L"(<\\/i>)*");
-        pos = tmp.find(L"<\\/i>", pos + 8);
-    }
-    */
-    return tmp;
-}
-
-size_t COROSSParser::getParaNum(const std::wstring& rest)
-{
-    size_t pos = rest.find(L"§");
-    if (pos != std::wstring::npos) {
-        pos = pos + 1;
-        while (rest[pos] == L'\x20' || rest[pos] == L'\xA0')
-            pos++;
-        return std::stoi(rest.c_str() + pos);
-    }
-    return 0;
-}
-
-std::wstring COROSSParser::getRuleNum(const std::wstring& rest)
-{
-    std::wstring ru(L"п.");
-    size_t pos = rest.find(ru);
-    if (pos != std::wstring::npos) {
-        pos = pos + ru.length();
-        while (rest[pos] == L' ' || rest[pos] == L'\xA0')
-            pos++;
-        size_t len = 1;
-        while ((pos + len) < rest.length() &&
-               (rest[pos + len] != L' ' && rest[pos + len] != L'\xA0' && rest[pos + len] != L'§'))
-            len++;
-        return std::wstring(rest.c_str(), pos, len);
-    }
-    return std::wstring(L"0");
-}
 
 STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]*/ long *hRes )
 {
@@ -596,7 +340,8 @@ STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]
     std::wstring title(Title);
     correctText(title);
 
-    article ca = {artId, art};
+    article ca = {artId, title, art, art, toRTF(art), art.find(L'\u25ca') != std::wstring::npos ? true : false};
+    prepareOrthoKey(ca.title);
 
 /*    if (artId == 1160) {
         int a = 0;
@@ -605,17 +350,77 @@ STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]
     std::wstring a(art);
     std::vector<size_t> paraVct(0);
 
-    std::wstring html = getPara(a, paraVct);
+  //  std::wstring html = 
+    ca.text = getPara(a, paraVct);
+/*    if (html.length() > 0) {
+        ca.text = html;
+    }
+    else {*/
+    if (ca.text.length() == 0) {
+        ca.text = a;
+    }
+
+    std::wstring pure;
+    pure = getPureArticle(ca.text);
+/*    if (html.length() > 0 )
+        pure = getPureArticle(html);
+    else
+        pure = getPureArticle(a);
+*/
+    substMap substs;
+
+    getOrthos(ca.text /*html*/, pure, paraVct, ca.orthos, substs);
+    getFormulas(ca.text /*html */, pure, paraVct, ca.orthos, ca.formulas, substs);
+    getHistoric(pure, ca.historic);
+
+    std::wstring html = ca.text;
+
+    if (substs.size() > 0) {
+        substMap::iterator sit = substs.begin();
+        size_t len = 0;
+        for (sit; sit != substs.end(); ++sit) {
+            if (sit->second.ok == 0)
+                continue;
+            substMap::iterator sit2 = substs.begin();
+            for (sit2; sit2 != substs.end(); ++sit2) {
+                if (sit->first == sit2->first && sit->second.len == sit2->second.len)
+                    continue;
+                if (sit2->first >= sit->first &&
+                    sit2->first + sit2->second.len <= sit->first + sit->second.len) {
+                    sit2->second.ok = 0;
+                    if (sit2->second.type == ORTHO_SUBST)
+                        ca.orthos.erase(std::find(ca.orthos.begin(), ca.orthos.end(), sit2->second.id));
+                    else
+                        ca.formulas.erase(std::find(ca.formulas.begin(), ca.formulas.end(), sit2->second.id));
+                    break;
+                }
+            }
+        }
+        a.clear();
+        a.append(html);
+        html.clear();
+        //substMap::iterator 
+        sit = substs.begin();
+        //size_t 
+        len = 0;
+        for (sit; sit != substs.end(); ++sit) {
+            if (sit->second.ok == 0)
+                continue;
+            html.append(a.substr(len, sit->first - len));
+            html.append(sit->second.substitution);
+            len = sit->first + sit->second.len;
+        }
+        html.append(a.substr(len));
+    }
+
     if (html.length() > 0) {
         ca.text = html;
     }
 
-    std::wstring pure = getPureArticle(html);
-
-    html = getFormulas(html, pure, paraVct, ca.orthos, ca.formulas);
+/*    html = getFormulas(html, pure, paraVct, ca.orthos, ca.formulas);
     if (html.length() > 0) {
         ca.text = html;
-    }
+    }*/
 
     std::wstring title_keys(title);
     size_t pos = title_keys.find_first_of(L"-,");
@@ -636,6 +441,7 @@ STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]
     prepareOrthoKey(title_keys);
     keys.push_back(title_keys);
     keys.erase(std::remove(keys.begin(), keys.end(), L""), keys.end());
+    keys.erase(std::remove(keys.begin(), keys.end(), L"и"), keys.end());
     std::sort(keys.begin(), keys.end());
     std::vector<std::wstring>::iterator it = std::unique(keys.begin(), keys.end());
     keys.resize( std::distance(keys.begin(), it) );
@@ -663,7 +469,8 @@ STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]
 
 std::wstring COROSSParser::getPureArticle(const std::wstring& art)
 {
-    std::wstring pure(art);
+    size_t pos = art.find(L'\u25ca');
+    std::wstring pure(art, 0, pos);
     std::vector<std::wstring> tags;
 
     // remove Bold and Italic
@@ -675,7 +482,7 @@ std::wstring COROSSParser::getPureArticle(const std::wstring& art)
     tags.push_back(L"</u>");
 
     std::vector<std::wstring>::iterator it = tags.begin();
-    size_t pos = 0;
+    pos = 0;
     for (it; it != tags.end(); ++it) {
         pos = pure.find(*it);
         while (pos != std::wstring::npos) {
@@ -759,6 +566,179 @@ std::wstring COROSSParser::getPara(const std::wstring& article, std::vector<size
     return html;
 }
 
+void COROSSParser::getOrthos(const std::wstring& article, const std::wstring& pure, const std::vector<size_t>& paraVct, std::vector<size_t>& orthos, substMap& substs)
+{
+    std::wstring a(pure);
+    std::wstring afull(article);
+    size_t tail = afull.length() - a.length(); // do not search after L'\u25ca'
+    paraMap::iterator parait = paras.begin();
+    for (parait; parait != paras.end(); ++parait) {
+        orthoMap::iterator oit = parait->second.orthos.begin();
+        for (oit; oit != parait->second.orthos.end(); ++oit) {
+            //
+            a.clear();
+            afull.clear();
+            a.append(pure);
+            afull.append(article);
+            size_t len = 0;
+            //
+            std::wstring ortho(oit->second.search);//name);
+            ortho.append(L"\\s*");
+            std::wregex e(ortho);
+            std::wsmatch cm;
+            while (std::regex_search(a.cbegin(), a.cend(), cm, e)) {
+                if (oit->second.active != 0) {
+                    size_t shift = shiftLeft(afull, cm.prefix().length());
+                    subst cs = {ORTHO_SUBST, oit->second.id, cm.str().length() + shift, L"", 1};
+                    cs.substitution.append(L"<a class=\"accordion-toggle orthogramm\" art_id=\"");
+                    cs.substitution.append(std::to_wstring(artId));
+                    cs.substitution.append(L"\" ortho_id=\"");
+                    cs.substitution.append(std::to_wstring(oit->second.id));
+                    cs.substitution.append(L"\" href=\"#formulas");
+                    cs.substitution.append(std::to_wstring(oit->second.id));
+                    cs.substitution.append(L"_");
+                    cs.substitution.append(std::to_wstring(artId));
+                    cs.substitution.append(L"\" data-parent=\"#accordionOrthos\" data-toggle=\"collapse\" style=\"text-transform:none\" >");
+                    cs.substitution.append(afull.substr(cm.prefix().length() - shift, cm.str().length() + shift));
+                    cs.substitution.append(L"</a >");
+                    substMap::iterator sit = substs.find(len + cm.prefix().length() - shift);
+                    if (sit != substs.end()) {
+                        if (cs.len > sit->second.len) {
+                            orthos.erase(std::find(orthos.begin(), orthos.end(), oit->second.id));
+                            sit->second = cs;
+                            orthos.push_back(oit->second.id);
+                        }
+                        else if (cs.len == sit->second.len) {
+                            orthos.push_back(oit->second.id);
+                        }
+                    }
+                    else {
+                        substs.insert(std::pair<size_t, subst>(len + cm.prefix().length() - shift, cs));
+                        orthos.push_back(oit->second.id);
+                    }
+                }
+                len += cm.length() + cm.prefix().length();
+                a = cm.suffix();
+                afull = afull.substr((afull.length() - tail) - cm.suffix().length());
+            }
+        }
+    }
+    std::sort(orthos.begin(), orthos.end());
+    std::vector<size_t>::iterator it = std::unique(orthos.begin(), orthos.end());
+    orthos.resize( std::distance(orthos.begin(), it) );
+
+}
+
+
+void COROSSParser::getFormulas(const std::wstring& article, const std::wstring& pure, const std::vector<size_t>& paraVct, std::vector<size_t>& orthos, std::vector<size_t>& formulas, substMap& substs)
+{
+    std::wstring a(pure);
+    std::wstring afull(article);
+//    std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
+
+    paraMap::iterator parait = paras.begin();
+//    std::wstring html(L"");
+//    substMap substs;
+    for (parait; parait != paras.end(); ++parait) {
+        a.clear();
+        afull.clear();
+        a.append(pure); //article);
+        afull.append(article);
+        size_t len = 0;
+        orthoMap::iterator oit = parait->second.orthos.begin();
+        for (oit; oit != parait->second.orthos.end(); ++oit) {
+            if (oit->second.active == 1 && std::find(orthos.begin(), orthos.end(), oit->second.id) == orthos.end())
+                continue;
+            formMap::iterator fit = oit->second.formulas.begin();
+            size_t len_match = 0;
+            std::wsmatch fmatch;
+            for (fit; fit != oit->second.formulas.end(); ++fit) {
+                if (fit->second.search.length() == 0)
+                    continue;
+                std::wstring formula(fit->second.search);
+                //formula.append(L"\\s*");
+                formula.insert(0, L"[\\: ]");
+                std::wregex f(formula);
+                std::wsmatch fm;
+                if (std::regex_search(a, fm, f)) {
+                    size_t shift = shiftLeft(afull, fm.prefix().length() + 1);
+                    subst cs = {FORMULA_SUBST, fit->second.id, fm.str().length() - 1 + shift, L"", 1};
+                    cs.substitution.append(L"<a class=\"formula\" href=\"http://oross.local:8888/orthogr/formula/");//#formula");
+                    cs.substitution.append(std::to_wstring(fit->second.id));
+                    cs.substitution.append(L"\" >");
+                    cs.substitution.append(afull.substr(fm.prefix().length() + 1 - shift, fm.str().length() - 1 + shift));
+                    std::wstring::iterator wsit = cs.substitution.end() - 1;
+                    size_t l = 0;
+                    for (wsit; wsit > cs.substitution.begin(); wsit--) {
+                        if (*wsit != L' ')
+                            break;
+                        cs.len--;
+                        l++;
+                    }
+                    if (l != 0)
+                        cs.substitution = cs.substitution.substr(0, cs.substitution.length() - l);
+
+//                    cs.substitution.append(afull.substr(0, fm[1].length()));
+                    //cs.substitution.append(afull.substr(fmatch[1].prefix().length(), fmatch[1].length()));
+                    cs.substitution.append(L"</a >");
+//                    substs.insert(std::pair<size_t, subst>(len + fm.prefix().length(), cs));
+                    substMap::iterator it = substs.find(fm.prefix().length() + 1 - shift);
+                    if (it != substs.end()) {
+                        //substMap::iterator it = substs.find(fm.prefix().length() + 1 - shift);
+                        if (cs.len > it->second.len) {
+                            formulas.erase(std::find(formulas.begin(), formulas.end(), it->second.id));
+                            it->second = cs;
+                            formulas.push_back(fit->second.id);
+                        }
+                        else if (cs.len == it->second.len) {
+                            orthoMap::iterator ot = parait->second.orthos.begin();
+                            bool done = false;
+                            for (ot; ot != parait->second.orthos.end(); ++ot) {
+                                if (ot->second.active == 0) {
+                                    formMap::iterator ft = ot->second.formulas.begin();
+                                    for (ft; ft != ot->second.formulas.end(); ++ft) {
+                                        if (it->second.id == ft->second.id) {
+                                            formulas.erase(std::find(formulas.begin(), formulas.end(), it->second.id));
+                                            it->second = cs;
+                                            done = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (done)
+                                    break;
+                            }
+//                            && oit->second.active == 0
+//                            formulas.erase(std::find(formulas.begin(), formulas.end(), it->second.id));
+                            if (oit->second.active == 1)
+                                formulas.push_back(fit->second.id);
+                        }
+                    }
+                    else {
+                        substs.insert(std::pair<size_t, subst>(fm.prefix().length() + 1 - shift, cs));
+                        formulas.push_back(fit->second.id);
+                    }
+                }
+                else {
+                    /*error.write(L"Formula wasn't found:", wcslen(L"Formula wasn't found:"));
+                    error.write(a.c_str(), a.length());
+//                    error.write(tmp.c_str(), tmp.length());
+                    error.write(L"\n", wcslen(L"\n")); */
+                }
+            }
+        }
+    }
+/*    std::sort(orthos.begin(), orthos.end());
+    std::vector<size_t>::iterator it = std::unique(orthos.begin(), orthos.end());
+    orthos.resize( std::distance(orthos.begin(), it) );
+*/
+    std::sort(formulas.begin(), formulas.end());
+    std::vector<size_t>::iterator it = std::unique(formulas.begin(), formulas.end());
+    formulas.resize( std::distance(formulas.begin(), it) );
+
+}
+
+/*
 std::wstring COROSSParser::getFormulas(const std::wstring& article, const std::wstring& pure, const std::vector<size_t>& paraVct, std::vector<size_t>& orthos, std::vector<size_t>& formulas)
 {
     std::wstring a(pure);
@@ -892,7 +872,7 @@ std::wstring COROSSParser::getFormulas(const std::wstring& article, const std::w
 //        html.append(a);
     return html;
 }
-
+*/
 size_t COROSSParser::getRuleId(const size_t& para, const std::wstring& Num) {
 
     ruleVct::iterator rit = rules.begin();
@@ -916,36 +896,22 @@ size_t COROSSParser::getParentRule(const std::wstring& Num) {
     return 0;
 }
 
-// for cases like this: § 13 и § 14 п. 1.7)
-//                    : § 20 п. 1 и § 20 п. 2
-std::wstring COROSSParser::getRestForPara(const std::wstring& Rest, const size_t& id_para) {
-    std::wstring rest(L"");
-    size_t pos = Rest.find(L'§');
-    size_t start = 0;
-    while (pos != std::wstring::npos && pos < Rest.length()) {
-        start = pos;
-        pos++;
-        while (pos < Rest.length() && (Rest[pos] == L'\x20' || Rest[pos] == L'\xA0')) {
-            pos++;
-        }
-        if (pos != Rest.length()) {
-            if (std::stol(Rest.c_str() + pos) != id_para) {
-                pos = Rest.find(L'§', pos + 1);
-            }
-            else { // id_para
-                pos = Rest.find(L'§', pos + 1);
-                if (pos != std::wstring::npos) {
-                    rest.append(Rest, start, pos - start);
-                }
-                else {
-                    rest.append(Rest, start, Rest.length() - start);
-                    return rest;
-                }
-            }
-        }
-        else
-            break;
-    }
-    return rest;
-}
+void COROSSParser::getHistoric(const std::wstring& pure, std::vector<size_t>& histvct) {
 
+    histMap::iterator hit = historic.begin();
+    for (hit; hit != historic.end(); ++hit) {
+        std::vector<std::wstring>::iterator it = hit->second.search.begin();
+        for (it; it != hit->second.search.end(); ++it) {
+            std::wstring search(*it);
+            std::wregex e(search);
+            std::wsmatch cm;
+            if (std::regex_search(pure.cbegin(), pure.cend(), cm, e)) {
+                histvct.push_back(hit->second.id);
+            }
+        }
+    }
+    std::sort(histvct.begin(), histvct.end());
+    std::vector<size_t>::iterator it = std::unique(histvct.begin(), histvct.end());
+    histvct.resize(std::distance(histvct.begin(), it));
+
+}
