@@ -30,16 +30,21 @@ struct article {
     std::wstring text;
     std::wstring src;
     std::wstring rtf;
-    bool hasComment;
-    size_t comment_id;
     std::vector<size_t> formulas;
     std::vector<size_t> orthos;
     std::vector<size_t> historic;
+    std::vector<size_t> comments;
 };
 
 typedef std::map<size_t, article> artMap;
 typedef std::vector<size_t> artIdVct;
-typedef std::map<std::wstring, artIdVct> wordMap;
+
+struct word {
+    size_t id;
+    wchar_t isTitle;
+    artIdVct arts;
+};
+typedef std::map<std::wstring, word> wordMap; //artIdVct > wordMap;
 
 struct hist {
     size_t id;
@@ -64,6 +69,7 @@ struct formula {
     std::wstring example;
     std::wstring rest;
     size_t is_prefix;
+    size_t min_len;
     size_t ortho;
     size_t para;
     size_t rule;
@@ -79,6 +85,7 @@ struct orthogr {
     size_t active;
     std::wstring name;
     std::wstring search;
+    size_t min_len;
     size_t art_count;
     formMap formulas;
 };
@@ -105,6 +112,7 @@ typedef std::vector<rule> ruleVct;
 struct pararest {
     std::wstring link;
     std::wstring search;
+    size_t min_len;
 };
 typedef std::map<std::wstring, pararest> restMap;
 
@@ -140,6 +148,26 @@ class ATL_NO_VTABLE COROSSParser :
     public ATL::CComCoClass<COROSSParser, &CLSID_OROSSParser>,
     public ATL::IDispatchImpl<IOROSSParser, &IID_IOROSSParser, &LIBID_OROSSParserLib>
 {
+    enum objType {
+        None = 0,
+        Words,
+        Words_Articles,
+        Articles_Orthos,
+        Articles_Formulas,
+        Articles_Comments,
+        Articles_Historic,
+        Articles
+    };
+    const std::wstring str_words;
+    const std::wstring str_words_articles;
+    const std::wstring str_articles_orthos;
+    const std::wstring str_articles_rules;
+    const std::wstring str_articles_paras;
+    const std::wstring str_articles_formulas;
+    const std::wstring str_articles_comments;
+    const std::wstring str_articles_historic;
+    const std::wstring str_articles;
+    const std::wstring str_values;
 
 public:
     COROSSParser():
@@ -150,7 +178,17 @@ public:
       orthoId(1),
       formulaId(1),
       artId(1),
-      error(L"c:\\IRYA\\error.txt", std::wofstream::binary)
+      wordId(1), //!!!
+      error(L"c:\\IRYA\\error.txt", std::wofstream::binary),
+      str_words(L"INSERT INTO words (id, title, word) "),
+      str_words_articles(L"INSERT INTO words_articles (id, id_article) "),
+      str_articles_orthos(L"INSERT INTO articles_orthos (id, id_ortho) "),
+      str_articles_formulas(L"INSERT INTO articles_formulas (id, id_formula) "),
+      str_articles_comments(L"INSERT INTO articles_comments (id, id_comment) "),
+      str_articles_historic(L"INSERT INTO articles_historic (id, id_historic) "),
+ //     str_articles(L"INSERT INTO articles (id, title, text, rtf, src, comment_id) "), //!!!!
+        str_articles(L"INSERT INTO articles (id, title, text, rtf, src) "), //!!!!
+        str_values(L"    VALUES (")
         {};
 
     DECLARE_REGISTRY_RESOURCEID(IDR_OROSSPARSER)
@@ -174,6 +212,8 @@ public:
     STDMETHOD(AddArticle)( BSTR Title, BSTR Article, /*[out, retval]*/ long *hRes );
     STDMETHOD(AddInfoToRule)( BSTR Info, /*[out, retval]*/ long *hRes );
     STDMETHOD(AddFootNote)( long ID, BSTR Text, /*[out, retval]*/ long *hRes );
+    //
+    STDMETHOD(LoadDic)( BSTR Dic, /*[out, retval]*/ long *hRes );
 
 protected:
     partMap parts;
@@ -195,6 +235,7 @@ protected:
     size_t orthoId;
     size_t formulaId;
     size_t artId;
+    size_t wordId;
 
     partMap::iterator curPart;
     tileMap::iterator curTile;
@@ -203,6 +244,10 @@ protected:
     std::vector<std::wstring> rtfReplacements;
     std::vector<std::wstring> tagsBI;
     std::vector<std::wstring> tagsSpecial;
+    std::vector<std::wstring> tagsAccents;
+
+//// tmp
+    std::map<size_t, size_t> wordIds;
 
     void saveData(bool saveSearch = false);
     void saveForSearch();
@@ -210,6 +255,7 @@ protected:
 
     void loadSearchData(bool loadSearch = false);
     void loadHistoric();
+    void loadDic(const std::wstring& dict);
 
     void makeSQL();
     void makePartsTable(std::wofstream& result);
@@ -224,25 +270,45 @@ protected:
     void makeArticlesTable(std::wofstream& result);
 
     void prepareOrthoKey(std::wstring& key);
+    void prepareTitle(std::wstring& title);
     std::wstring prepareForSearch(const std::wstring& ortho);
     std::wstring prepareRest(const std::wstring& Rest);
-    void correctText(std::wstring& text);
-    std::wstring getPureArticle(const std::wstring& art);
+    void correctText(std::wstring& text);// with accent
+    void correctWord(std::wstring& text);// without accent
+    std::wstring getPureArticle(const std::wstring& art, bool full = false);
+    std::wstring getSpecMarkedArticle(const std::wstring& art);
+    std::wstring getPureWord(const std::wstring& word);
 
     size_t getParaNum(const std::wstring& rest);
     std::wstring getRuleNum(const std::wstring& rest);
     std::wstring getPara(const std::wstring& a, std::vector<size_t>& paraVct);
-    void getOrthos(const std::wstring& article, const std::wstring& pure, const std::vector<size_t>& paraVct, std::vector<size_t>& orthos, substMap& substs);
-    void getFormulas(const std::wstring& article, const std::wstring& pure, const std::vector<size_t>& paraVct, std::vector<size_t>& orthos, std::vector<size_t>& formulas, substMap& substs);
+    void getOrthos(const std::wstring& article, const std::wstring& pure, const size_t& src_len, const std::vector<size_t>& paraVct, std::vector<size_t>& orthos, substMap& substs);
+    void getFormulas(const std::wstring& article, const std::wstring& pure, const size_t& src_len, const std::vector<size_t>& paraVct, std::vector<size_t>& orthos, std::vector<size_t>& formulas, substMap& substs);
     void getHistoric(const std::wstring& pure, std::vector<size_t>& histvct);
     void getTags(const std::wstring& text, const std::wstring& tag, std::vector<size_t>& tagsVct);
     size_t getRuleId(const size_t& para, const std::wstring& Num);
     size_t getParentRule(const std::wstring& Num);
     std::wstring getRestForPara(const std::wstring& Rest, const size_t& id_para);
+    size_t getSearchMinLen(const std::wstring& str);
+    size_t getPureLen(const std::wstring& pure);
 
     std::vector<std::wstring> split(const std::wstring& str, const wchar_t delim);
     size_t shiftLeft(const std::wstring& afull, size_t start);
     std::wstring toRTF(const std::wstring& article);
+
+    COROSSParser::objType checkInStr(const std::wstring& str);
+    void addItem(COROSSParser::objType type, const std::wstring& str);
+    void addWord(const std::wstring& str);
+    void addArticle2Word(const std::wstring& str);
+    void addOrtho2Article(const std::wstring& str);
+    void addFormula2Article(const std::wstring& str);
+    void addComment2Article(const std::wstring& str);
+    void addHistoric2Article(const std::wstring& str);
+    void addArticle(const std::wstring& str);
+    std::vector<size_t> splitValues(const std::wstring& str);
+
+    wordMap::iterator findWord(const size_t& id);
+
 };
 
 #endif //__KHPARSER_H_

@@ -125,6 +125,33 @@ std::wstring COROSSParser::prepareRest(const std::wstring& Rest)
     return result;
 }
 
+void COROSSParser::prepareTitle(std::wstring& title)
+{
+    std::vector<std::wstring> tags;
+    tags.push_back(L"<i>");
+    tags.push_back(L"</i>");
+    tags.push_back(L"<b>");
+    tags.push_back(L"</b>");
+    tags.push_back(L"<u>");
+    tags.push_back(L"</u>");
+/*    tags.push_back(L" ");
+    tags.push_back(L".");
+    tags.push_back(L"-");
+    tags.push_back(L"\u00B9");
+    tags.push_back(L"\u00B3");
+    tags.push_back(L"\u00B2");
+    tags.push_back(L"\u2026"); */
+    tags.push_back(L"&#x301");
+    std::vector<std::wstring>::iterator it = tags.begin();
+    for (it; it != tags.end(); ++it) {
+        size_t pos = title.find(*it);
+        while (pos != std::wstring::npos) {
+            title.replace(pos, (*it).length(), L"");
+            pos = title.find(*it);
+        }
+    }
+}
+
 void COROSSParser::prepareOrthoKey(std::wstring& key)
 {
     std::vector<std::wstring> tags;
@@ -141,6 +168,7 @@ void COROSSParser::prepareOrthoKey(std::wstring& key)
     tags.push_back(L"\u00B3");
     tags.push_back(L"\u00B2");
     tags.push_back(L"\u2026");
+    tags.push_back(L"&#x301");
     std::vector<std::wstring>::iterator it = tags.begin();
     for (it; it != tags.end(); ++it) {
         size_t pos = key.find(*it);
@@ -166,6 +194,33 @@ void COROSSParser::correctText(std::wstring& text)
         text.replace(pos, 1, L"-");
         pos = text.find(L"\u001e");
     }
+    std::vector<std::wstring>::iterator it = tagsAccents.begin();
+    for (it; it != tagsAccents.end(); it += 2) {
+        pos = text.find(*it);
+        while (pos != std::wstring::npos) {
+            text.replace(pos, (*it).length(), *(it + 1));
+            pos = text.find(*it, pos + 1);
+        }
+    }
+
+}
+
+void COROSSParser::correctWord(std::wstring& text)
+{
+    size_t pos = text.find(L"\u001e");
+    while (pos != std::wstring::npos) {
+        text.replace(pos, 1, L"-");
+        pos = text.find(L"\u001e");
+    }
+    std::vector<std::wstring>::iterator it = tagsAccents.begin();
+    for (it; it != tagsAccents.end(); it += 2) {
+        pos = text.find(*it);
+        while (pos != std::wstring::npos) {
+            text.replace(pos, (*it).length(), (*(it + 1)).substr(0, 1));
+            pos = text.find(*it, pos + 1);
+        }
+    }
+
 }
 
 std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
@@ -448,4 +503,83 @@ std::wstring COROSSParser::toRTF(const std::wstring& article) {
     }
 //    size_t pos = str.find("
     return str;
+}
+
+size_t COROSSParser::getSearchMinLen(const std::wstring& str) {
+    std::wstring space(L"s*");
+    std::wstring slash(L"\\");
+    size_t pos = str.find(space);
+    size_t delta = 0;
+    while (pos != std::wstring::npos) {
+        delta += space.length();
+        pos = str.find(space, pos + space.length());
+    }
+    pos = str.find(slash);
+    while (pos != std::wstring::npos) {
+        delta += slash.length();
+        pos = str.find(slash, pos + slash.length());
+    }
+    return (str.length() - delta);
+}
+
+size_t COROSSParser::getPureLen(const std::wstring& pure) {
+    size_t len = pure.length();
+    size_t pure_len = len;
+    bool space = false;
+    for (size_t i = 0; i < len; i++) {
+        if (pure[i] == L' ') {
+            if (space == true)
+                pure_len--;
+            space = true;
+        }
+        else {
+            space = false;
+        }
+    }
+    return pure_len;
+}
+
+std::wstring COROSSParser::getSpecMarkedArticle(const std::wstring& art) {
+    size_t pos = std::wstring::npos;
+    std::wstring pure(art);
+    std::vector<std::wstring> tags;
+
+    // remove Bold and Italic
+    tags.push_back(L"<b>");
+    tags.push_back(L"</b>");
+    tags.push_back(L"<i>");
+    tags.push_back(L"</i>");
+    tags.push_back(L"<u>");
+    tags.push_back(L"</u>");
+    tags.push_back(L"&#x301");
+
+    std::vector<std::wstring>::iterator it = tags.begin();
+    pos = 0;
+    for (it; it != tags.end(); ++it) {
+        pos = pure.find(*it);
+        while (pos != std::wstring::npos) {
+            pure.replace(pos, (*it).length(), std::wstring((*it).length(), L'_'));
+            pos = pure.find(*it, pos + (*it).length());
+        }
+    }
+    return pure;
+}
+
+std::wstring COROSSParser::getPureWord(const std::wstring& word) {
+    size_t pos = word.find(L"_");
+    std::wstring pure(word);
+    while (pos != std::wstring::npos) {
+        pure.replace(pos, 1, L"");
+        pos = pure.find(L"_", pos);
+    }
+    return pure;
+}
+
+wordMap::iterator COROSSParser::findWord(const size_t& id) {
+    wordMap::iterator wit = words.begin();
+    for (wit; wit != words.end(); ++wit) {
+        if (wit->second.id == id)
+            return wit;
+    }
+    return wit;
 }

@@ -121,8 +121,8 @@ void COROSSParser::saveData(bool saveSearch)
         wordMap::iterator wit = words.begin();
         for (; wit != words.end(); ++wit) {
             arts.write(wit->first.c_str(), wit->first.length());
-            artIdVct::iterator avt = wit->second.begin();
-            for (avt; avt != wit->second.end(); ++avt) {
+            artIdVct::iterator avt = wit->second.arts.begin();
+            for (avt; avt != wit->second.arts.end(); ++avt) {
                 artMap::iterator ait = articles.find(*avt);
                 if (ait != articles.end()) {
                     arts.write(ait->second.text.c_str(), ait->second.text.length());
@@ -534,45 +534,48 @@ void COROSSParser::makeWordsTable(std::wofstream& result)
     result.write(str.c_str(), str.length());
 
     wordMap::iterator wit = words.begin();
-    size_t idx = 1;
-    size_t title = 1;
+   // size_t idx = 1;
+   // size_t title = 1;
     for (; wit != words.end(); ++wit) {
         str.clear();
-        str.append(L"INSERT INTO words (id, title, word) \n\
+        str.append(str_words);//L"INSERT INTO words (id, title, word) 
+        str.append(L"\n\
     VALUES (");
-        str.append(std::to_wstring(idx));
+        str.append(std::to_wstring(wit->second.id/*idx*/));
         str.append(L",");
-        str.append(std::to_wstring(title));
+        str.append(std::wstring(1, wit->second.isTitle));
         str.append(L",'");
         str.append(wit->first);
         str.append(L"');\n");
         result.write(str.c_str(), str.length());
 
-        artIdVct::iterator avt = wit->second.begin();
-        for (avt; avt != wit->second.end(); ++avt) {
+        artIdVct::iterator avt = wit->second.arts.begin();
+        for (avt; avt != wit->second.arts.end(); ++avt) {
             str.clear();
-            str.append(L"INSERT INTO words_articles (id, id_article) \n\
+            str.append(str_words_articles); //L"INSERT INTO words_articles (id, id_article) 
+            str.append(L"\n\
     VALUES (");
-            str.append(std::to_wstring(idx));
+            str.append(std::to_wstring(wit->second.id /*idx*/));
             str.append(L",");
             str.append(std::to_wstring(*avt));
             str.append(L");\n");
             result.write(str.c_str(), str.length());
         }
-        idx ++;
+//        idx ++;
     }
 }
 
 void COROSSParser::makeArticlesTable(std::wofstream& result)
 {
     //    id_word int(11) NOT NULL,\n\
-
+    
+    std::wstring art_id_1(L"art_id=\"1\"");
     std::wstring str(L"\nCREATE TABLE IF NOT EXISTS articles (\n\
     id int(11) NOT NULL,\n\
+    title varchar(256) NOT NULL,\n\
     text TEXT NOT NULL,\n\
     rtf TEXT NOT NULL,\n\
     src TEXT NOT NULL,\n\
-    comment_id int(11) NOT NULL,\n\
     PRIMARY KEY (id) \n\
     );\n\n");
     result.write(str.c_str(), str.length());
@@ -614,6 +617,14 @@ void COROSSParser::makeArticlesTable(std::wofstream& result)
     id int(11) NOT NULL,\n\
     id_historic int(11) NOT NULL,\n\
     PRIMARY KEY (id, id_historic) \n\
+    );\n\n");
+    result.write(str.c_str(), str.length());
+
+    str.clear();
+    str.append(L"\nCREATE TABLE IF NOT EXISTS articles_comments (\n\
+    id int(11) NOT NULL,\n\
+    id_comment int(11) NOT NULL,\n\
+    PRIMARY KEY (id, id_comment) \n\
     );\n\n");
     result.write(str.c_str(), str.length());
 
@@ -667,7 +678,8 @@ void COROSSParser::makeArticlesTable(std::wofstream& result)
         std::vector<size_t>::iterator hit = ait->second.historic.begin();
         for (hit; hit != ait->second.historic.end(); ++hit) {
             str.clear();
-            str.append(L"INSERT INTO articles_historic (id, id_historic) \n\
+            str.append(str_articles_historic); //L"INSERT INTO articles_historic (id, id_historic) 
+            str.append(L"\n\
                         VALUES (");
             str.append(std::to_wstring(ait->second.id));
             str.append(L",");
@@ -676,11 +688,27 @@ void COROSSParser::makeArticlesTable(std::wofstream& result)
             result.write(str.c_str(), str.length());
         }
 
+        std::vector<size_t>::iterator cit = ait->second.comments.begin();
+        for (cit; cit != ait->second.comments.end(); ++cit) {
+            str.clear();
+            str.append(str_articles_comments);//L"INSERT INTO articles_comments (id, id_comments) 
+            str.append(L"\n\
+                        VALUES (");
+            str.append(std::to_wstring(ait->second.id));
+            str.append(L",");
+            str.append(std::to_wstring(*cit));
+            str.append(L");\n");
+            result.write(str.c_str(), str.length());
+        }
+
         str.clear();
-        str.append(L"INSERT INTO articles (id, text, rtf, src, comment_id) \n\
+        str.append(str_articles);//L"INSERT INTO articles (id, title, text, rtf, src) 
+        str.append(L"\n\
 VALUES (");
         str.append(std::to_wstring(ait->second.id));
         str.append(L",'");
+        str.append(ait->second.title);
+        str.append(L"','");
         std::wstring a(ait->second.text);
         size_t pos = a.find(L"#rules_");
         while (pos != std::wstring::npos) {
@@ -692,14 +720,19 @@ VALUES (");
             a.insert(pos + 6, std::to_wstring(ait->second.id));
             pos = a.find(L"#paras_", pos + 6);
         }
+        pos = a.find(art_id_1);
+        std::wstring art_id = L"art_id=\"" + std::to_wstring(ait->second.id) + L"\"";
+        while (pos != std::wstring::npos) {
+            a.replace(pos, art_id_1.length(), art_id);
+            pos = a.find(art_id_1, pos + 1);
+        }
+
         str.append(a);//ait->second.text);
         str.append(L"','");
         str.append(ait->second.rtf);
         str.append(L"','");
         str.append(ait->second.src);
-        str.append(L"',");
-        str.append(std::to_wstring(ait->second.comment_id));
-        str.append(L");\n");
+        str.append(L"');\n");
         result.write(str.c_str(), str.length());
 
     }
@@ -717,6 +750,20 @@ void COROSSParser::getTags(const std::wstring& text, const std::wstring& tag, st
         if (std::find(tagsVct.begin(), tagsVct.end(), std::stol(cm[1])) == tagsVct.end())
             tagsVct.push_back(std::stol(cm[1]));
         a = cm.suffix().str();
+    }
+    if (tagsVct.size() == 0 && tag.find(L"_") != std::wstring::npos) {
+        std::wstring pattern(L"\\#");
+        pattern.append(tag);
+        pattern.insert(pattern.find(L"_"), L"\\d+");
+        pattern.append(L"(\\d+)");
+        std::wregex e(pattern);
+        std::wsmatch cm;    // same as std::match_results<const char*> cm;
+        std::wstring a(text);
+        while (std::regex_search(a.cbegin(), a.cend(), cm, e)) {
+            if (std::find(tagsVct.begin(), tagsVct.end(), std::stol(cm[1])) == tagsVct.end())
+                tagsVct.push_back(std::stol(cm[1]));
+            a = cm.suffix().str();
+        }
     }
 }
 
@@ -806,15 +853,93 @@ VALUES (");
 }
 
 void COROSSParser::presaveArticles() {
-    std::wstring sm_komment(L"\\s[С|с]м\\.\\s*коммент\\.\\s*к\\s*");
-//    std::wstring sm(L"\s[С|с]м\.\s*");
+    std::wstring sm_komment(L"(\\s*[С|с]м\\.\\s*коммент\\.\\s*к\\s*)([_\\u00B9\\u00B2\\u00B3а-яЁё]+[-|…]*\\s*)([_\\u00B9\\u00B2\\u00B3а-яЁё]*)");//
+    std::wstring smotri(L"(\\s*[С|с]м\\.\\s*)([_\\u00B9\\u00B2\\u00B3а-яЁё]+[-|…]*\\s*[_\\u00B9\\u00B2\\u00B3а-яЁё]*)");//L"\\s[С|с]м\\.\\s*");
     artMap::iterator it = articles.begin();
-    std::wregex search_komm(sm_komment);
+//    std::wregex search_komm(sm_komment);
+//    std::wregex search(smotri);
+
     for (it; it != articles.end(); ++it) {
-        std::wsmatch sm;
-        if (std::regex_search(it->second.src, sm, search_komm)) {
-            std::wstring word = sm.suffix();
-            word.substr(0, word.find_first_of(L" .,"));
+        std::wstring pure;
+        pure = getSpecMarkedArticle(it->second.text); // full = true
+        for (size_t i = 0; i < 2; i++) {
+             std::wregex search(sm_komment);
+            if (i == 1)
+                search = smotri;
+
+            std::regex_iterator<std::wstring::iterator> rit(pure.begin(), pure.end(), search);
+            std::regex_iterator<std::wstring::iterator> rend;
+
+            while (rit != rend) {
+              //  std::wsmatch sm = *rit;
+                //std::cout << rit->str() << std::endl;
+                std::wstring word = (*rit)[2].str();
+                if (word != L"коммент") {
+                    size_t begin = (*rit).prefix().length() + (*rit)[1].str().length();
+                    size_t end = begin;
+                    if (i == 0 && (*rit).size() > 3)
+                        word = word + (*rit)[3].str();
+                    end += word.length();
+                    size_t i = 0;
+                    while (word[i] == L'_') {
+                        i++;
+                    }
+                    std::wstring pref(it->second.text.substr(begin, i));
+                    if (pref == L"<i>") {
+                        size_t pi = it->second.text.find(L"</i>", end);
+                        if (pi != std::wstring::npos)
+                            end = pi + 4;
+                    }
+                    word = getPureWord(word);
+                    std::wstring key(word);
+                    prepareOrthoKey(key);
+                    wordMap::iterator wit = words.find(key);
+                    if (wit != words.end()) {
+                        artIdVct::iterator ait = wit->second.arts.begin();
+                        for (ait; ait != wit->second.arts.end(); ++ait) {
+                            article a = articles[*ait];
+                            if (word == a.title && a.id != it->second.id) {
+                                std::vector<size_t>::iterator cit = it->second.comments.begin();
+                                for (cit; cit != it->second.comments.end(); ++cit) {
+                                    if ((*cit) == a.id)
+                                        break;
+                                }
+                                if (cit == it->second.comments.end())
+                                    it->second.comments.push_back(a.id);
+                                std::wstring subst(L"<a class =\"accordion-toggle comment\" art_id=\"");
+                                subst.append(std::to_wstring(it->second.id));
+                                subst.append(L"\" comment_id=\"");
+                                subst.append(std::to_wstring(a.id));
+                                subst.append(L"\" href =\"#comment");
+                                subst.append(std::to_wstring(it->second.id));
+                                subst.append(L"_");
+                                subst.append(std::to_wstring(a.id));
+                                subst.append(L"\" data-parent=\"#accordionComments\" data-toggle=\"collapse\" style=\"text-transform:none\" >");
+                                end += subst.length();
+                                it->second.text.insert(begin, subst);
+                                if (end < it->second.text.length())
+                                    it->second.text.insert(end, L"</a >");
+                                else
+                                    it->second.text.append(L"</a >");
+                                break;
+                            }
+                        }
+                    }
+                }
+                ++rit;
+            }
+
+/*            std::wsmatch sm;
+            while (std::regex_search(it->second.src, sm, search)) {
+                //    if (std::regex_search(it->second.src, sm, search_komm)) {
+                std::wstring word = sm[2].str();
+                if (i == 0)
+                    //                    std::wstring word = sm.suffix();
+                    word = word + sm[3].str();
+            } */
+        }
+    }
+/*            word = word.substr(0, word.find_first_of(L" .,;"));
             prepareOrthoKey(word);
             wordMap::iterator wit = words.find(word);
             if (wit != words.end()) {
@@ -829,5 +954,20 @@ void COROSSParser::presaveArticles() {
                 }
             }
         }
-    }
+        else if (std::regex_search(it->second.src, sm, search)) {
+            std::wstring word = sm.suffix();
+            word = word.substr(0, word.find_first_of(L" .,;"));
+            prepareTitle(word);
+            wordMap::iterator wit = words.find(word);
+            if (wit != words.end()) {
+                artIdVct::iterator ait = wit->second.begin();
+                for (ait; ait != wit->second.end(); ++ait) {
+                    if (word.compare(0, word.length(), articles[(*ait)].title, 0, articles[(*ait)].title.length()) == 0) {
+                        it->second.comment_id = (*ait);
+                        break;
+                    }
+                }
+            }
+        }
+    } */
 }

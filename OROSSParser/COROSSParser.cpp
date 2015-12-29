@@ -16,6 +16,8 @@
 #define SAVE_SEARCH false
 #define LOAD_SEARCH true
 
+//COROSSParser::str_words_articles(L"INSERT INTO words_articles (id, id_article) ");
+
 STDMETHODIMP COROSSParser::Init( long* hRes )
 {
     *hRes = S_OK;
@@ -40,6 +42,19 @@ STDMETHODIMP COROSSParser::Init( long* hRes )
     tagsSpecial.push_back(L":");
     tagsSpecial.push_back(L"+");
     tagsSpecial.push_back(L"&");
+
+    tagsAccents.push_back(L"\u00E1");//?
+    tagsAccents.push_back(L"\u0430&#x301");
+    tagsAccents.push_back(L"\u00F3"); //?
+    tagsAccents.push_back(L"\u043E&#x301");
+    tagsAccents.push_back(L"\u044D\u0301");//ý?
+    tagsAccents.push_back(L"\u044D&#x301");
+    tagsAccents.push_back(L"\u00FD");//?
+    tagsAccents.push_back(L"\u0443&#x301");
+    tagsAccents.push_back(L"\u044B\u0301");//û?
+    tagsAccents.push_back(L"\u044B&#x301");
+    tagsAccents.push_back(L"\u0438\u0301");//è?
+    tagsAccents.push_back(L"\u0438&#x301");
 
     rtfReplacements.push_back(L"<b>");
     rtfReplacements.push_back(L"\\\\b");
@@ -74,6 +89,15 @@ STDMETHODIMP COROSSParser::Terminate( long* hRes )
     presaveArticles();
     makeSQL();
     error.close();
+    return S_OK;
+}
+
+STDMETHODIMP COROSSParser::LoadDic(BSTR Dic, /*[out, retval]*/ long *hRes)
+{
+    if (paras.size() == 0)
+        loadSearchData(true);
+    loadDic(Dic);
+    *hRes = S_OK;
     return S_OK;
 }
 
@@ -123,7 +147,7 @@ STDMETHODIMP COROSSParser::AddPara( long Num, BSTR Name, /* [out, retval]*/ long
     std::wstring name(Name);
     correctText(name);
 
-    para cp = {Num, curTile->second.id, curPart->second.id, name};
+    para cp = {(size_t)Num, curTile->second.id, curPart->second.id, name};
     curPara = paras.find(Num);
     if (curPara == paras.end())
     {
@@ -131,14 +155,14 @@ STDMETHODIMP COROSSParser::AddPara( long Num, BSTR Name, /* [out, retval]*/ long
         curPara = paras.find(Num);
         curTile->second.paras.push_back(Num);
         if (partId == PART_END) {
-            orthogr co = {orthoId, Num, 0, SL_D_RAZD, prepareForSearch(SL_D_RAZD), 0};
+            orthogr co = {orthoId, (size_t)Num, 0, SL_D_RAZD, prepareForSearch(SL_D_RAZD), getSearchMinLen(co.search), 0};
             std::wstring key(SL_D_RAZD);
             prepareOrthoKey(key);
             curPara->second.orthos.insert(std::pair<std::wstring, orthogr>(key, co));
             orthoId++;
         }
         else if (Num == 21) {
-            orthogr co = {orthoId, Num, 0, PROVER_GLASN, prepareForSearch(PROVER_GLASN), 0};
+            orthogr co = {orthoId, (size_t)Num, 0, PROVER_GLASN, prepareForSearch(PROVER_GLASN), getSearchMinLen(co.search), 0};
             std::wstring key(PROVER_GLASN);
             prepareOrthoKey(key);
             curPara->second.orthos.insert(std::pair<std::wstring, orthogr>(key, co));
@@ -147,7 +171,7 @@ STDMETHODIMP COROSSParser::AddPara( long Num, BSTR Name, /* [out, retval]*/ long
         std::wstring rest(L"§ ");
         rest.append(std::to_wstring((size_t)Num));
         std::wstring link = prepareRest(rest);
-        pararest pr = {prepareRest(rest), prepareForSearch(rest)};
+        pararest pr = {prepareRest(rest), prepareForSearch(rest), getSearchMinLen(pr.search)};
         curPara->second.links.insert(std::pair<std::wstring, pararest>(rest, pr));
 
         paraId = Num;
@@ -265,7 +289,7 @@ STDMETHODIMP COROSSParser::AddOrthogr( BSTR Orthogr, BSTR Formula, BSTR Example,
     correctText(rest);
 
 //    orthogr co = {orthoId, 0, IsActive, ortho, prepareForSearch(ortho)};
-    orthogr co = {orthoId, 0, IsActive};//, curPart->second.id != PART_LAST ? ortho : SL_D_RAZD, prepareForSearch(co.name)};
+    orthogr co = {orthoId, 0, (size_t)IsActive};//, curPart->second.id != PART_LAST ? ortho : SL_D_RAZD, prepareForSearch(co.name)};
     if (curPart->second.id != PART_LAST) {
         if (curPara->second.id == PARA21)
             co.name = PROVER_GLASN;
@@ -304,7 +328,7 @@ STDMETHODIMP COROSSParser::AddOrthogr( BSTR Orthogr, BSTR Formula, BSTR Example,
     size_t rule_id = getRuleId(num, rule);
 //    formula cf = {formulaId, curPart->second.id != PART_LAST ? form : ortho, example, rest, IsPrefix, ot->second.id, num, rule_id};
 //    formula cf = {formulaId, curPart->second.id != PART_LAST ? form : ortho, prepareForSearch(cf.name), example, Rest, IsPrefix, ot->second.id, num, rule_id};
-    formula cf = {formulaId, L"", L"", example, Rest, IsPrefix, ot->second.id, num, rule_id};
+    formula cf = {formulaId, L"", L"", example, Rest, (size_t)IsPrefix, 0, ot->second.id, num, rule_id};
     if (curPart->second.id != PART_LAST && curPara->second.id != PARA21) {
         cf.name = form;
     }
@@ -312,6 +336,7 @@ STDMETHODIMP COROSSParser::AddOrthogr( BSTR Orthogr, BSTR Formula, BSTR Example,
         cf.name = ortho;
     }
     cf.search = prepareForSearch(cf.name);
+    cf.min_len = getSearchMinLen(cf.search);
     key.empty();
     key.append(cf.name);
     prepareOrthoKey(key);
@@ -339,9 +364,9 @@ STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]
 
     std::wstring title(Title);
     correctText(title);
+    prepareTitle(title);
 
-    article ca = {artId, title, art, art, toRTF(art), art.find(L'\u25ca') != std::wstring::npos ? true : false};
-    prepareOrthoKey(ca.title);
+    article ca = {artId, title, art, art, toRTF(art)};
 
 /*    if (artId == 1160) {
         int a = 0;
@@ -368,9 +393,9 @@ STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]
         pure = getPureArticle(a);
 */
     substMap substs;
-
-    getOrthos(ca.text /*html*/, pure, paraVct, ca.orthos, substs);
-    getFormulas(ca.text /*html */, pure, paraVct, ca.orthos, ca.formulas, substs);
+    size_t pure_len = getPureLen(pure);
+    getOrthos(ca.text /*html*/, pure, pure_len, paraVct, ca.orthos, substs);
+    getFormulas(ca.text /*html */, pure, pure_len, paraVct, ca.orthos, ca.formulas, substs);
     getHistoric(pure, ca.historic);
 
     std::wstring html = ca.text;
@@ -452,10 +477,12 @@ STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]
         if (wit == words.end()) {
             artIdVct av;
             av.push_back(ca.id);
-            words.insert(std::pair<std::wstring, artIdVct>(key, av));
+            word cw = { wordId, L'1', av };
+            words.insert(std::pair<std::wstring, word>(key, cw));
+            wordId++;
         }
         else {
-            wit->second.push_back(ca.id);
+            wit->second.arts.push_back(ca.id);
         }
     }
 
@@ -467,9 +494,9 @@ STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]
     return S_OK;
 }
 
-std::wstring COROSSParser::getPureArticle(const std::wstring& art)
+std::wstring COROSSParser::getPureArticle(const std::wstring& art, bool full)
 {
-    size_t pos = art.find(L'\u25ca');
+    size_t pos = !full ? art.find(L'\u25ca') : std::wstring::npos;
     std::wstring pure(art, 0, pos);
     std::vector<std::wstring> tags;
 
@@ -508,27 +535,23 @@ std::wstring COROSSParser::getPara(const std::wstring& article, std::vector<size
         tmp.append(cm.suffix().str());
         if (parait != paras.end()) {
             restMap::iterator rit = parait->second.links.begin();
+            size_t tmp_len = tmp.length();
             for (rit; rit != parait->second.links.end(); ++rit) {
+                if (tmp_len < rit->second.min_len)
+                    continue;
                 std::wstring pattern(rit->second.search);
                 pattern.append(L")(.*)");
                 pattern.insert(0, L"(");
                 std::wregex r(pattern);
                 std::wsmatch rm;
                 if (std::regex_match(tmp, rm, r)) {
-                    if (rit->first.length() > len) {
+//                    if (rit->first.length() > len) {
+                    if (rm[1].str().length() > len) {
                         link.clear();
                         link.append(rit->second.link);
-                        len = rit->first.length();
+                        len = rm[1].str().length(); //rit->first.length();
                     }
                 }
-/*                if (rit->first.length() <= tmp.length() &&
-                    rit->first.compare(0, rit->first.length(), tmp, 0, rit->first.length()) == 0) {
-                    if (rit->first.length() > len) {
-                        link.clear();
-                        link.append(rit->second.link);
-                        len = rit->first.length();
-                    }
-                }*/
             }
         }
         if (link.length() > 0) {
@@ -544,16 +567,11 @@ std::wstring COROSSParser::getPara(const std::wstring& article, std::vector<size
             error.write(L"\n", wcslen(L"\n"));
 
         }
-/*        html.append(L"<a id=\"para");
-        html.append(cm[1]);
-        html.append(L"\" onclick=\"artParaClick(this)\" href=\"#para");
-        html.append(cm[1]);
-        html.append(L"\">");
-        html.append(cm.str());
-        html.append(L"</a >");
-        */
-        if (len > 0)
+        if (len > 0) {
+            size_t l = cm.str().length();
+            std::wstring tmp = cm.str();
             a = cm.suffix().str().substr(len - cm.str().length());
+        }
         else
             a = cm.suffix().str();
     }
@@ -566,7 +584,7 @@ std::wstring COROSSParser::getPara(const std::wstring& article, std::vector<size
     return html;
 }
 
-void COROSSParser::getOrthos(const std::wstring& article, const std::wstring& pure, const std::vector<size_t>& paraVct, std::vector<size_t>& orthos, substMap& substs)
+void COROSSParser::getOrthos(const std::wstring& article, const std::wstring& pure, const size_t& src_len, const std::vector<size_t>& paraVct, std::vector<size_t>& orthos, substMap& substs)
 {
     std::wstring a(pure);
     std::wstring afull(article);
@@ -575,6 +593,8 @@ void COROSSParser::getOrthos(const std::wstring& article, const std::wstring& pu
     for (parait; parait != paras.end(); ++parait) {
         orthoMap::iterator oit = parait->second.orthos.begin();
         for (oit; oit != parait->second.orthos.end(); ++oit) {
+            if (oit->second.min_len > src_len)
+                continue;
             //
             a.clear();
             afull.clear();
@@ -604,7 +624,7 @@ void COROSSParser::getOrthos(const std::wstring& article, const std::wstring& pu
                     substMap::iterator sit = substs.find(len + cm.prefix().length() - shift);
                     if (sit != substs.end()) {
                         if (cs.len > sit->second.len) {
-                            orthos.erase(std::find(orthos.begin(), orthos.end(), oit->second.id));
+                            orthos.erase(std::find(orthos.begin(), orthos.end(), sit->second.id));
                             sit->second = cs;
                             orthos.push_back(oit->second.id);
                         }
@@ -630,7 +650,7 @@ void COROSSParser::getOrthos(const std::wstring& article, const std::wstring& pu
 }
 
 
-void COROSSParser::getFormulas(const std::wstring& article, const std::wstring& pure, const std::vector<size_t>& paraVct, std::vector<size_t>& orthos, std::vector<size_t>& formulas, substMap& substs)
+void COROSSParser::getFormulas(const std::wstring& article, const std::wstring& pure, const size_t& src_len, const std::vector<size_t>& paraVct, std::vector<size_t>& orthos, std::vector<size_t>& formulas, substMap& substs)
 {
     std::wstring a(pure);
     std::wstring afull(article);
@@ -649,11 +669,13 @@ void COROSSParser::getFormulas(const std::wstring& article, const std::wstring& 
         for (oit; oit != parait->second.orthos.end(); ++oit) {
             if (oit->second.active == 1 && std::find(orthos.begin(), orthos.end(), oit->second.id) == orthos.end())
                 continue;
+            if (oit->second.min_len > src_len)
+                continue;
             formMap::iterator fit = oit->second.formulas.begin();
             size_t len_match = 0;
             std::wsmatch fmatch;
             for (fit; fit != oit->second.formulas.end(); ++fit) {
-                if (fit->second.search.length() == 0)
+                if (fit->second.search.length() == 0 || fit->second.min_len > src_len)
                     continue;
                 std::wstring formula(fit->second.search);
                 //formula.append(L"\\s*");
