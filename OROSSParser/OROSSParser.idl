@@ -28,6 +28,8 @@ import "ocidl.idl";
         [id(10), helpstring("method AddArticle")] HRESULT AddArticle( BSTR Title, BSTR Article, [out, retval] long *hRes );
         [id(11), helpstring("method AddInfoToRule")] HRESULT AddInfoToRule( BSTR Info, [out, retval] long *hRes );
         [id(12), helpstring("method AddFootNote")] HRESULT AddFootNote( long ID, BSTR Text, [out, retval] long *hRes );
+        //
+        [id(13), helpstring("method LoadDic")] HRESULT LoadDic( BSTR Dic, [out, retval] long *hRes );
     };
 
 [
