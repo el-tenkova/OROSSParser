@@ -134,13 +134,18 @@ void COROSSParser::prepareTitle(std::wstring& title)
     tags.push_back(L"</b>");
     tags.push_back(L"<u>");
     tags.push_back(L"</u>");
-/*    tags.push_back(L" ");
+    tags.push_back(L"<p>");
+    tags.push_back(L"</p>");
+    tags.push_back(L"<sup>");
+    tags.push_back(L"</sup>");
+    /*    tags.push_back(L" ");
     tags.push_back(L".");
     tags.push_back(L"-");
     tags.push_back(L"\u00B9");
     tags.push_back(L"\u00B3");
     tags.push_back(L"\u00B2");
     tags.push_back(L"\u2026"); */
+    tags.push_back(L"\u25ca");
     tags.push_back(L"&#x301");
     std::vector<std::wstring>::iterator it = tags.begin();
     for (it; it != tags.end(); ++it) {
@@ -149,6 +154,21 @@ void COROSSParser::prepareTitle(std::wstring& title)
             title.replace(pos, (*it).length(), L"");
             pos = title.find(*it);
         }
+    }
+    size_t idx = 0;
+    for (std::wstring::iterator i = title.begin(); i != title.end(); ++i, idx++) {
+        if ((*i) != L' ')
+            break;
+    }
+    if (idx > 0)
+        title = title.substr(idx);
+    idx = title.length();
+    if (idx > 0) {
+        for (std::wstring::iterator i = title.end() - 1; i != title.begin(); --i, idx--) {
+            if ((*i) != L' ')
+                break;
+        }
+        title = title.substr(0, idx);
     }
 }
 
@@ -225,16 +245,7 @@ void COROSSParser::correctWord(std::wstring& text)
 
 std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
 {
-    //std::vector<std::wstring> tags;
     std::wstring tmp(ortho);
-
-    // remove Bold and Italic
-/*    tags.push_back(L"<b>");
-    tags.push_back(L"</b>");
-    tags.push_back(L"<i>");
-    tags.push_back(L"</i>");
-    tags.push_back(L"<u>");
-    tags.push_back(L"</u>");*/
 
     std::vector<std::wstring>::iterator it = tagsBI.begin();
     size_t pos = 0;
@@ -245,32 +256,22 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
             pos = tmp.find(*it, pos + 1);
         }
     }
+    size_t sp = 0;
     if (tmp.length() > 0) {
-        size_t sp = 0;
         while (tmp[sp] == L' ')
             sp++;
         // trim left
         tmp = tmp.substr(sp);
+        sp = tmp.length() - 1;
+        while (sp > 0 && tmp[sp] == L' ')
+            sp--;
+        // trim right
+        tmp = tmp.substr(0, sp + 1);
     }
-/*    tags.clear();
-    tags.push_back(L"[");
-    tags.push_back(L"]");
-    tags.push_back(L"(");
-    tags.push_back(L")");
-    tags.push_back(L".");
-    tags.push_back(L"/");
-    tags.push_back(L"#");
-    tags.push_back(L":");
-    tags.push_back(L"+");
-    tags.push_back(L"&"); */
-//    tags.push_back(L"<");
-//    tags.push_back(L">");
 
-    std::wstring search(tmp);//ortho);
+    std::wstring search(tmp);
 
-    //std::vector<std::wstring>::iterator 
     it = tagsSpecial.begin();
-    //size_t 
     pos = 0;
     for (it; it != tagsSpecial.end(); ++it) {
         pos = search.find(*it);
@@ -280,15 +281,12 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
         }
     }
 
-//    std::wregex e(L"\\([<i>]*слово[^\\(\\)]*\\)");
     std::wregex e(L"\\(\\s*слово[^\\(\\)]*\\)");
     std::wsmatch cm;
-//    std::wstring tmp(L"");
     tmp.clear();
     while (std::regex_search(search.cbegin(), search.cend(), cm, e)) {
         tmp.append(cm.prefix(), 0, cm.prefix().length() - 1);
         tmp.append(L"(\\(\\s*[^\\(\\)]*\\))* ");
-//        tmp.append(cm.suffix().str());
         search = cm.suffix();
     }
     tmp.append(search);
@@ -296,13 +294,11 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
     search.clear();
     cm.empty();
     search.append(tmp);
-//    std::wregex e1(L"\\([<b>]*буква[^\\(\\)]*\\)");
-    std::wregex e1(L"\\(\\s*буква[^\\(\\)]*\\)");
+    std::wregex e4(L"\\(\\s*приставка[^\\(\\)]*\\)");
     tmp.clear();
-    while (std::regex_search(search.cbegin(), search.cend(), cm, e1)) {
+    while (std::regex_search(search.cbegin(), search.cend(), cm, e4)) {
         tmp.append(cm.prefix().str());
-        tmp.append(L"(\\s*[^\\(\\)]*\\)* ");
-//        tmp.append(cm.suffix().str());
+        tmp.append(L"(\\(\\s*[^\\(\\)]*\\))* ");
         search = cm.suffix().str();
     }
     tmp.append(search);
@@ -310,9 +306,19 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
     search.clear();
     cm.empty();
     search.append(tmp);
-//    std::wregex e1(L"\\([<b>]*буква[^\\(\\)]*\\)");
-    //проверка:b*\\\\*\\:*
-    std::wregex e2(L"проверка\\s*\\\\*\\:*");// проверка\\s*\\\\:*");
+    std::wregex e1(L"\\(\\s*буква[^\\(\\)]*\\)");
+    tmp.clear();
+    while (std::regex_search(search.cbegin(), search.cend(), cm, e1)) {
+        tmp.append(cm.prefix().str());
+        tmp.append(L"(\\s*[^\\(\\)]*\\)* ");
+        search = cm.suffix().str();
+    }
+    tmp.append(search);
+
+    search.clear();
+    cm.empty();
+    search.append(tmp);
+    std::wregex e2(L"проверка\\s*\\\\*\\:*");
     tmp.clear();
     while (std::regex_search(search.cbegin(), search.cend(), cm, e2)) {
         if (cm.prefix().length() > 0) {
@@ -322,7 +328,6 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
         else {
             tmp.append(L"проверка\\s*\\:* ");
         }
-//        tmp.append(cm.suffix().str());
         search = cm.suffix().str();
     }
     tmp.append(search);
@@ -338,6 +343,20 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
         search = cm.suffix().str();
     }
     tmp.append(search);
+
+    sp = tmp.length() - 1;
+    while (sp > 0 && tmp[sp] == L' ')
+        sp--;
+    // trim right
+    tmp = tmp.substr(0, sp + 1);
+
+    // суфф. => суфф\s*.
+    pos = tmp.find(L'.');
+    while (pos != std::wstring::npos) {
+        if (pos > 1 && tmp[pos - 1] != ' ')
+            tmp.replace(pos, 1, L" .");
+        pos = tmp.find(L'.', pos + 2);
+    }
 
     pos = tmp.find(L' ');
     while (pos != std::wstring::npos) {
@@ -372,29 +391,12 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
         pos = tmp.find(L',', pos + 1);
     }
 
-    // Bold
-/*    pos = tmp.find(L"<b>");
+    pos = tmp.find(L"\\/");
     while (pos != std::wstring::npos) {
-        tmp.replace(pos, 3, L"(<b>)*");
-        pos = tmp.find(L"<b>", pos + 6);
+        tmp.replace(pos, 2, L"\\/\\s*");
+        pos = tmp.find(L"\\/", pos + 1);
     }
-    pos = tmp.find(L"<\\/b>");
-    while (pos != std::wstring::npos) {
-        tmp.replace(pos, 5, L"(<\\/b>)*");
-        pos = tmp.find(L"<\\/b>", pos + 8);
-    }
-    // Italic
-    pos = tmp.find(L"<i>");
-    while (pos != std::wstring::npos) {
-        tmp.replace(pos, 3, L"(<i>)*");
-        pos = tmp.find(L"<i>", pos + 6);
-    }
-    pos = tmp.find(L"<\\/i>");
-    while (pos != std::wstring::npos) {
-        tmp.replace(pos, 5, L"(<\\/i>)*");
-        pos = tmp.find(L"<\\/i>", pos + 8);
-    }
-    */
+
     return tmp;
 }
 
@@ -551,7 +553,14 @@ std::wstring COROSSParser::getSpecMarkedArticle(const std::wstring& art) {
     tags.push_back(L"</i>");
     tags.push_back(L"<u>");
     tags.push_back(L"</u>");
+    tags.push_back(L"<p>");
+    tags.push_back(L"</p>");
+    tags.push_back(L"<sup>");
+    tags.push_back(L"</sup>");
     tags.push_back(L"&#x301");
+    tags.push_back(L"\u25ca");
+    tags.push_back(tagsTitle[0]);
+    tags.push_back(tagsTitle[1]);
 
     std::vector<std::wstring>::iterator it = tags.begin();
     pos = 0;
@@ -575,6 +584,109 @@ std::wstring COROSSParser::getPureWord(const std::wstring& word) {
     return pure;
 }
 
+std::vector<std::wstring> COROSSParser::getWordsForIndex(const std::wstring& word, size_t& offset, size_t &len, bool title) {
+    std::vector<std::wstring> res;
+    std::wstring str(word);
+    offset = 0;
+    len = word.length();
+    std::locale loc;
+    std::wregex e(L"\\([^\\(\\)]+\\)");
+
+    std::regex_iterator<std::wstring::iterator> rit(str.begin(), str.end(), e);
+    std::regex_iterator<std::wstring::iterator> rend;
+//    std::wstring 
+//    size_t pref = 0;
+    std::wstring tmp;
+    std::wstring suff;
+    while (rit != rend) {
+        tmp.append((*rit).prefix());
+        suff = (*rit).suffix();
+//        pref += (*rit).prefix().length() + (*rit).str().length();
+        ++rit;
+    }
+    if (tmp.length() != 0) {
+        tmp.append(suff);
+    }
+//    std::wstring::iterator i = str.begin();
+    auto i = str.begin();
+    for (i; i < str.end(); ++i) {
+        if (!(std::ispunct((*i), loc) || std::isdigit((*i), loc)))
+            break;
+        offset++;
+        len--;
+    }
+    if (i != str.end()) {
+        for (i = str.end() - 1; i != str.begin(); --i) {
+            if (!(std::ispunct((*i), loc) || std::isdigit((*i), loc)))
+                break;
+            len--;
+        }
+    }
+    if (len == 0)
+        return res;
+    if (stopDic.find(str.substr(offset, len)) != stopDic.end())
+        return res;
+
+    removeParentheses(str);
+    res.push_back(str);
+    if (tmp.length() != 0) {
+        auto i = tmp.begin();
+        size_t idx = 0;
+        for (i; i < tmp.end(); ++i, idx++) {
+            if (!(std::ispunct((*i), loc) || std::isdigit((*i), loc)) && (*i) != L'/') {
+                tmp = tmp.substr(idx);
+                break;
+            }
+        }
+        if (i != tmp.end()) {
+            idx = tmp.length();
+            for (i = tmp.end() - 1; i != tmp.begin(); --i, idx--) {
+                if (!(std::ispunct((*i), loc) || std::isdigit((*i), loc)) && (*i) != L'/') {
+                    tmp = tmp.substr(0, idx);
+                    break;
+                }
+            }
+        }
+        if (tmp.length() != 0)
+            res.push_back(tmp);
+    }
+
+    if (title)
+        return res;
+
+    std::wstring all_keys(str.substr(offset, len));
+    all_keys.append(L" ");
+    all_keys.append(tmp);
+    size_t pos = all_keys.find_first_of(L"-/");
+    if (pos != std::wstring::npos) {
+        while (pos != std::wstring::npos) {
+            all_keys[pos] = L' ';
+            pos = all_keys.find_first_of(L"-/", pos + 1);
+        }
+        std::wistringstream iss(all_keys.c_str());
+        std::vector<std::wstring> keys;
+        std::copy(std::istream_iterator<std::wstring, wchar_t>(iss),
+            std::istream_iterator<std::wstring, wchar_t>(),
+            std::back_inserter(keys));
+
+        for (auto kit = keys.begin(); kit != keys.end(); ++kit) {
+            prepareOrthoKey(*kit);
+        }
+        keys.erase(std::remove(keys.begin(), keys.end(), L""), keys.end());
+        std::sort(keys.begin(), keys.end());
+        std::vector<std::wstring>::iterator it = std::unique(keys.begin(), keys.end());
+        keys.resize(std::distance(keys.begin(), it));
+        for (auto kit = keys.begin(); kit != keys.end(); ++kit) {
+            res.push_back(*kit);
+        }
+        std::sort(res.begin(), res.end());
+        it = std::unique(res.begin(), res.end());
+        keys.resize(std::distance(res.begin(), it));
+
+    }
+    return res;
+}
+
 wordMap::iterator COROSSParser::findWord(const size_t& id) {
     wordMap::iterator wit = words.begin();
     for (wit; wit != words.end(); ++wit) {
@@ -582,4 +694,105 @@ wordMap::iterator COROSSParser::findWord(const size_t& id) {
             return wit;
     }
     return wit;
+}
+
+bool COROSSParser::IsPair(size_t ortho_id, size_t formula_id) {
+    paraMap::iterator parait = paras.begin();
+    for (parait; parait != paras.end(); ++parait) {
+        orthoMap::iterator oit = parait->second.orthos.begin();
+        for (oit; oit != parait->second.orthos.end(); ++oit) {
+            if (oit->second.id != ortho_id)
+                continue;
+            formMap::iterator fit = oit->second.formulas.begin();
+            for (fit; fit != oit->second.formulas.end(); ++fit) {
+                if (fit->second.id == formula_id)
+                    return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool COROSSParser::IsActiveOrtho(size_t formula_id) {
+    paraMap::iterator parait = paras.begin();
+    for (parait; parait != paras.end(); ++parait) {
+        orthoMap::iterator oit = parait->second.orthos.begin();
+        for (oit; oit != parait->second.orthos.end(); ++oit) {
+            formMap::iterator fit = oit->second.formulas.begin();
+            for (fit; fit != oit->second.formulas.end(); ++fit) {
+                if (fit->second.id == formula_id)
+                    return (oit->second.active == 1 ? true : false);
+            }
+        }
+    }
+    return false;
+}
+
+size_t COROSSParser::getUtfLen(const std::wstring& str, const size_t&start, const size_t& len) {
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> conv1;
+    std::string u8str = conv1.to_bytes(str.substr(start, len));
+    return u8str.size();
+}
+
+bool COROSSParser::isEqualToTitle(const std::wstring& word, const std::wstring& title) {
+    if (word == title)
+        return true;
+    size_t pos = word.find(L"...");
+    if (pos != std::wstring::npos) {
+        std::wstring tmp(word);
+        tmp.replace(pos, 3, L"Е");
+        if (tmp == title)
+            return true;
+    }
+    pos = word.find(L"Е");
+    if (pos != std::wstring::npos) {
+        std::wstring tmp(word);
+        tmp.replace(pos, 1, L"...");
+        if (tmp == title)
+            return true;
+    }
+    pos = word.find(L".");
+    if (pos != std::wstring::npos) {
+        std::wstring tmp(word);
+        tmp.replace(pos, 1, L"");
+        if (tmp == title)
+            return true;
+    }
+    return false;
+}
+
+void COROSSParser::removeParentheses(std::wstring& str) {
+    size_t pos = str.find(L'(');
+    while (pos != std::wstring::npos) {
+        str.replace(pos, 1, L"");
+        pos = str.find(L'(');
+    }
+    pos = str.find(L')');
+    while (pos != std::wstring::npos) {
+        str.replace(pos, 1, L"");
+        pos = str.find(L')');
+    }
+}
+
+void COROSSParser::cutTail(std::wstring& str) {
+    std::locale loc;
+    size_t idx = str.length();
+    for (auto i = str.end() - 1; i != str.begin(); --i, idx--) {
+        if ((*i) != L'-' &&  (*i) !=  L'Е' && (*i) != L'.') {
+            str = str.substr(0, idx);
+            break;
+        }
+    }
+
+}
+
+void COROSSParser::cutHead(std::wstring& str) {
+    std::locale loc;
+    size_t idx = 0;
+    for (auto i = str.begin(); i < str.end(); ++i, idx++) {
+        if (!(std::ispunct((*i), loc) || std::isdigit((*i), loc))) {
+            str = str.substr(idx);
+            break;
+        }
+    }
 }

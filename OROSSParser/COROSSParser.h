@@ -15,14 +15,29 @@
 
 #define ORTHO_SUBST 1
 #define FORMULA_SUBST 2
+#define PARA_SUBST 3
+
+#define TITLE_WORD 1
+#define LINK_WORD 2
+#define ARTICLE_WORD 3
+
+struct dummy {
+    size_t start;
+    size_t len;
+    char type; // 1 - title, 2 - text, 3 - text in link
+};
+typedef std::vector<dummy> dummyVct;
+
 struct subst {
     size_t type; // 1 - ortho, 2 - formula
     size_t id; // ortho or formula id
     size_t len;
     std::wstring substitution;
     char ok;
+    dummyVct index;
 };
-typedef std::map<size_t, subst> substMap;
+
+typedef std::map<size_t, std::vector<subst> > substMap;
 
 struct article {
     size_t id;
@@ -34,17 +49,33 @@ struct article {
     std::vector<size_t> orthos;
     std::vector<size_t> historic;
     std::vector<size_t> comments;
+    dummyVct index;
+    std::vector<size_t> words;
 };
 
 typedef std::map<size_t, article> artMap;
-typedef std::vector<size_t> artIdVct;
+struct place {
+    size_t id; // article id
+    size_t start; // position of word in article
+    size_t len; // can be more than word's length due to in article wordcan contain dashes
+    wchar_t isTitle; // is word article's title
+};
+typedef std::vector<place> artIdVct;
 
 struct word {
     size_t id;
-    wchar_t isTitle;
+//    wchar_t isTitle;
     artIdVct arts;
+//    size_t from;
+//    size_t to;
 };
 typedef std::map<std::wstring, word> wordMap; //artIdVct > wordMap;
+
+struct mistake {
+    size_t id;
+    std::vector<size_t> wordIds;
+};
+typedef std::map<std::wstring, mistake> mistakeMap; 
 
 struct hist {
     size_t id;
@@ -179,9 +210,10 @@ public:
       formulaId(1),
       artId(1),
       wordId(1), //!!!
+      russian("Russian"),
       error(L"c:\\IRYA\\error.txt", std::wofstream::binary),
-      str_words(L"INSERT INTO words (id, title, word) "),
-      str_words_articles(L"INSERT INTO words_articles (id, id_article) "),
+      str_words(L"INSERT INTO words (id, word) "),
+      str_words_articles(L"INSERT INTO words_articles (id, id_article, start, len, title) "),
       str_articles_orthos(L"INSERT INTO articles_orthos (id, id_ortho) "),
       str_articles_formulas(L"INSERT INTO articles_formulas (id, id_formula) "),
       str_articles_comments(L"INSERT INTO articles_comments (id, id_comment) "),
@@ -221,9 +253,11 @@ protected:
     paraMap paras;
     ruleVct rules;
     wordMap words;
+    mistakeMap mistakes;
     artMap articles;
     footMap footnotes;
     histMap historic;
+    std::map<std::wstring, size_t> stopDic;
 
   //  orthoMap orthos;
     std::wofstream error;
@@ -236,6 +270,9 @@ protected:
     size_t formulaId;
     size_t artId;
     size_t wordId;
+  
+  // Russian locale
+    std::locale russian;
 
     partMap::iterator curPart;
     tileMap::iterator curTile;
@@ -245,6 +282,7 @@ protected:
     std::vector<std::wstring> tagsBI;
     std::vector<std::wstring> tagsSpecial;
     std::vector<std::wstring> tagsAccents;
+    std::vector<std::wstring> tagsTitle;
 
 //// tmp
     std::map<size_t, size_t> wordIds;
@@ -256,6 +294,7 @@ protected:
     void loadSearchData(bool loadSearch = false);
     void loadHistoric();
     void loadDic(const std::wstring& dict);
+    void loadStopDic(const std::wstring& dict);
 
     void makeSQL();
     void makePartsTable(std::wofstream& result);
@@ -268,6 +307,13 @@ protected:
     void makeHistoricTable(std::wofstream& result);
     void makeWordsTable(std::wofstream& result);
     void makeArticlesTable(std::wofstream& result);
+    void makeMistakesTable(std::wofstream& result);
+
+    void processComments();
+    void processIndex();
+    void processMistakes();
+
+    void printArticles();
 
     void prepareOrthoKey(std::wstring& key);
     void prepareTitle(std::wstring& title);
@@ -278,12 +324,19 @@ protected:
     std::wstring getPureArticle(const std::wstring& art, bool full = false);
     std::wstring getSpecMarkedArticle(const std::wstring& art);
     std::wstring getPureWord(const std::wstring& word);
+    std::vector<std::wstring> getWordsForIndex(const std::wstring& word, size_t& offset, size_t &len, bool title = false);
+    bool isEqualToTitle(const std::wstring& word, const std::wstring& title);
+    std::vector<std::wstring> addWordToIndex(artMap::iterator ait, const std::wstring& key, const size_t& pos, const size_t& start, const size_t& utf_len, const wchar_t type);
+    std::vector<std::wstring> addTitleToIndex(artMap::iterator ait);
+    void removeParentheses(std::wstring& str);
+    void cutTail(std::wstring& str);
+    void cutHead(std::wstring& str);
 
     size_t getParaNum(const std::wstring& rest);
     std::wstring getRuleNum(const std::wstring& rest);
-    std::wstring getPara(const std::wstring& a, std::vector<size_t>& paraVct);
+    void getPara(const std::wstring& article, const std::wstring& pure, std::vector<size_t>& paraVct, substMap& substs);
     void getOrthos(const std::wstring& article, const std::wstring& pure, const size_t& src_len, const std::vector<size_t>& paraVct, std::vector<size_t>& orthos, substMap& substs);
-    void getFormulas(const std::wstring& article, const std::wstring& pure, const size_t& src_len, const std::vector<size_t>& paraVct, std::vector<size_t>& orthos, std::vector<size_t>& formulas, substMap& substs);
+    void getFormulas(const std::wstring& article, const std::wstring& pure, const size_t& src_len, const std::vector<size_t>& paraVct, std::vector<size_t>& orthos, std::vector<size_t>& formulas, substMap& substs, dummyVct& index);
     void getHistoric(const std::wstring& pure, std::vector<size_t>& histvct);
     void getTags(const std::wstring& text, const std::wstring& tag, std::vector<size_t>& tagsVct);
     size_t getRuleId(const size_t& para, const std::wstring& Num);
@@ -291,6 +344,7 @@ protected:
     std::wstring getRestForPara(const std::wstring& Rest, const size_t& id_para);
     size_t getSearchMinLen(const std::wstring& str);
     size_t getPureLen(const std::wstring& pure);
+    void correctSubst(substMap& subst);
 
     std::vector<std::wstring> split(const std::wstring& str, const wchar_t delim);
     size_t shiftLeft(const std::wstring& afull, size_t start);
@@ -308,7 +362,10 @@ protected:
     std::vector<size_t> splitValues(const std::wstring& str);
 
     wordMap::iterator findWord(const size_t& id);
-
+    bool IsPair(size_t ortho_id, size_t formula_id);
+    bool IsActiveOrtho(size_t formula_id);
+    size_t getUtfLen(const std::wstring& str, const size_t&start, const size_t& len);
+    void shiftWords(artMap::iterator& ait, const size_t& begin, const size_t& shift1, const size_t& end, const size_t& shift2);
 };
 
 #endif //__KHPARSER_H_

@@ -227,7 +227,7 @@ void COROSSParser::addWord(const std::wstring& str) {
             wordMap::iterator wit = words.find(word_str);
             if (wit == words.end()) {
                 artIdVct av;
-                word cw = {id, isTitle, av};
+                word cw = {id, av};
                 words.insert(std::pair<std::wstring, word>(word_str, cw));
             }
             else {
@@ -248,7 +248,8 @@ void COROSSParser::addArticle2Word(const std::wstring& str) {
                 wit = findWord(lossit->second);
         }
         if (wit != words.end()) {
-            wit->second.arts.push_back(vct[1]);
+            place cp = { vct[1], vct[2], vct[3] };
+            wit->second.arts.push_back(cp);//vct[1]);
         }
     }
 }
@@ -365,8 +366,31 @@ std::vector<size_t> COROSSParser::splitValues(const std::wstring& str) {
         std::wstring tmp(str.substr(pos + str_values.length(), str.rfind(L");") - (pos + str_values.length())));
         size_t id = std::stoi(tmp);
         vct.push_back(id);
-        id = std::stoi(tmp.substr(tmp.find(L",") + 1));
-        vct.push_back(id);
+        pos = tmp.find(L",");
+        while (pos != std::wstring::npos) {
+            id = std::stoi(tmp.substr(pos + 1));
+            vct.push_back(id);
+            pos = tmp.find(L",", pos + 1);
+        }
     }
     return vct;
+}
+
+void COROSSParser::loadStopDic(const std::wstring& dict) {
+    std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
+    // load data to search in articles
+    std::wifstream stop(dict, std::wifstream::binary);
+
+    if (stop.is_open()) {
+        stop.imbue(loc);
+        stop.seekg(3);
+        while (!stop.eof()) {
+            std::wstring str(L"");
+            std::getline(stop, str);
+            if (str.length() == 0)
+                continue;
+            stopDic.insert(std::pair<std::wstring, size_t>(str, 1));
+        }
+        stop.close();
+    }
 }

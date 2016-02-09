@@ -1,9 +1,11 @@
 #include "stdafx.h"
 
-#include <locale.h>
 #include <fstream>
 #include <codecvt>
 #include <regex>
+#include <locale>
+#include <cwctype>
+#include <functional>
 
 #include "OROSSParser_i.h"
 #include "COROSSParser.h"
@@ -13,11 +15,12 @@ void COROSSParser::saveData(bool saveSearch)
     std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
     std::wofstream result(L"c:\\IRYA\\result.txt", std::wofstream::binary);
     std::wofstream examples(L"c:\\IRYA\\examples.txt", std::wofstream::binary);
-    std::wofstream arts(L"c:\\IRYA\\articles.txt", std::wofstream::binary);
     std::wofstream rest(L"c:\\IRYA\\form_rest.txt", std::wofstream::binary);
 
     std::wstring caret(L"\n");
     std::wstring tab(L"\t");
+    std::wstring para_b(L"<p>");
+    std::wstring para_e(L"</p>");
 
     if (result.is_open()) {
         result.imbue(loc);
@@ -115,7 +118,8 @@ void COROSSParser::saveData(bool saveSearch)
         saveForSearch();
     }
 
-    if (arts.is_open()) {
+
+/*    if (arts.is_open()) {
         arts.imbue(loc);
         examples.imbue(loc);
         wordMap::iterator wit = words.begin();
@@ -134,7 +138,7 @@ void COROSSParser::saveData(bool saveSearch)
             }
         }
         arts.close();
-    }
+    }*/
 }
 
 void COROSSParser::saveForSearch()
@@ -243,13 +247,17 @@ void COROSSParser::makeSQL()
 {
     std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
     std::wofstream result_contents(L"c:\\IRYA\\import_contents.sql", std::wofstream::binary);
-    std::wofstream result(L"c:\\IRYA\\import.sql", std::wofstream::binary);
+    std::wofstream result_words(L"c:\\IRYA\\import_words.sql", std::wofstream::binary);
+    std::wofstream result_articles(L"c:\\IRYA\\import_articles.sql", std::wofstream::binary);
+    std::wofstream result_mistakes(L"c:\\IRYA\\import_mistakes.sql", std::wofstream::binary);
 
     std::wstring caret(L"\n");
 
-    if (result.is_open() && result_contents.is_open()) {
-        result.imbue(loc);
+    if (result_words.is_open() && result_articles.is_open() && result_contents.is_open() && result_mistakes.is_open()) {
+        result_words.imbue(loc);
+        result_articles.imbue(loc);
         result_contents.imbue(loc);
+        result_mistakes.imbue(loc);
         makePartsTable(result_contents);
         makeTileTable(result_contents);
         makeParaTable(result_contents);
@@ -258,10 +266,13 @@ void COROSSParser::makeSQL()
         makeFormulaTable(result_contents); 
         makeFootNotesTable(result_contents);
         makeHistoricTable(result_contents);
-        makeWordsTable(result);
-        makeArticlesTable(result);
-        result.close();
+        makeWordsTable(result_words);
+        makeMistakesTable(result_mistakes);
+        makeArticlesTable(result_articles);
+        result_words.close();
+        result_articles.close();
         result_contents.close();
+        result_mistakes.close();
     }
 }
 
@@ -519,7 +530,6 @@ void COROSSParser::makeWordsTable(std::wofstream& result)
 {
     std::wstring str(L"\nCREATE TABLE IF NOT EXISTS words (\n\
     id int(11) NOT NULL,\n\
-    title int(10) NOT NULL,\n\
     word varchar(256) NOT NULL,\n\
     PRIMARY KEY (id) \n\
     );\n\n");
@@ -529,7 +539,10 @@ void COROSSParser::makeWordsTable(std::wofstream& result)
     str.append(L"\nCREATE TABLE IF NOT EXISTS words_articles (\n\
     id int(11) NOT NULL,\n\
     id_article int(11) NOT NULL,\n\
-    PRIMARY KEY (id, id_article) \n\
+    start int(11) NOT NULL, \n\
+    len int(11) NOT NULL, \n\
+    title int(10) NOT NULL,\n\
+    PRIMARY KEY (id, id_article, start) \n\
     );\n\n");
     result.write(str.c_str(), str.length());
 
@@ -542,8 +555,8 @@ void COROSSParser::makeWordsTable(std::wofstream& result)
         str.append(L"\n\
     VALUES (");
         str.append(std::to_wstring(wit->second.id/*idx*/));
-        str.append(L",");
-        str.append(std::wstring(1, wit->second.isTitle));
+//        str.append(L",");
+//        str.append(std::wstring(1, wit->second.isTitle));
         str.append(L",'");
         str.append(wit->first);
         str.append(L"');\n");
@@ -557,7 +570,13 @@ void COROSSParser::makeWordsTable(std::wofstream& result)
     VALUES (");
             str.append(std::to_wstring(wit->second.id /*idx*/));
             str.append(L",");
-            str.append(std::to_wstring(*avt));
+            str.append(std::to_wstring(avt->id));
+            str.append(L",");
+            str.append(std::to_wstring(avt->start));
+            str.append(L",");
+            str.append(std::to_wstring(avt->len));
+            str.append(L",");
+            str.append(std::wstring(1, avt->isTitle));
             str.append(L");\n");
             result.write(str.c_str(), str.length());
         }
@@ -569,7 +588,6 @@ void COROSSParser::makeArticlesTable(std::wofstream& result)
 {
     //    id_word int(11) NOT NULL,\n\
     
-    std::wstring art_id_1(L"art_id=\"1\"");
     std::wstring str(L"\nCREATE TABLE IF NOT EXISTS articles (\n\
     id int(11) NOT NULL,\n\
     title varchar(256) NOT NULL,\n\
@@ -639,8 +657,8 @@ void COROSSParser::makeArticlesTable(std::wofstream& result)
             std::wstring pattern(L"");
             switch (i) {
                 case 0: pattern.append(L"formulas"); break;
-                case 1: pattern.append(L"rules_"); break;
-                case 2: pattern.append(L"paras_"); break;
+                case 1: pattern.append(L"rules"); break;
+                case 2: pattern.append(L"paras"); break;
             }
             getTags(ait->second.text, pattern, tags);
             std::vector<size_t>::iterator it = tags.begin();
@@ -709,7 +727,7 @@ VALUES (");
         str.append(L",'");
         str.append(ait->second.title);
         str.append(L"','");
-        std::wstring a(ait->second.text);
+/*        std::wstring a(ait->second.text);
         size_t pos = a.find(L"#rules_");
         while (pos != std::wstring::npos) {
             a.insert(pos + 6, std::to_wstring(ait->second.id));
@@ -726,8 +744,8 @@ VALUES (");
             a.replace(pos, art_id_1.length(), art_id);
             pos = a.find(art_id_1, pos + 1);
         }
-
-        str.append(a);//ait->second.text);
+        */
+        str.append(ait->second.text);
         str.append(L"','");
         str.append(ait->second.rtf);
         str.append(L"','");
@@ -742,16 +760,16 @@ void COROSSParser::getTags(const std::wstring& text, const std::wstring& tag, st
 {
     std::wstring pattern(L"\\#");
     pattern.append(tag);
-    pattern.append(L"(\\d+)");
+    pattern.append(L"(\\d+)_(\\d+)");
     std::wregex e(pattern);
     std::wsmatch cm;    // same as std::match_results<const char*> cm;
     std::wstring a(text);
     while (std::regex_search(a.cbegin(), a.cend(), cm, e)) {
-        if (std::find(tagsVct.begin(), tagsVct.end(), std::stol(cm[1])) == tagsVct.end())
-            tagsVct.push_back(std::stol(cm[1]));
+        if (std::find(tagsVct.begin(), tagsVct.end(), std::stol(cm[2])) == tagsVct.end())
+            tagsVct.push_back(std::stol(cm[2]));
         a = cm.suffix().str();
     }
-    if (tagsVct.size() == 0 && tag.find(L"_") != std::wstring::npos) {
+/*    if (tagsVct.size() == 0 && tag.find(L"_") != std::wstring::npos) {
         std::wstring pattern(L"\\#");
         pattern.append(tag);
         pattern.insert(pattern.find(L"_"), L"\\d+");
@@ -764,7 +782,7 @@ void COROSSParser::getTags(const std::wstring& text, const std::wstring& tag, st
                 tagsVct.push_back(std::stol(cm[1]));
             a = cm.suffix().str();
         }
-    }
+    }*/
 }
 
 void COROSSParser::makeFootNotesTable(std::wofstream& result)
@@ -852,10 +870,68 @@ VALUES (");
     }
 }
 
+void COROSSParser::makeMistakesTable(std::wofstream& result) {
+
+    std::wstring str(L"\nCREATE TABLE IF NOT EXISTS mistakes (\n\
+    id int(11) NOT NULL,\n\
+    mistake varchar(256) NOT NULL,\n\
+    PRIMARY KEY (id) \n\
+    );\n\n");
+    result.write(str.c_str(), str.length());
+
+    str.clear();
+    str.append(L"\nCREATE TABLE IF NOT EXISTS words_mistakes (\n\
+    id int(11) NOT NULL,\n\
+    id_mistake int(11) NOT NULL,\n\
+    PRIMARY KEY (id, id_mistake) \n\
+    );\n\n");
+    result.write(str.c_str(), str.length());
+
+    mistakeMap::iterator mit = mistakes.begin();
+    for (; mit != mistakes.end(); ++mit) {
+        str.clear();
+        str.append(L"INSERT INTO mistakes (id, mistake) ");
+        str.append(L"\n\
+    VALUES (");
+        str.append(std::to_wstring(mit->second.id));
+        str.append(L",'");
+        str.append(mit->first);
+        str.append(L"');\n");
+        result.write(str.c_str(), str.length());
+
+        std::vector<size_t>::iterator wvt = mit->second.wordIds.begin();
+        for (wvt; wvt != mit->second.wordIds.end(); ++wvt) {
+            str.clear();
+            str.append(L"INSERT INTO words_mistakes (id, id_mistake) ");
+            str.append(L"\n\
+    VALUES (");
+            str.append(std::to_wstring(mit->second.id));
+            str.append(L",");
+            str.append(std::to_wstring((*wvt)));
+            str.append(L");\n");
+            result.write(str.c_str(), str.length());
+        }
+    } 
+}
+
 void COROSSParser::presaveArticles() {
-    std::wstring sm_komment(L"(\\s*[Ñ|ñ]ì\\.\\s*êîììåíò\\.\\s*ê\\s*)([_\\u00B9\\u00B2\\u00B3à-ÿ¨¸]+[-|…]*\\s*)([_\\u00B9\\u00B2\\u00B3à-ÿ¨¸]*)");//
-    std::wstring smotri(L"(\\s*[Ñ|ñ]ì\\.\\s*)([_\\u00B9\\u00B2\\u00B3à-ÿ¨¸]+[-|…]*\\s*[_\\u00B9\\u00B2\\u00B3à-ÿ¨¸]*)");//L"\\s[Ñ|ñ]ì\\.\\s*");
+    processIndex();
+    processComments();
+    wordId = 1;
+    wordMap::iterator wit = words.begin();
+    for (wit; wit != words.end(); ++wit) {
+        wit->second.id = wordId;
+        wordId++;
+    }
+    processMistakes();
+    printArticles();
+}
+
+void COROSSParser::processComments() {
+    std::wstring sm_komment(L"(\\s*[Ñ|ñ]ì\\.\\s*êîììåíò\\.\\s*ê\\s*)([_\\u00B9\\u00B2\\u00B3à-ÿ¨¸]+[-]*[…]*[\\.]*\\s*)([_\\u00B9\\u00B2\\u00B3à-ÿ¨¸]*)");//
+    std::wstring smotri(L"(\\s*[Ñ|ñ]ì\\.\\s*)([_\\u00B9\\u00B2\\u00B3à-ÿ¨¸]+[-]*[…]*[\\.]*\\s*[_\\u00B9\\u00B2\\u00B3à-ÿ¨¸]*)");//L"\\s[Ñ|ñ]ì\\.\\s*");
     artMap::iterator it = articles.begin();
+    std::wstring romb(L"</p><p>\u25ca");
 //    std::wregex search_komm(sm_komment);
 //    std::wregex search(smotri);
 
@@ -886,19 +962,29 @@ void COROSSParser::presaveArticles() {
                     }
                     std::wstring pref(it->second.text.substr(begin, i));
                     if (pref == L"<i>") {
-                        size_t pi = it->second.text.find(L"</i>", end);
-                        if (pi != std::wstring::npos)
+                        size_t pi = it->second.text.find(L"</i>", begin);
+                        if (pi != std::wstring::npos && pi >= end)
                             end = pi + 4;
                     }
-                    word = getPureWord(word);
+//                    word = getPureWord(word);
                     std::wstring key(word);
+                    key = getPureWord(key);
                     prepareOrthoKey(key);
+                    //
+                    word = it->second.text.substr(begin, end - begin);
+                    size_t pos = word.find(romb);
+                    if (pos != std::wstring::npos) {
+                        end -= romb.length() + 1;
+                        word = word.substr(0, pos);
+                    }
+                    prepareTitle(word);
+
                     wordMap::iterator wit = words.find(key);
                     if (wit != words.end()) {
                         artIdVct::iterator ait = wit->second.arts.begin();
                         for (ait; ait != wit->second.arts.end(); ++ait) {
-                            article a = articles[*ait];
-                            if (word == a.title && a.id != it->second.id) {
+                            article a = articles[ait->id];
+                            if (a.id != it->second.id && isEqualToTitle(word, a.title) == true) {
                                 std::vector<size_t>::iterator cit = it->second.comments.begin();
                                 for (cit; cit != it->second.comments.end(); ++cit) {
                                     if ((*cit) == a.id)
@@ -915,8 +1001,12 @@ void COROSSParser::presaveArticles() {
                                 subst.append(L"_");
                                 subst.append(std::to_wstring(a.id));
                                 subst.append(L"\" data-parent=\"#accordionComments\" data-toggle=\"collapse\" style=\"text-transform:none\" >");
-                                end += subst.length();
+                                // shift words
+                                size_t utf_begin = getUtfLen(it->second.text, 0, begin);
+                                size_t utf_end = getUtfLen(it->second.text, 0, end);
+                                shiftWords(it, utf_begin, subst.length(), utf_end, 5);
                                 it->second.text.insert(begin, subst);
+                                end += subst.length();
                                 if (end < it->second.text.length())
                                     it->second.text.insert(end, L"</a >");
                                 else
@@ -970,4 +1060,281 @@ void COROSSParser::presaveArticles() {
             }
         }
     } */
+}
+
+std::vector<std::wstring> COROSSParser::addWordToIndex(artMap::iterator ait, const std::wstring& interval, const size_t& pos, const size_t& start, const size_t& utf_len, const wchar_t type) {
+
+    std::wstring key(interval.substr(start, pos - start));
+
+    size_t offset = 0;
+    size_t len = 0;
+
+    std::wstring under_b(L"<u>");
+    std::wstring under_e(L"</u>");
+    std::wstring accent(L"&#x301");
+
+    key = getSpecMarkedArticle(key);
+    std::vector<std::wstring> vw = getWordsForIndex(key, offset, len);
+    if (offset >= under_b.length() &&
+        interval.substr(start + offset - under_b.length(), under_b.length()) == under_b) {
+        offset -= under_b.length();
+        len += under_b.length();
+    }
+    if (key.length() - (offset + len) > under_e.length()
+        && interval.substr(start + offset + len, under_e.length()) == under_e)
+        len += under_e.length();
+    if (key.length() - (offset + len) > accent.length() &&
+        interval.substr(start + offset + len, accent.length()) == accent)
+        len += accent.length();
+
+    size_t key_utf_len = getUtfLen(key, offset, len);
+    for (auto it = vw.begin(); it != vw.end(); ++it) {
+        if (it == vw.begin()) {
+            key = getPureWord(key.substr(offset, len));
+            removeParentheses(key);
+        }
+        else
+            key = getPureWord((*it));
+
+        (*it) = key;
+        //                    prepareOrthoKey(key);
+        if (key.length() > 0) {
+//            prepareOrthoKey(key);
+            prepareTitle(key);
+            cutTail(key);
+
+            std::transform(key.begin(), key.end(), key.begin(),
+                std::bind2nd(std::ptr_fun(&std::tolower<wchar_t>), russian));
+            if (stopDic.find(key) == stopDic.end()) {
+                place cp = { ait->second.id, utf_len + getUtfLen(interval, 0, start + offset), key_utf_len, type };
+                wordMap::iterator wit = words.find(key);
+                if (wit == words.end()) {
+                    artIdVct av;
+                    av.push_back(cp);
+                    word cw = { wordId, av };
+                    words.insert(std::pair<std::wstring, word>(key, cw));
+                    ait->second.words.push_back(wordId);
+                    wordId++;
+                }
+                else {
+                    if (std::find(ait->second.words.begin(), ait->second.words.end(), wit->second.id) == ait->second.words.end())
+                        ait->second.words.push_back(wit->second.id);
+                    bool add = true;
+                    for (auto p = wit->second.arts.begin(); p != wit->second.arts.end(); ++p) {
+                        if (cp.id == (*p).id && cp.start == (*p).start && cp.len == (*p).len) {
+                            add = false;
+                            break;
+                        }
+                    }
+                    if (add)
+                        wit->second.arts.push_back(cp);
+
+//                    ait->second.words.push_back(wit->second.id);
+//                    wit->second.arts.push_back(cp);
+                }
+            }
+        }
+    }
+    return vw; //key;
+}
+
+std::vector<std::wstring> COROSSParser::addTitleToIndex(artMap::iterator ait) {
+
+    if (ait->second.title.length() == 0)
+        return (std::vector<std::wstring>());
+
+    std::wstring interval(ait->second.text.substr(ait->second.index[0].start, ait->second.index[0].len));
+    std::wstring key(interval);
+
+    size_t offset = 0;
+    size_t len = 0;
+    size_t start = 0;
+    size_t utf_len = getUtfLen(ait->second.text, 0, ait->second.index[0].start);
+
+    std::wstring under_b(L"<u>");
+    std::wstring under_e(L"</u>");
+    std::wstring accent(L"&#x301");
+
+    key = getSpecMarkedArticle(key);
+    std::vector<std::wstring> vw = getWordsForIndex(key, offset, len, true);
+        
+    if (offset >= under_b.length() &&
+        interval.substr(start + offset - under_b.length(), under_b.length()) == under_b) {
+        offset -= under_b.length();
+        len += under_b.length();
+    }
+    if (key.length() - (offset + len) > under_e.length()
+        && interval.substr(start + offset + len, under_e.length()) == under_e)
+        len += under_e.length();
+    if (key.length() - (offset + len) > accent.length() &&
+        interval.substr(start + offset + len, accent.length()) == accent)
+        len += accent.length();
+
+    size_t key_utf_len = getUtfLen(key, offset, len);
+    for (auto it = vw.begin(); it != vw.end(); ++it) {
+        if (it == vw.begin()) {
+            key = getPureWord(key.substr(offset, len));
+            removeParentheses(key);
+        }
+        else
+            key = getPureWord((*it));
+
+        (*it) = key;
+        //                    prepareOrthoKey(key);
+        if (key.length() > 0) {
+            prepareTitle(key);
+            cutTail(key);
+            std::transform(key.begin(), key.end(), key.begin(),
+                std::bind2nd(std::ptr_fun(&std::tolower<wchar_t>), russian));
+            if (stopDic.find(key) == stopDic.end()) {
+//                place cp = { ait->second.id, getUtfLen(ait->second.text, 0, ait->second.index[0].start + offset), key_utf_len, L'1' };
+                place cp = { ait->second.id, 0, 0, L'1' };
+                wordMap::iterator wit = words.find(key);
+                if (wit == words.end()) {
+                    artIdVct av;
+                    av.push_back(cp);
+                    word cw = { wordId, av };
+                    words.insert(std::pair<std::wstring, word>(key, cw));
+                    ait->second.words.push_back(wordId);
+                    wordId++;
+                }
+                else {
+                    if (std::find(ait->second.words.begin(), ait->second.words.end(), wit->second.id) == ait->second.words.end())
+                        ait->second.words.push_back(wit->second.id);
+                    bool add = true;
+                    for (auto p = wit->second.arts.begin(); p != wit->second.arts.end(); ++p) {
+                        if (cp.id == (*p).id && cp.start == (*p).start && cp.len == (*p).len) {
+                            add = false;
+                            break;
+                        }
+                    }
+                    if (add)
+                        wit->second.arts.push_back(cp);
+                }
+            }
+        }
+    }
+    return vw; //key;
+
+}
+
+void COROSSParser::processIndex() {
+
+    std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
+
+    std::wstring caret(L"\n");
+    std::wstring tab(L"\t");
+    
+    std::wofstream arts(L"c:\\IRYA\\articles.txt", std::wofstream::binary);
+    if (arts.is_open()) {
+        arts.imbue(loc);
+        artMap::iterator ait = articles.begin();
+        for (; ait != articles.end(); ++ait) {
+            arts.write(L"-----------------------", wcslen(L"-----------------------"));
+            arts.write(caret.c_str(), caret.length());
+            addTitleToIndex(ait);
+            dummyVct::iterator dit = ait->second.index.begin();
+            for (dit; dit != ait->second.index.end(); ++dit) {
+                std::wstring interval = ait->second.text.substr(dit->start, dit->len);
+                size_t pos = interval.find(L' ');
+                size_t start = 0;
+                size_t utf_len = getUtfLen(ait->second.text, 0, dit->start);
+                while (pos != std::wstring::npos) {
+                    std::vector<std::wstring> vw = addWordToIndex(ait, interval, pos, start, utf_len, dit->type == TITLE_WORD ? L'1' : L'2');
+                    if (vw.size() != 0) {
+                        for (auto w = vw.begin(); w != vw.end(); ++w) {
+                            arts.write((*w).c_str(), (*w).length());
+                            arts.write(caret.c_str(), caret.length());
+                        }
+                    }
+                    start = pos + 1;
+                    if (start > interval.length())
+                        break;
+                    pos = interval.find(L' ', start);
+                }
+                if (start == 0 && dit->type == TITLE_WORD)
+                    continue; // do not add title another time
+                if (start < interval.length()) {
+                    std::vector<std::wstring> vw = addWordToIndex(ait, interval, pos, start, utf_len, dit->type == TITLE_WORD ? L'1' : L'2');
+                    if (vw.size() != 0) {
+                        for (auto w = vw.begin(); w != vw.end(); ++w) {
+                            arts.write((*w).c_str(), (*w).length());
+                            arts.write(caret.c_str(), caret.length());
+                        }
+                    }
+                }
+            }
+            // sort article's word index
+            std::sort(ait->second.words.begin(), ait->second.words.end());
+            std::vector<size_t>::iterator words_it = std::unique(ait->second.words.begin(), ait->second.words.end());
+            ait->second.words.resize(std::distance(ait->second.words.begin(), words_it));
+
+//            html.write(L"<p>-----------------------</p>", wcslen(L"<p>-----------------------</p>"));
+//            html.write(para_b.c_str(), para_b.length());
+//            html.write(ait->second.text.c_str(), ait->second.text.length());
+//            html.write(para_e.c_str(), para_e.length());
+        }
+//        html.close();
+        arts.close();
+    }
+}
+
+void COROSSParser::shiftWords(artMap::iterator& ait, const size_t& begin, const size_t& shift1, const size_t& end, const size_t& shift2) {
+    std::vector<size_t>::iterator wait = ait->second.words.begin();
+    for (wait; wait != ait->second.words.end(); ++wait) {
+        wordMap::iterator wit = findWord((*wait));
+        if (wit != words.end()) {
+            for (artIdVct::iterator it = wit->second.arts.begin(); it != wit->second.arts.end(); ++it) {
+                if (it->id == ait->second.id)
+                    if (it->start >= end)
+                        it->start += shift1 + shift2;
+                    else if (it->start >= begin)
+                        it->start += shift1;
+//                    else if (it->start == begin)
+//                        it->start = end - it->len;
+            }
+        }
+    }
+}
+
+void COROSSParser::printArticles() {
+    std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
+    std::wstring caret(L"\n");
+    std::wstring para_b(L"<p>");
+    std::wstring para_e(L"</p>");
+
+    std::wofstream html(L"c:\\IRYA\\articles.html", std::wofstream::binary);
+    if (html.is_open()) {
+        html.imbue(loc);
+        artMap::iterator ait = articles.begin();
+        for (; ait != articles.end(); ++ait) {
+            html.write(L"<p>-----------------------</p>", wcslen(L"<p>-----------------------</p>"));
+            html.write(para_b.c_str(), para_b.length());
+            html.write(ait->second.text.c_str(), ait->second.text.length());
+            html.write(para_e.c_str(), para_e.length());
+        }
+        html.close();
+    }
+}
+
+void COROSSParser::processMistakes() {
+    size_t mistId = 1;
+    for (auto wit = words.begin(); wit != words.end(); ++wit) {
+        if (wit->first.find(L' ') != std::wstring::npos || wit->first.find(L'-') != std::wstring::npos) {
+            std::wstring mist(wit->first);
+            prepareOrthoKey(mist);
+            mistakeMap::iterator mit = mistakes.find(mist);
+            if (mit == mistakes.end()) {
+                mistake cm = {mistId};
+                cm.wordIds.push_back(wit->second.id);
+                mistakes.insert(std::pair<std::wstring, mistake>(mist, cm));
+                mistId++;
+            }
+            else {
+                if (std::find(mit->second.wordIds.begin(), mit->second.wordIds.end(), wit->second.id) == mit->second.wordIds.end()) {
+                    mit->second.wordIds.push_back(wit->second.id);
+                }
+            }
+        }
+    }
 }
