@@ -68,7 +68,7 @@ Sub ParseOROSS()
    
     Dim objParser As Object
     Set objParser = New OROSSParser
-    res = objParser.Init()
+    res = objParser.Init(OROSSParserLib.Create)
     
     Set objRegExpRule = ruleRegEx()
     Set objRegExpRuleSimp = ruleSimpRegEx()
@@ -88,7 +88,7 @@ Sub ParseOROSS()
     footNote = 1
 '    If orthoWait Then
     
-    For i = 1 To 1 ' cp
+    For i = 1 To 1 'cp
         If para.Range.Characters.count > 1 Then
             Call CheckPara(para, objParser)
         End If
@@ -100,8 +100,8 @@ Sub ParseOROSS()
 
  '   End If
     
-    Set theDoc = Documents.Open("c:\IRYA\errors.doc") '"c:\IRYA\OROS_2014 гранки март31-апр28 (1).doc"
-
+   ' Set theDoc = Documents.Open("c:\IRYA\OROS_2014 гранки март31-апр28 (1).doc") '"c:\IRYA\errors.doc")
+    Set theDoc = Documents.Open("c:\IRYA\errors.doc")
     Set para = theDoc.Paragraphs.item(1)
     cp = theDoc.Paragraphs.count
     
@@ -453,6 +453,7 @@ Function DoReplacements(text As String) As String
     
     Next i
     text = Replace(text, "))", ")")
+    text = Replace(text, "((", "(")
     text = Trim$(text)
         
     DoReplacements = text
@@ -607,7 +608,7 @@ Sub addFormula(para As Paragraph, prefix As Boolean, objParser As Object)
             If dcomma = 0 Then
 '                If Trim$(para.Range.Words(i).text) = "(" Then
                 If InStr(Trim$(para.Range.words(i).text), "(") Then
-                    If para.Range.words(i + 1).Italic And Trim$(para.Range.words(i + 1).text) <> "слово" Then
+                    If para.Range.words(i + 1).Italic And Trim$(para.Range.words(i + 1).text) <> "слово" And Trim$(para.Range.words(i + 1).text) <> "приставка" Then
 '                        If Trim$(para.Range.words(i - 1).text) = ":" And (Trim$(para.Range.words(i - 2).text) = "проверка" And i - 4 > 1) Then
 '                            orthogr = ConvertText(para.Range.words, 1, i - 4)
 '                            proverka = True
@@ -640,7 +641,7 @@ Sub addFormula(para As Paragraph, prefix As Boolean, objParser As Object)
             Else
 '                If Trim$(para.Range.Words(j).text) = "(" Then
                 If InStr(Trim$(para.Range.words(j).text), "(") Then
-                    If para.Range.words(j + 1).Italic And Trim$(para.Range.words(j + 1).text) <> "слово" Then
+                    If para.Range.words(j + 1).Italic And Trim$(para.Range.words(j + 1).text) <> "слово" And Trim$(para.Range.words(j + 1).text) <> "приставка" Then
   '                      If Trim$(para.Range.words(j - 1).text) = ":" And (Trim$(para.Range.words(j - 2).text) = "проверка" And j - 4 > i + 1) Then
   '                          formula = ConvertText(para.Range.words, i + 1, j - 4)
   '                          proverka = True
@@ -694,8 +695,16 @@ Function CheckArticle(para As Paragraph, oParser As Object) As Paragraph
         For i = 1 To wc
             If Not para.Range.words(i).Bold And Not Trim$(para.Range.words(i)) = "," And Not Trim$(para.Range.words(i)) = "-" And Not Trim$(para.Range.words(i)) = "и" Then
                 noAccent = True
-                title = ConvertText(para.Range.words, 1, i - 1, noAccent)
+                title = ConvertText(para.Range.words, 1, i - 1) ', noAccent)
                 Exit For
+            Else
+                If Trim$(para.Range.words(i)) = "и" Then
+                    If Not para.Range.words(i + 1).Bold Then
+                        noAccent = True
+                        title = ConvertText(para.Range.words, 1, i - 1) ', noAccent)
+                        Exit For
+                    End If
+                End If
             End If
         Next i
         'Call para.Range.ExportFragment("c:\IRYA\tmp.txt", wdFormatUnicodeText)
@@ -703,7 +712,8 @@ Function CheckArticle(para As Paragraph, oParser As Object) As Paragraph
         Article = ConvertText(para.Range.words, 1, 0)
         Set nextPara = para.Next()
         If Not nextPara Is Nothing Then
-            If nextPara.Range.words(1).Characters(1) = ChrW$(&H25CA) Then '  Or Not nextPara.Range.Words(1).Bold Then
+'            If nextPara.Range.words(1).Characters(1) = ChrW$(&H25CA) Then '  Or Not nextPara.Range.Words(1).Bold Then
+            If Mid$(Trim$(nextPara.Range.text), 1, 1) = ChrW$(&H25CA) Then '  Or Not nextPara.Range.Words(1).Bold Then
                 Article = Article & "</p><p>" & ConvertText(nextPara.Range.words, 1, 0)
                 Set nextPara = nextPara.Next()
             End If
