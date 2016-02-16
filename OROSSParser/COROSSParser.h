@@ -20,6 +20,10 @@
 #define TITLE_WORD 1
 #define LINK_WORD 2
 #define ARTICLE_WORD 3
+#define FORMULA_EXAMPLE 4
+#define RULE_WORD 5
+#define FOOTNOTE_WORD 6
+#define PARA_WORD 7
 
 struct dummy {
     size_t start;
@@ -98,6 +102,7 @@ typedef std::map<size_t, footnote> footMap;
 struct formula {
     size_t id;
     std::wstring name;
+    std::wstring rtf;
     std::wstring search;
     std::wstring example;
     std::wstring rest;
@@ -117,6 +122,7 @@ struct orthogr {
     size_t para;
     size_t active;
     std::wstring name;
+    std::wstring rtf;
     std::wstring search;
     size_t min_len;
     size_t art_count;

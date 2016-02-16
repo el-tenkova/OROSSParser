@@ -265,7 +265,7 @@ void COROSSParser::makeSQL()
         makeOrthogrTable(result_contents);
         makeFormulaTable(result_contents); 
         makeFootNotesTable(result_contents);
-        makeHistoricTable(result_contents);
+       // makeHistoricTable(result_contents);
         makeWordsTable(result_words);
         makeMistakesTable(result_mistakes);
         makeArticlesTable(result_articles);
@@ -454,6 +454,7 @@ void COROSSParser::makeOrthogrTable(std::wofstream& result)
     id_para int(11) NOT NULL,\n\
     active BOOLEAN,\n\
     name varchar(256) NOT NULL,\n\
+    rtf varchar(1024) NOT NULL,\n\
     PRIMARY KEY (id) \n\
     );\n\n");
     result.write(str.c_str(), str.length());
@@ -464,7 +465,7 @@ void COROSSParser::makeOrthogrTable(std::wofstream& result)
         orthoMap::iterator ot = parait->second.orthos.begin();
         for (ot; ot != parait->second.orthos.end(); ++ot) {
             str.clear();
-            str.append(L"INSERT INTO orthos (id, id_para, active, name) \n\
+            str.append(L"INSERT INTO orthos (id, id_para, active, name, rtf) \n\
         VALUES (");
             str.append(std::to_wstring(ot->second.id));
             str.append(L",");
@@ -473,6 +474,8 @@ void COROSSParser::makeOrthogrTable(std::wofstream& result)
             str.append(std::to_wstring(ot->second.active));
             str.append(L",'");
             str.append(ot->second.name);
+            str.append(L"','");
+            str.append(ot->second.rtf);
             str.append(L"');\n");
             result.write(str.c_str(), str.length());
         }
@@ -487,6 +490,7 @@ void COROSSParser::makeFormulaTable(std::wofstream& result)
     id_para int(11) NOT NULL,\n\
     id_rule int(11) NOT NULL,\n\
     name varchar(1024) NOT NULL,\n\
+    rtf varchar(4096) NOT NULL,\n\
     example varchar(256),\n\
     rest varchar(256),\n\
     is_prefix BOOLEAN, \n\
@@ -502,7 +506,7 @@ void COROSSParser::makeFormulaTable(std::wofstream& result)
             formMap::iterator ft = ot->second.formulas.begin();
             for (ft; ft != ot->second.formulas.end(); ++ft) {
                 str.clear();
-                str.append(L"INSERT INTO formulas (id, id_ortho, id_para, id_rule, name, example, rest, is_prefix) \n\
+                str.append(L"INSERT INTO formulas (id, id_ortho, id_para, id_rule, name, rtf, example, rest, is_prefix) \n\
                 VALUES (");
                 str.append(std::to_wstring(ft->second.id));
                 str.append(L",");
@@ -513,6 +517,8 @@ void COROSSParser::makeFormulaTable(std::wofstream& result)
                 str.append(std::to_wstring(ft->second.rule));
                 str.append(L",'");
                 str.append(ft->second.name);
+                str.append(L"','");
+                str.append(ft->second.rtf);
                 str.append(L"','");
                 str.append(ft->second.example);
                 str.append(L"','");

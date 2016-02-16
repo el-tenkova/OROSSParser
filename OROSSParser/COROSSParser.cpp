@@ -15,8 +15,8 @@
 #define SL_D_RAZD   L"<i>слитно/дефисно/раздельно</i>"
 #define PROVER_GLASN L"<i>провер€ема€ гласна€</i>"
 #define PARA21  21
-#define SAVE_SEARCH false
-#define LOAD_SEARCH true
+#define SAVE_SEARCH true//false
+#define LOAD_SEARCH false//true
 
 //COROSSParser::str_words_articles(L"INSERT INTO words_articles (id, id_article) ");
 
@@ -85,7 +85,7 @@ STDMETHODIMP COROSSParser::Init( modeName Mode, long* hRes )
     mode = Mode;
 
     loadSearchData(LOAD_SEARCH);
-    loadHistoric();
+//    loadHistoric();
     loadStopDic(L"c:\\IRYA\\stop.txt");
     return *hRes;
 }
@@ -171,14 +171,14 @@ STDMETHODIMP COROSSParser::AddPara( long Num, BSTR Name, /* [out, retval]*/ long
         curPara = paras.find(Num);
         curTile->second.paras.push_back(Num);
         if (partId == PART_END) {
-            orthogr co = {orthoId, (size_t)Num, 0, SL_D_RAZD, prepareForSearch(SL_D_RAZD), getSearchMinLen(co.search), 0};
+            orthogr co = {orthoId, (size_t)Num, 0, SL_D_RAZD, toRTF(SL_D_RAZD), prepareForSearch(SL_D_RAZD), getSearchMinLen(co.search), 0};
             std::wstring key(SL_D_RAZD);
             prepareOrthoKey(key);
             curPara->second.orthos.insert(std::pair<std::wstring, orthogr>(key, co));
             orthoId++;
         }
         else if (Num == 21) {
-            orthogr co = {orthoId, (size_t)Num, 0, PROVER_GLASN, prepareForSearch(PROVER_GLASN), getSearchMinLen(co.search), 0};
+            orthogr co = {orthoId, (size_t)Num, 0, PROVER_GLASN, toRTF(PROVER_GLASN), prepareForSearch(PROVER_GLASN), getSearchMinLen(co.search), 0};
             std::wstring key(PROVER_GLASN);
             prepareOrthoKey(key);
             curPara->second.orthos.insert(std::pair<std::wstring, orthogr>(key, co));
@@ -344,13 +344,14 @@ STDMETHODIMP COROSSParser::AddOrthogr( BSTR Orthogr, BSTR Formula, BSTR Example,
     size_t rule_id = getRuleId(num, rule);
 //    formula cf = {formulaId, curPart->second.id != PART_LAST ? form : ortho, example, rest, IsPrefix, ot->second.id, num, rule_id};
 //    formula cf = {formulaId, curPart->second.id != PART_LAST ? form : ortho, prepareForSearch(cf.name), example, Rest, IsPrefix, ot->second.id, num, rule_id};
-    formula cf = {formulaId, L"", L"", example, Rest, (size_t)IsPrefix, 0, ot->second.id, num, rule_id};
+    formula cf = {formulaId, L"", L"", L"", example, Rest, (size_t)IsPrefix, 0, ot->second.id, num, rule_id};
     if (curPart->second.id != PART_LAST && curPara->second.id != PARA21) {
         cf.name = form;
     }
     else {
         cf.name = ortho;
     }
+    cf.rtf = toRTF(cf.name);
     cf.search = prepareForSearch(cf.name);
     cf.min_len = getSearchMinLen(cf.search);
     key.empty();
