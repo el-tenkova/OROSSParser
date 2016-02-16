@@ -391,12 +391,6 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
         pos = tmp.find(L',', pos + 1);
     }
 
-    pos = tmp.find(L'.');
-    while (pos != std::wstring::npos) {
-        tmp.replace(pos, 1, L",*");
-        pos = tmp.find(L',', pos + 1);
-    }
-
     pos = tmp.find(L"\\/");
     while (pos != std::wstring::npos) {
         tmp.replace(pos, 2, L"\\/\\s*");
