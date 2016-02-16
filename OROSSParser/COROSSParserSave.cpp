@@ -986,6 +986,10 @@ void COROSSParser::processComments() {
                     prepareTitle(word);
 
                     wordMap::iterator wit = words.find(key);
+                    if (wit == words.end()) {
+                        // try to find title
+                        wit = words.find(word);
+                    }
                     if (wit != words.end()) {
                         artIdVct::iterator ait = wit->second.arts.begin();
                         for (ait; ait != wit->second.arts.end(); ++ait) {
