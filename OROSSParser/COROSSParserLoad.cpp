@@ -154,8 +154,8 @@ void COROSSParser::loadDic(const std::wstring& dict)
                 continue;
             addItem(type, str);
             type = checkInStr(str);
-//            if (type == Articles_Historic)
-//                break;
+            //            if (type == Articles_Historic)
+            //                break;
         }
         f.close();
     }
@@ -239,7 +239,7 @@ void COROSSParser::addWord(const std::wstring& str) {
 
 void COROSSParser::addArticle2Word(const std::wstring& str) {
     std::vector<size_t> vct = splitValues(str);
-    if (vct.size() == 2) {
+    if (vct.size() == 5) {
         wordMap::iterator wit = findWord(vct[0]);//words.end();
 //        wit--;
         if (wit == words.end()) {
@@ -248,8 +248,14 @@ void COROSSParser::addArticle2Word(const std::wstring& str) {
                 wit = findWord(lossit->second);
         }
         if (wit != words.end()) {
-            place cp = { vct[1], vct[2], vct[3] };
+            place cp = { vct[1], vct[2], vct[3], std::to_wstring(vct[4])[0] };
             wit->second.arts.push_back(cp);//vct[1]);
+        }
+        auto ait = articles.find(vct[1]);
+        if (ait != articles.end()) {
+            ait->second.words.push_back(vct[0]);
+            dummy cd = { vct[2], vct[3] };
+            ait->second.index.push_back(cd);
         }
     }
 }
@@ -316,7 +322,7 @@ void COROSSParser::addArticle(const std::wstring& str) {
     size_t pos = str.find(art_values);
     if (pos != std::wstring::npos) {
 //        std::wstring tmp(str.substr(pos + art_values.length(), str.rfind(L"');") - (pos + art_values.length())));
-        std::wstring tmp(str.substr(pos + art_values.length(), str.rfind(L"',") - (pos + art_values.length())));
+        std::wstring tmp(str.substr(pos + art_values.length(), str.rfind(L"');") - (pos + art_values.length())));
         article ca = { (size_t)std::stoi(tmp) };
         pos = tmp.find(L"'");
         size_t idx = 0;

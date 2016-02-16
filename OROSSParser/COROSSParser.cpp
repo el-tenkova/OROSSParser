@@ -20,7 +20,7 @@
 
 //COROSSParser::str_words_articles(L"INSERT INTO words_articles (id, id_article) ");
 
-STDMETHODIMP COROSSParser::Init( long* hRes )
+STDMETHODIMP COROSSParser::Init( modeName Mode, long* hRes )
 {
     *hRes = S_OK;
     std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
@@ -82,6 +82,8 @@ STDMETHODIMP COROSSParser::Init( long* hRes )
     tagsTitle.push_back(L"<span class=\"title\" >");
     tagsTitle.push_back(L"</span>");
 
+    mode = Mode;
+
     loadSearchData(LOAD_SEARCH);
     loadHistoric();
     loadStopDic(L"c:\\IRYA\\stop.txt");
@@ -97,7 +99,16 @@ STDMETHODIMP COROSSParser::Terminate( long* hRes )
     return S_OK;
 }
 
-STDMETHODIMP COROSSParser::LoadDic(BSTR Dic, /*[out, retval]*/ long *hRes)
+STDMETHODIMP COROSSParser::LoadArticles(BSTR Dic, /*[out, retval]*/ long *hRes)
+{
+    if (paras.size() == 0)
+        loadSearchData(true);
+    loadDic(Dic);
+    *hRes = S_OK;
+    return S_OK;
+}
+
+STDMETHODIMP COROSSParser::LoadWords(BSTR Dic, /*[out, retval]*/ long *hRes)
 {
     if (paras.size() == 0)
         loadSearchData(true);
@@ -372,10 +383,12 @@ STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]
     size_t titleLen = title.length();
     prepareTitle(title);
 
-    art.insert(titleLen, tagsTitle[1]);
-    art.insert(0, tagsTitle[0]);
 
     article ca = {artId, title, art, art, toRTF(art)};
+
+    ca.text.insert(titleLen, tagsTitle[1]);
+    ca.text.insert(0, tagsTitle[0]);
+
     ca.index.push_back({ tagsTitle[0].length(), titleLen, TITLE_WORD });
     titleLen += tagsTitle[0].length() + tagsTitle[1].length();
 

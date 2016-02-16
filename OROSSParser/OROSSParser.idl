@@ -7,6 +7,13 @@
 import "oaidl.idl";
 import "ocidl.idl";
 
+    typedef [v1_enum] enum
+    {
+        Create = 0,
+        Update
+    }modeName;
+
+
     [
         object,
         uuid(6B3F19E1-5F18-48B2-B49D-C411B990AAAF),
@@ -16,7 +23,7 @@ import "ocidl.idl";
     ]
     interface IOROSSParser : IDispatch
     {
-        [id(1), helpstring("method Init")] HRESULT Init([out, retval] long *hRes );
+        [id(1), helpstring("method Init")] HRESULT Init(modeName name, [out, retval] long *hRes );
         [id(2), helpstring("method Terminate")] HRESULT Terminate([out, retval] long *hRes );
         [id(3), helpstring("method AddPart")] HRESULT AddPart( BSTR Name, [out, retval] long *hRes );
         [id(4), helpstring("method AddTile")] HRESULT AddTile( BSTR Name, [out, retval] long *hRes );
@@ -29,7 +36,8 @@ import "ocidl.idl";
         [id(11), helpstring("method AddInfoToRule")] HRESULT AddInfoToRule( BSTR Info, [out, retval] long *hRes );
         [id(12), helpstring("method AddFootNote")] HRESULT AddFootNote( long ID, BSTR Text, [out, retval] long *hRes );
         //
-        [id(13), helpstring("method LoadDic")] HRESULT LoadDic( BSTR Dic, [out, retval] long *hRes );
+        [id(13), helpstring("method LoadArticles")] HRESULT LoadArticles( BSTR Dic, [out, retval] long *hRes );
+        [id(14), helpstring("method LoadWords")] HRESULT LoadWords(BSTR Dic, [out, retval] long *hRes);
     };
 
 [

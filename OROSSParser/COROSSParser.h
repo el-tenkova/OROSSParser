@@ -58,6 +58,8 @@ struct place {
     size_t id; // article id
     size_t start; // position of word in article
     size_t len; // can be more than word's length due to in article wordcan contain dashes
+    size_t group; // group = dummy's number
+    size_t number; // number in group
     wchar_t isTitle; // is word article's title
 };
 typedef std::vector<place> artIdVct;
@@ -210,10 +212,11 @@ public:
       formulaId(1),
       artId(1),
       wordId(1), //!!!
+      mode(Create),
       russian("Russian"),
       error(L"c:\\IRYA\\error.txt", std::wofstream::binary),
       str_words(L"INSERT INTO words (id, word) "),
-      str_words_articles(L"INSERT INTO words_articles (id, id_article, start, len, title) "),
+      str_words_articles(L"INSERT INTO words_articles (id, id_article, start, len, title, segment, number) "),
       str_articles_orthos(L"INSERT INTO articles_orthos (id, id_ortho) "),
       str_articles_formulas(L"INSERT INTO articles_formulas (id, id_formula) "),
       str_articles_comments(L"INSERT INTO articles_comments (id, id_comment) "),
@@ -232,7 +235,7 @@ public:
         COM_INTERFACE_ENTRY(IDispatch)
     END_COM_MAP()
 public:
-    STDMETHOD(Init)(/*[out, retval]*/ long* hRes);
+    STDMETHOD(Init)(modeName mode, /*[out, retval]*/ long* hRes);
     STDMETHOD(Terminate)(/*[out, retval]*/ long* hRes);
     STDMETHOD(AddPart)( BSTR Name, /*[out, retval]*/ long *hRes );
     STDMETHOD(AddTile)( BSTR Name, /* [out, retval]*/ long *hRes );
@@ -245,9 +248,13 @@ public:
     STDMETHOD(AddInfoToRule)( BSTR Info, /*[out, retval]*/ long *hRes );
     STDMETHOD(AddFootNote)( long ID, BSTR Text, /*[out, retval]*/ long *hRes );
     //
-    STDMETHOD(LoadDic)( BSTR Dic, /*[out, retval]*/ long *hRes );
+//    STDMETHOD(LoadDic)( BSTR Dic, /*[out, retval]*/ long *hRes );
+    STDMETHOD(LoadArticles)( BSTR Dic, /*[out, retval]*/ long *hRes );
+    STDMETHOD(LoadWords)( BSTR Dic, /*[out, retval]*/ long *hRes );
 
 protected:
+    modeName mode;
+
     partMap parts;
     tileMap tiles;
     paraMap paras;
@@ -326,7 +333,7 @@ protected:
     std::wstring getPureWord(const std::wstring& word);
     std::vector<std::wstring> getWordsForIndex(const std::wstring& word, size_t& offset, size_t &len, bool title = false);
     bool isEqualToTitle(const std::wstring& word, const std::wstring& title);
-    std::vector<std::wstring> addWordToIndex(artMap::iterator ait, const std::wstring& key, const size_t& pos, const size_t& start, const size_t& utf_len, const wchar_t type);
+    std::vector<std::wstring> addWordToIndex(artMap::iterator ait, const std::wstring& key, const size_t& pos, const size_t& start, const size_t& utf_len, const wchar_t type, const size_t& group, const size_t& number);
     std::vector<std::wstring> addTitleToIndex(artMap::iterator ait);
     void removeParentheses(std::wstring& str);
     void cutTail(std::wstring& str);

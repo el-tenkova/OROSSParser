@@ -350,12 +350,12 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
     // trim right
     tmp = tmp.substr(0, sp + 1);
 
-    // ρσττ. => ρσττ\s*.
-    pos = tmp.find(L'.');
+    // ρσττ. => ρσττ\s*\.*
+    pos = tmp.find(L"\\.");
     while (pos != std::wstring::npos) {
         if (pos > 1 && tmp[pos - 1] != ' ')
-            tmp.replace(pos, 1, L" .");
-        pos = tmp.find(L'.', pos + 2);
+            tmp.replace(pos, 2, L" \\.*");
+        pos = tmp.find(L'.', pos + 4);
     }
 
     pos = tmp.find(L' ');
@@ -386,6 +386,12 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
     }
 
     pos = tmp.find(L',');
+    while (pos != std::wstring::npos) {
+        tmp.replace(pos, 1, L",*");
+        pos = tmp.find(L',', pos + 1);
+    }
+
+    pos = tmp.find(L'.');
     while (pos != std::wstring::npos) {
         tmp.replace(pos, 1, L",*");
         pos = tmp.find(L',', pos + 1);
@@ -624,7 +630,9 @@ std::vector<std::wstring> COROSSParser::getWordsForIndex(const std::wstring& wor
     }
     if (len == 0)
         return res;
-    if (stopDic.find(str.substr(offset, len)) != stopDic.end())
+
+    str = str.substr(offset, len);
+    if (stopDic.find(str) != stopDic.end())
         return res;
 
     removeParentheses(str);
@@ -654,7 +662,7 @@ std::vector<std::wstring> COROSSParser::getWordsForIndex(const std::wstring& wor
     if (title)
         return res;
 
-    std::wstring all_keys(str.substr(offset, len));
+    std::wstring all_keys(str);//.substr(offset, len));
     all_keys.append(L" ");
     all_keys.append(tmp);
     size_t pos = all_keys.find_first_of(L"-/");
@@ -681,7 +689,7 @@ std::vector<std::wstring> COROSSParser::getWordsForIndex(const std::wstring& wor
         }
         std::sort(res.begin(), res.end());
         it = std::unique(res.begin(), res.end());
-        keys.resize(std::distance(res.begin(), it));
+        res.resize(std::distance(res.begin(), it));
 
     }
     return res;
