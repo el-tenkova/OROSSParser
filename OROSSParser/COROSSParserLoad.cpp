@@ -18,6 +18,7 @@ void COROSSParser::loadSearchData(bool loadSearch)
     std::wifstream rest(L"c:\\IRYA\\pararest.txt", std::wifstream::binary);
     std::wifstream formulas(L"c:\\IRYA\\formulas.txt", std::wifstream::binary);
     std::wifstream orthos(L"c:\\IRYA\\orthos.txt", std::wifstream::binary);
+    std::wifstream tutorial(L"c:\\IRYA\\tutorial.txt", std::wifstream::binary);
 
     if (rest.is_open()) {
         rest.imbue(loc);
@@ -82,7 +83,7 @@ void COROSSParser::loadSearchData(bool loadSearch)
                 size_t para = (size_t)wcstol(parts[0].c_str(), 0, 0);
                 size_t oId = (size_t)wcstol(parts[1].c_str(), 0, 0);
                 size_t fId = (size_t)wcstol(parts[2].c_str(), 0, 0);
-                formula cf = {fId, parts[4], parts[5], L"", L"", 0, oId, para, 0};
+                formula cf = {fId, parts[4], L"", parts[5], L"", L"", 0, oId, para, 0};
 
                 curPara = paras.find(para);
                 if (curPara != paras.end()) {
@@ -98,6 +99,43 @@ void COROSSParser::loadSearchData(bool loadSearch)
             }
         }
         formulas.close();
+    }
+    if (tutorial.is_open()) {
+        tutorial.imbue(loc);
+        tutorial.seekg(3);
+        std::wstring key;
+        while (!tutorial.eof()) {
+            std::wstring str(L"");
+            std::getline(tutorial, str);
+            if (str.length() == 0)
+                continue;
+            std::vector<std::wstring> parts = split(str, L'\t');
+            if (parts[0] == L"w:") {
+                key = parts[1];
+                wordId = std::stol(parts[parts.size() - 1]);
+                word cw = { wordId };
+                words.insert(std::pair<std::wstring, word>(key, cw));
+                if (wordId == 2997) {
+                    wordId++;
+                }
+                error.write(L"Load tutorial index:", wcslen(L"Load tutorial index:"));
+                error.write(key.c_str(), key.length());
+                error.write(L"\n", wcslen(L"\n"));
+
+            }
+            else if (parts[0] == L"w_t:") {
+                auto wit = words.find(key);
+                if (wit != words.end()) {
+                    tutorial_place cp = { (size_t)std::stol(parts[2]),
+                                          (size_t)std::stol(parts[3]),
+                                          (size_t)std::stol(parts[4]),
+                                          (size_t)std::stol(parts[5]),
+                                          parts[6][0] };
+                    wit->second.rules.push_back(cp);
+                }
+            }
+        }
+        tutorial.close();
     }
 }
 

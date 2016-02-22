@@ -571,6 +571,20 @@ std::wstring COROSSParser::getSpecMarkedArticle(const std::wstring& art) {
             pos = pure.find(*it, pos + (*it).length());
         }
     }
+    if (pure.find(L"<") != std::wstring::npos) {
+        std::wregex e(L"\\<[^\\<\\>]+\\>");
+
+        std::regex_iterator<std::wstring::iterator> rit(pure.begin(), pure.end(), e);
+        std::regex_iterator<std::wstring::iterator> rend;
+        size_t pref = 0;
+        while (rit != rend) {
+            std::wstring tmp((*rit).str().length(), L'_');
+            pure.replace(pref + (*rit).prefix().length(), (*rit).str().length(), tmp);
+            pref += (*rit).prefix().length() + (*rit).str().length();
+            ++rit;
+        }
+
+    }
     return pure;
 }
 
@@ -604,7 +618,7 @@ std::vector<std::wstring> COROSSParser::getWordsForIndex(const std::wstring& wor
 //        pref += (*rit).prefix().length() + (*rit).str().length();
         ++rit;
     }
-    if (tmp.length() != 0) {
+    if (tmp.length() != 0  || suff.length() != 0) {
         tmp.append(suff);
     }
 //    std::wstring::iterator i = str.begin();
@@ -649,7 +663,8 @@ std::vector<std::wstring> COROSSParser::getWordsForIndex(const std::wstring& wor
                 }
             }
         }
-        if (tmp.length() != 0)
+        removeParentheses(tmp);
+        if (tmp.length() != 0 && tmp.length() != str.length())
             res.push_back(tmp);
     }
 
@@ -659,33 +674,84 @@ std::vector<std::wstring> COROSSParser::getWordsForIndex(const std::wstring& wor
     std::wstring all_keys(str);//.substr(offset, len));
     all_keys.append(L" ");
     all_keys.append(tmp);
-    size_t pos = all_keys.find_first_of(L"-/");
+    size_t pos = all_keys.find(L"/");
     if (pos != std::wstring::npos) {
         while (pos != std::wstring::npos) {
             all_keys[pos] = L' ';
-            pos = all_keys.find_first_of(L"-/", pos + 1);
+            pos = all_keys.find(L"/", pos + 1);
         }
-        std::wistringstream iss(all_keys.c_str());
-        std::vector<std::wstring> keys;
-        std::copy(std::istream_iterator<std::wstring, wchar_t>(iss),
-            std::istream_iterator<std::wstring, wchar_t>(),
-            std::back_inserter(keys));
-
-        for (auto kit = keys.begin(); kit != keys.end(); ++kit) {
-            prepareOrthoKey(*kit);
-        }
-        keys.erase(std::remove(keys.begin(), keys.end(), L""), keys.end());
-        std::sort(keys.begin(), keys.end());
-        std::vector<std::wstring>::iterator it = std::unique(keys.begin(), keys.end());
-        keys.resize(std::distance(keys.begin(), it));
-        for (auto kit = keys.begin(); kit != keys.end(); ++kit) {
-            res.push_back(*kit);
-        }
-        std::sort(res.begin(), res.end());
-        it = std::unique(res.begin(), res.end());
-        res.resize(std::distance(res.begin(), it));
-
     }
+    std::wistringstream iss(all_keys.c_str());
+    std::vector<std::wstring> keys;
+    std::copy(std::istream_iterator<std::wstring, wchar_t>(iss),
+    std::istream_iterator<std::wstring, wchar_t>(),
+    std::back_inserter(keys));
+
+    for (auto kit = keys.begin(); kit != keys.end(); ++kit) {
+        std::wstring item(*kit);
+        pos = item.find(L"-");
+        size_t prev = 0;
+        if (pos != std::wstring::npos) {
+            bool isLemma = true;
+            item = getPureWord(item);
+            prepareTitle(item);
+            bool split = false;
+            if (morph.Check(item, isLemma) == true) {
+                // split and add
+                split = true;
+            }
+            else {
+                // remove dashes and check
+                auto resit = std::find(res.begin(), res.end(), item);
+                std::wstring glue(item);
+                prepareOrthoKey(glue);
+                if (morph.Check(glue, isLemma) == true) {
+                    (*kit) = glue;
+                    if (resit != res.end()) {
+                        (*resit) = glue;
+                    }
+                    // do not split, 
+                }
+                else {
+                    // split and add
+                    split = true;
+                }
+            }
+            if (split) {
+                pos = item.find(L"-");
+                while (pos != std::wstring::npos) {
+                    item[pos] = L' ';
+                    pos = item.find(L"-", pos + 1);
+                }
+                std::wistringstream iss(item.c_str());
+                std::vector<std::wstring> parts;
+                std::copy(std::istream_iterator<std::wstring, wchar_t>(iss),
+                    std::istream_iterator<std::wstring, wchar_t>(),
+                    std::back_inserter(parts));
+                for (auto pit = parts.begin(); pit != parts.end(); ++pit) {
+                    prepareOrthoKey(*pit);
+                    res.push_back(*pit);
+                }
+            }
+        }
+    }
+//    for (auto kit = keys.begin(); kit != keys.end(); ++kit) {
+//        prepareOrthoKey(*kit);
+//    }
+/*    keys.erase(std::remove(keys.begin(), keys.end(), L""), keys.end());
+    std::sort(keys.begin(), keys.end());
+    std::vector<std::wstring>::iterator it = std::unique(keys.begin(), keys.end());
+    keys.resize(std::distance(keys.begin(), it));
+    // check all word
+    */
+    for (auto kit = keys.begin(); kit != keys.end(); ++kit) {
+        res.push_back(*kit);
+    }
+    res.erase(std::remove(res.begin(), res.end(), L""), res.end());
+    std::sort(res.begin(), res.end());
+    auto it = std::unique(res.begin(), res.end());
+    res.resize(std::distance(res.begin(), it));
+   // }
     return res;
 }
 

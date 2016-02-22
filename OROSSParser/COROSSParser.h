@@ -13,6 +13,8 @@
 #include <fstream>
 #include <codecvt>
 
+#include "COROSSParserMorph.h"
+
 #define ORTHO_SUBST 1
 #define FORMULA_SUBST 2
 #define PARA_SUBST 3
@@ -21,9 +23,16 @@
 #define LINK_WORD 2
 #define ARTICLE_WORD 3
 #define FORMULA_EXAMPLE 4
-#define RULE_WORD 5
-#define FOOTNOTE_WORD 6
-#define PARA_WORD 7
+#define RULE_TEXT_WORD 5
+#define RULE_INFO_WORD 6
+#define FOOTNOTE_WORD 7
+#define PARA_WORD 8
+
+const wchar_t titleWord = L'1';
+const wchar_t articleWord = L'2';
+const wchar_t ruleWord = L'4';
+const wchar_t formulaWord = L'5';
+const wchar_t footnoteWord = L'6';
 
 struct dummy {
     size_t start;
@@ -68,10 +77,20 @@ struct place {
 };
 typedef std::vector<place> artIdVct;
 
+struct tutorial_place {
+    size_t id; // rule or formula id
+    size_t start; // position of word in rule or formula's example
+    size_t len; // can be more than word's length due to in article word can contain dashes
+    size_t number; // number in group
+    wchar_t isRule; // rule or formula's example
+};
+typedef std::vector<tutorial_place> ruleIdVct;
+
 struct word {
     size_t id;
 //    wchar_t isTitle;
     artIdVct arts;
+    ruleIdVct rules;
 //    size_t from;
 //    size_t to;
 };
@@ -199,6 +218,7 @@ class ATL_NO_VTABLE COROSSParser :
     };
     const std::wstring str_words;
     const std::wstring str_words_articles;
+    const std::wstring str_words_tutorial;
     const std::wstring str_articles_orthos;
     const std::wstring str_articles_rules;
     const std::wstring str_articles_paras;
@@ -223,6 +243,7 @@ public:
       error(L"c:\\IRYA\\error.txt", std::wofstream::binary),
       str_words(L"INSERT INTO words (id, word) "),
       str_words_articles(L"INSERT INTO words_articles (id, id_article, start, len, title, segment, number) "),
+      str_words_tutorial(L"INSERT INTO words_tutorial (id, id_item, start, len, type, number) "),
       str_articles_orthos(L"INSERT INTO articles_orthos (id, id_ortho) "),
       str_articles_formulas(L"INSERT INTO articles_formulas (id, id_formula) "),
       str_articles_comments(L"INSERT INTO articles_comments (id, id_comment) "),
@@ -296,18 +317,21 @@ protected:
     std::vector<std::wstring> tagsSpecial;
     std::vector<std::wstring> tagsAccents;
     std::vector<std::wstring> tagsTitle;
-
+    std::vector<std::wstring> tagsRuleParts;
 //// tmp
     std::map<size_t, size_t> wordIds;
 
+    COROSSParserMorph morph;
+
     void saveData(bool saveSearch = false);
     void saveForSearch();
-    void presaveArticles();
+    void presaveArticles(bool saveSearch = false);
 
     void loadSearchData(bool loadSearch = false);
     void loadHistoric();
     void loadDic(const std::wstring& dict);
     void loadStopDic(const std::wstring& dict);
+    void COROSSParser::loadMorph();
 
     void makeSQL();
     void makePartsTable(std::wofstream& result);
@@ -323,8 +347,11 @@ protected:
     void makeMistakesTable(std::wofstream& result);
 
     void processComments();
-    void processIndex();
+    void processIndex(bool saveSearch = false);
     void processMistakes();
+
+    void addArticlesToIndex();
+    void addTutorialToIndex();
 
     void printArticles();
 
@@ -341,6 +368,7 @@ protected:
     bool isEqualToTitle(const std::wstring& word, const std::wstring& title);
     std::vector<std::wstring> addWordToIndex(artMap::iterator ait, const std::wstring& key, const size_t& pos, const size_t& start, const size_t& utf_len, const wchar_t type, const size_t& group, const size_t& number);
     std::vector<std::wstring> addTitleToIndex(artMap::iterator ait);
+    std::vector<std::wstring> addWordToTutorialIndex(const size_t& id, const std::wstring& interval, const size_t& pos, const size_t& start, const size_t& utf_len, const wchar_t type, const size_t& number);
     void removeParentheses(std::wstring& str);
     void cutTail(std::wstring& str);
     void cutHead(std::wstring& str);

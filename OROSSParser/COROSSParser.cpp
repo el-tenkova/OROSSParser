@@ -15,8 +15,8 @@
 #define SL_D_RAZD   L"<i>слитно/дефисно/раздельно</i>"
 #define PROVER_GLASN L"<i>проверяемая гласная</i>"
 #define PARA21  21
-#define SAVE_SEARCH true//false
-#define LOAD_SEARCH false//true
+#define SAVE_SEARCH true //false
+#define LOAD_SEARCH false //true
 
 //COROSSParser::str_words_articles(L"INSERT INTO words_articles (id, id_article) ");
 
@@ -82,6 +82,14 @@ STDMETHODIMP COROSSParser::Init( modeName Mode, long* hRes )
     tagsTitle.push_back(L"<span class=\"title\" >");
     tagsTitle.push_back(L"</span>");
 
+    tagsRuleParts.push_back(L"И с к л ю ч е н и е");
+    tagsRuleParts.push_back(L"И с к л ю ч е н и я");
+    tagsRuleParts.push_back(L"И с к л ю ч е н и е - п о д п р а в и л о");
+    tagsRuleParts.push_back(L"П о д п р а в и л о");
+    tagsRuleParts.push_back(L"П р а в и л о");
+    tagsRuleParts.push_back(L"П р и м е ч а н и е");
+    tagsRuleParts.push_back(L"П р и м е р ы");
+
     mode = Mode;
 
     loadSearchData(LOAD_SEARCH);
@@ -92,9 +100,9 @@ STDMETHODIMP COROSSParser::Init( modeName Mode, long* hRes )
 
 STDMETHODIMP COROSSParser::Terminate( long* hRes )
 {
-    saveData(SAVE_SEARCH);
-    presaveArticles();
+    presaveArticles(SAVE_SEARCH);
     makeSQL();
+    saveData(SAVE_SEARCH);
     error.close();
     return S_OK;
 }
@@ -265,6 +273,10 @@ STDMETHODIMP COROSSParser::AddRule( BSTR Num, BSTR Name, /* [out, retval]*/ long
 STDMETHODIMP COROSSParser::AddInfoToRule( BSTR Info, /*[out, retval]*/ long *hRes )
 {
     ruleVct::iterator rit = rules.end() - 1;
+    if (rit->info.length() != 0)
+        rit->info.append(L" ");
+    else
+        rit->text.append(L" ");
     rit->info.append(L"<p>");
     rit->info.append(Info);
     rit->info.append(L"</p>");
