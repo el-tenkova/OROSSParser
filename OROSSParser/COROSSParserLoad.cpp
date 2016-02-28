@@ -59,7 +59,7 @@ void COROSSParser::loadSearchData(bool loadSearch)
                 size_t para = (size_t)wcstol(parts[0].c_str(), 0, 0);
                 size_t oId = (size_t)wcstol(parts[1].c_str(), 0, 0);
                 size_t active = (size_t)wcstol(parts[5].c_str(), 0, 0);
-                orthogr co = {oId, para, active, parts[3], parts[4]};
+                orthogr co = {oId, para, std::vector<size_t>(), active, parts[3], L"", parts[4]};
                 curPara = paras.find(para);
                 if (curPara != paras.end()) {
                     curPara->second.orthos.insert(std::pair<std::wstring, orthogr>(parts[2], co));
@@ -83,7 +83,7 @@ void COROSSParser::loadSearchData(bool loadSearch)
                 size_t para = (size_t)wcstol(parts[0].c_str(), 0, 0);
                 size_t oId = (size_t)wcstol(parts[1].c_str(), 0, 0);
                 size_t fId = (size_t)wcstol(parts[2].c_str(), 0, 0);
-                formula cf = {fId, parts[4], L"", parts[5], L"", L"", 0, oId, para, 0};
+                formula cf = {fId, parts[4], L"", parts[5], L"", L"", 0, 0, oId, para, 0};
 
                 curPara = paras.find(para);
                 if (curPara != paras.end()) {
@@ -251,10 +251,10 @@ void COROSSParser::addWord(const std::wstring& str) {
     size_t pos = str.find(str_values);
     if (pos != std::wstring::npos) {
         size_t id = std::stoi(str.substr(pos + str_values.length()));
-        if (id == 2034) {
+/*        if (id == 2034) {
             int a = 0;
             a++;
-        }
+        } */
         pos += str_values.length();
         pos = str.find(L",");
         wchar_t isTitle = str[pos + 1];

@@ -32,7 +32,9 @@ const wchar_t titleWord = L'1';
 const wchar_t articleWord = L'2';
 const wchar_t ruleWord = L'4';
 const wchar_t formulaWord = L'5';
-const wchar_t footnoteWord = L'6';
+const wchar_t formulaExampleWord = L'6';
+const wchar_t footnoteWord = L'7';
+const wchar_t orthogrWord = L'8';
 
 struct dummy {
     size_t start;
@@ -139,6 +141,7 @@ typedef std::map<std::wstring, formula> formMap;
 struct orthogr {
     size_t id;
     size_t para;
+    std::vector<size_t> rules;
     size_t active;
     std::wstring name;
     std::wstring rtf;
@@ -227,6 +230,9 @@ class ATL_NO_VTABLE COROSSParser :
     const std::wstring str_articles_historic;
     const std::wstring str_articles;
     const std::wstring str_values;
+    const std::wstring str_sup1;
+    const std::wstring str_sup2;
+    const std::wstring str_sup3;
 
 public:
     COROSSParser():
@@ -250,7 +256,10 @@ public:
       str_articles_historic(L"INSERT INTO articles_historic (id, id_historic) "),
  //     str_articles(L"INSERT INTO articles (id, title, text, rtf, src, comment_id) "), //!!!!
         str_articles(L"INSERT INTO articles (id, title, text, rtf, src) "), //!!!!
-        str_values(L"    VALUES (")
+        str_values(L"    VALUES ("),
+        str_sup1(L"<sup>1</sup>"),
+        str_sup2(L"<sup>2</sup>"),
+        str_sup3(L"<sup>3</sup>")
         {};
 
     DECLARE_REGISTRY_RESOURCEID(IDR_OROSSPARSER)
@@ -342,8 +351,8 @@ protected:
     void makeFormulaTable(std::wofstream& result);
     void makeFootNotesTable(std::wofstream& result);
     void makeHistoricTable(std::wofstream& result);
-    void makeWordsTable(std::wofstream& result);
-    void makeArticlesTable(std::wofstream& result);
+    void makeWordsTable(const std::locale& loc);
+    void makeArticlesTable(const std::locale& loc);
     void makeMistakesTable(std::wofstream& result);
 
     void processComments();
@@ -357,6 +366,7 @@ protected:
 
     void prepareOrthoKey(std::wstring& key);
     void prepareTitle(std::wstring& title);
+    void prepareComment(std::wstring& comment);
     std::wstring prepareForSearch(const std::wstring& ortho);
     std::wstring prepareRest(const std::wstring& Rest);
     void correctText(std::wstring& text);// with accent

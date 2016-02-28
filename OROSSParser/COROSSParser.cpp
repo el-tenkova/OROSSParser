@@ -15,8 +15,8 @@
 #define SL_D_RAZD   L"<i>слитно/дефисно/раздельно</i>"
 #define PROVER_GLASN L"<i>провер€ема€ гласна€</i>"
 #define PARA21  21
-#define SAVE_SEARCH true //false
-#define LOAD_SEARCH false //true
+#define SAVE_SEARCH false
+#define LOAD_SEARCH true
 
 //COROSSParser::str_words_articles(L"INSERT INTO words_articles (id, id_article) ");
 
@@ -179,14 +179,14 @@ STDMETHODIMP COROSSParser::AddPara( long Num, BSTR Name, /* [out, retval]*/ long
         curPara = paras.find(Num);
         curTile->second.paras.push_back(Num);
         if (partId == PART_END) {
-            orthogr co = {orthoId, (size_t)Num, 0, SL_D_RAZD, toRTF(SL_D_RAZD), prepareForSearch(SL_D_RAZD), getSearchMinLen(co.search), 0};
+            orthogr co = {orthoId, (size_t)Num, std::vector<size_t>(), 0, SL_D_RAZD, toRTF(SL_D_RAZD), prepareForSearch(SL_D_RAZD), getSearchMinLen(co.search), 0};
             std::wstring key(SL_D_RAZD);
             prepareOrthoKey(key);
             curPara->second.orthos.insert(std::pair<std::wstring, orthogr>(key, co));
             orthoId++;
         }
         else if (Num == 21) {
-            orthogr co = {orthoId, (size_t)Num, 0, PROVER_GLASN, toRTF(PROVER_GLASN), prepareForSearch(PROVER_GLASN), getSearchMinLen(co.search), 0};
+            orthogr co = {orthoId, (size_t)Num, std::vector<size_t>(), 0, PROVER_GLASN, toRTF(PROVER_GLASN), prepareForSearch(PROVER_GLASN), getSearchMinLen(co.search), 0};
             std::wstring key(PROVER_GLASN);
             prepareOrthoKey(key);
             curPara->second.orthos.insert(std::pair<std::wstring, orthogr>(key, co));
@@ -295,8 +295,9 @@ STDMETHODIMP COROSSParser::AddFootNote( long ID, BSTR Text, /*[out, retval]*/ lo
     }
     else {
         fit->second.para = curPara->second.id;
-        if (rules.size() > 0)
-            fit->second.rule = (rules.end() - 1)->id;
+        if (curPara->second.rules.size() > 0)
+//            fit->second.rule = (curPara->second.rules.end() - 1)->id;
+            fit->second.rule = *(curPara->second.rules.end() - 1);
     }
     *hRes = S_OK;
     return S_OK;
@@ -317,7 +318,7 @@ STDMETHODIMP COROSSParser::AddOrthogr( BSTR Orthogr, BSTR Formula, BSTR Example,
     correctText(rest);
 
 //    orthogr co = {orthoId, 0, IsActive, ortho, prepareForSearch(ortho)};
-    orthogr co = {orthoId, 0, (size_t)IsActive};//, curPart->second.id != PART_LAST ? ortho : SL_D_RAZD, prepareForSearch(co.name)};
+    orthogr co = {orthoId, 0, std::vector<size_t>(), (size_t)IsActive};//, curPart->second.id != PART_LAST ? ortho : SL_D_RAZD, prepareForSearch(co.name)};
     if (curPart->second.id != PART_LAST) {
         if (curPara->second.id == PARA21)
             co.name = PROVER_GLASN;
@@ -327,6 +328,7 @@ STDMETHODIMP COROSSParser::AddOrthogr( BSTR Orthogr, BSTR Formula, BSTR Example,
     else {
         co.name = SL_D_RAZD;
     }
+    co.rtf = toRTF(co.name);
     co.search = prepareForSearch(co.name);
     co.art_count = 0;
     std::wstring key(co.name); //curPart->second.id != PART_LAST ? ortho : SL_D_RAZD);
@@ -337,9 +339,16 @@ STDMETHODIMP COROSSParser::AddOrthogr( BSTR Orthogr, BSTR Formula, BSTR Example,
     std::wstring rule = getRuleNum(std::wstring(rest));
     if (ot == curPara->second.orthos.end()) {
         co.para = curPara->first;//num;
+        co.rules.push_back(getRuleId(num, rule));
         curPara->second.orthos.insert(std::pair<std::wstring, orthogr>(key, co));
         ot = curPara->second.orthos.find(key);
         orthoId++;
+    }
+    else {
+        size_t rule_id = getRuleId(num, rule);
+        if (std::find(ot->second.rules.begin(), ot->second.rules.end(), rule_id) == ot->second.rules.end()) {
+            ot->second.rules.push_back(rule_id);
+        }
     }
 
     std::wstring link(L"");

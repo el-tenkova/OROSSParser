@@ -5,6 +5,7 @@
 #include <codecvt>
 #include <regex>
 #include <sstream>
+#include <functional>
 
 #include "OROSSParser_i.h"
 #include "COROSSParser.h"
@@ -164,12 +165,33 @@ void COROSSParser::prepareTitle(std::wstring& title)
         title = title.substr(idx);
     idx = title.length();
     if (idx > 0) {
-        for (std::wstring::iterator i = title.end() - 1; i != title.begin(); --i, idx--) {
+        for (std::wstring::iterator i = title.end() - 1; i != title.end(); --i, idx--) {
             if ((*i) != L' ')
                 break;
         }
         title = title.substr(0, idx);
     }
+}
+
+void COROSSParser::prepareComment(std::wstring& comment)
+{
+    size_t pos = comment.find(str_sup1);
+    if (pos != std::wstring::npos) {
+        comment.replace(pos, str_sup1.length(), L"\u00B9");
+    }
+    else {
+        pos = comment.find(str_sup2);
+        if (pos != std::wstring::npos) {
+            comment.replace(pos, str_sup2.length(), L"\u00B2");
+        }
+        else {
+            pos = comment.find(str_sup3);
+            if (pos != std::wstring::npos) {
+                comment.replace(pos, str_sup3.length(), L"\u00B3");
+            }
+        }
+    }
+//    \u00B9\\u00B2\\u00B3
 }
 
 void COROSSParser::prepareOrthoKey(std::wstring& key)
@@ -197,6 +219,10 @@ void COROSSParser::prepareOrthoKey(std::wstring& key)
             pos = key.find(*it);
         }
     }
+
+    std::transform(key.begin(), key.end(), key.begin(),
+                   std::bind2nd(std::ptr_fun(&std::tolower<wchar_t>), russian));
+
 /*    correctText(key);
     
     size_t pos = key.find(L"\u001e");
@@ -297,7 +323,7 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
     std::wregex e4(L"\\(\\s*приставка[^\\(\\)]*\\)");
     tmp.clear();
     while (std::regex_search(search.cbegin(), search.cend(), cm, e4)) {
-        tmp.append(cm.prefix().str());
+        tmp.append(cm.prefix(), 0, cm.prefix().length() - 1);
         tmp.append(L"(\\(\\s*[^\\(\\)]*\\))* ");
         search = cm.suffix().str();
     }
@@ -350,12 +376,27 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
     // trim right
     tmp = tmp.substr(0, sp + 1);
 
-    // суфф. => суфф\s*\.*
+    // суфф. => суфф\s*\.*\s*
     pos = tmp.find(L"\\.");
     while (pos != std::wstring::npos) {
         if (pos > 1 && tmp[pos - 1] != ' ')
-            tmp.replace(pos, 2, L" \\.*");
-        pos = tmp.find(L'.', pos + 4);
+            tmp.replace(pos, 2, L" \\.* ");
+        pos = tmp.find(L"\\.", pos + 4);
+    }
+
+    // передача звука [й] - й может быть написана курсивом, сделаем [\s*й\s*]
+    pos = tmp.find(L"\\[");
+    while (pos != std::wstring::npos) {
+        if (pos > 1 && tmp[pos + 1] != ' ')
+            tmp.replace(pos, 2, L"\\[ ");
+        pos = tmp.find(L"\\[", pos + 3);
+    }
+
+    pos = tmp.find(L"\\]");
+    while (pos != std::wstring::npos) {
+        if (pos > 1 && tmp[pos - 1] != ' ')
+            tmp.replace(pos, 2, L" \\]");
+        pos = tmp.find(L"\\]", pos + 3);
     }
 
     pos = tmp.find(L' ');
@@ -630,7 +671,7 @@ std::vector<std::wstring> COROSSParser::getWordsForIndex(const std::wstring& wor
         len--;
     }
     if (i != str.end()) {
-        for (i = str.end() - 1; i != str.begin(); --i) {
+        for (i = str.end() - 1; i != str.end(); --i) {
             if (!(std::ispunct((*i), loc) || std::isdigit((*i), loc)))
                 break;
             len--;
@@ -644,19 +685,34 @@ std::vector<std::wstring> COROSSParser::getWordsForIndex(const std::wstring& wor
         return res;
 
     removeParentheses(str);
+/*    if (str.find(L',') != std::wstring::npos) {
+        int a = 0;
+        a++;
+    } */
+
     res.push_back(str);
+    if (title == true && str.find(L' ') == std::wstring::npos &&
+        str.find(L'-') == std::wstring::npos &&
+        !morph.IsLemma(getPureWord(str))) {
+        std::wstring lemma = morph.GetLemma(getPureWord(str));
+        if (lemma.length() > 0) {
+            res.push_back(lemma);
+        }
+    }
     if (tmp.length() != 0) {
         auto i = tmp.begin();
         size_t idx = 0;
         for (i; i < tmp.end(); ++i, idx++) {
             if (!(std::ispunct((*i), loc) || std::isdigit((*i), loc)) && (*i) != L'/') {
-                tmp = tmp.substr(idx);
                 break;
             }
         }
-        if (i != tmp.end()) {
+        if (idx > 0)
+            tmp = tmp.substr(idx);
+
+        if (tmp.length() != 0) {
             idx = tmp.length();
-            for (i = tmp.end() - 1; i != tmp.begin(); --i, idx--) {
+            for (i = tmp.end() - 1; i != tmp.end(); --i, idx--) {
                 if (!(std::ispunct((*i), loc) || std::isdigit((*i), loc)) && (*i) != L'/') {
                     tmp = tmp.substr(0, idx);
                     break;
@@ -664,6 +720,10 @@ std::vector<std::wstring> COROSSParser::getWordsForIndex(const std::wstring& wor
             }
         }
         removeParentheses(tmp);
+/*        if (str.find(L',') != std::wstring::npos) {
+            int a = 0;
+            a++;
+        }*/
         if (tmp.length() != 0 && tmp.length() != str.length())
             res.push_back(tmp);
     }
@@ -688,15 +748,15 @@ std::vector<std::wstring> COROSSParser::getWordsForIndex(const std::wstring& wor
     std::back_inserter(keys));
 
     for (auto kit = keys.begin(); kit != keys.end(); ++kit) {
+        cutHead(*kit);
         std::wstring item(*kit);
         pos = item.find(L"-");
         size_t prev = 0;
         if (pos != std::wstring::npos) {
-            bool isLemma = true;
             item = getPureWord(item);
             prepareTitle(item);
             bool split = false;
-            if (morph.Check(item, isLemma) == true) {
+            if (morph.Check(item) == true) {
                 // split and add
                 split = true;
             }
@@ -705,12 +765,22 @@ std::vector<std::wstring> COROSSParser::getWordsForIndex(const std::wstring& wor
                 auto resit = std::find(res.begin(), res.end(), item);
                 std::wstring glue(item);
                 prepareOrthoKey(glue);
-                if (morph.Check(glue, isLemma) == true) {
-                    (*kit) = glue;
-                    if (resit != res.end()) {
-                        (*resit) = glue;
+                if (morph.Check(glue) == true) {
+                    split = true;
+                    std::vector<std::wstring> parts = this->split(item, L'-');
+                    for (auto p = parts.begin(); p < parts.end(); ++p) {
+                        if (morph.Search((*p)) == false) {
+                            split = false;
+                            break;
+                        }
                     }
-                    // do not split, 
+                    if (!split) {
+                        (*kit) = glue;
+                        if (resit != res.end()) {
+                            (*resit) = glue;
+                        }
+                        // do not split,
+                    }
                 }
                 else {
                     // split and add
@@ -845,7 +915,7 @@ void COROSSParser::removeParentheses(std::wstring& str) {
 void COROSSParser::cutTail(std::wstring& str) {
     std::locale loc;
     size_t idx = str.length();
-    for (auto i = str.end() - 1; i != str.begin(); --i, idx--) {
+    for (auto i = str.end() - 1; i != str.end(); --i, idx--) {
         if ((*i) != L'-' &&  (*i) !=  L'Е' && (*i) != L'.') {
             str = str.substr(0, idx);
             break;
