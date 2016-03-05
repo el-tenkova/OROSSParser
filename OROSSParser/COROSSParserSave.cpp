@@ -484,7 +484,6 @@ void COROSSParser::makeOrthogrTable(std::wofstream& result)
     std::wstring str(L"\nCREATE TABLE IF NOT EXISTS orthos (\n\
     id int(11) NOT NULL,\n\
     id_para int(11) NOT NULL,\n\
-    id_rule int(11) NOT NULL,\n\
     active BOOLEAN,\n\
     name varchar(256) NOT NULL,\n\
     rtf varchar(1024) NOT NULL,\n\
@@ -1094,7 +1093,14 @@ void COROSSParser::processComments() {
                     size_t end = begin;
                     if (i == 0 && (*rit).size() > 3)
                         word = word + (*rit)[3].str();
+
                     end += word.length();
+/*                    for (auto i = word.end() - 1; i != word.end(); ++i) {
+                        if ((*i) != L' ')
+                            break;
+                        end--;
+                    } */
+
                     size_t i = 0;
                     while (word[i] == L'_') {
                         i++;
@@ -1122,7 +1128,7 @@ void COROSSParser::processComments() {
                     word = it->second.text.substr(begin, end - begin);
                     size_t pos = word.find(romb);
                     if (pos != std::wstring::npos) {
-                        end -= romb.length() + 1;
+                        end = begin + pos; // -= romb.length() + 1;
                         word = word.substr(0, pos);
                     }
                     prepareComment(word);
@@ -1505,8 +1511,8 @@ void COROSSParser::addArticlesToIndex() {
                 size_t start = 0;
                 size_t utf_len = getUtfLen(ait->second.text, 0, dit->start);
                 size_t number = 1;
-                if (dit->type == TITLE_WORD && pos != std::wstring::npos)
-                    addTitleToIndex(ait);
+//                if (dit->type == TITLE_WORD && pos != std::wstring::npos)
+//                    addTitleToIndex(ait);
                 while (pos != std::wstring::npos) {
                     std::vector<std::wstring> vw = addWordToIndex(ait, interval, pos, start, utf_len, dit->type == TITLE_WORD ? titleWord : articleWord, group, number);
                     if (vw.size() != 0) {
@@ -1561,6 +1567,33 @@ void COROSSParser::addTutorialToIndex() {
             size_t utf_len = 0;
             size_t number = 1;
             while (pos != std::wstring::npos) {
+                size_t skip = checkToSkip(interval, start);
+                if (skip != 0) {
+                    //std::wstring word(interval.substr(start, skip));
+                    size_t sp = 0;
+                    size_t j = 0;
+                    for (auto i = interval.begin() + start; j < skip - sp; j++, ++i) {
+                        if ((*i) == L' ') {
+                            sp++;
+                            interval.erase(i);
+                        }
+                    }
+/*                    j = 0;
+                    for (auto i = interval.begin() + start; j < sp; j++, ++i) {
+                        if ((*i) == L' ') {
+                            interval.erase(i);
+                        }
+                    }*/
+
+                    interval.insert((start + skip - sp) + 1, sp, L'_');
+                    pos = interval.find(L" ", start);
+                    //pos = skip;
+/*                    start += skip;
+                    if (start > interval.length())
+                        break;
+                    pos = interval.find(L" ", start);
+                    continue; */
+                }
                 std::vector<std::wstring> vw = addWordToTutorialIndex(r.id, interval, pos, start, utf_len, ruleWord, number);
                 if (vw.size() != 0) {
                     number++;

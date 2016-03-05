@@ -82,9 +82,9 @@ STDMETHODIMP COROSSParser::Init( modeName Mode, long* hRes )
     tagsTitle.push_back(L"<span class=\"title\" >");
     tagsTitle.push_back(L"</span>");
 
+    tagsRuleParts.push_back(L"È ñ ê ë þ ÷ å í è å - ï î ä ï ð à â è ë î");
     tagsRuleParts.push_back(L"È ñ ê ë þ ÷ å í è å");
     tagsRuleParts.push_back(L"È ñ ê ë þ ÷ å í è ÿ");
-    tagsRuleParts.push_back(L"È ñ ê ë þ ÷ å í è å - ï î ä ï ð à â è ë î");
     tagsRuleParts.push_back(L"Ï î ä ï ð à â è ë î");
     tagsRuleParts.push_back(L"Ï ð à â è ë î");
     tagsRuleParts.push_back(L"Ï ð è ì å ÷ à í è å");
@@ -1106,13 +1106,15 @@ size_t COROSSParser::getRuleId(const size_t& para, const std::wstring& Num) {
 
 size_t COROSSParser::getParentRule(const std::wstring& Num) {
     std::wstring parent(Num, 0, Num.find(L'.'));
-    ruleVct::iterator rit = rules.end() - 1;
-    for (; ; --rit) {
-        if (rit->num == parent) {
-            return rit->id;
+    if (rules.size() > 0) {
+        ruleVct::iterator rit = rules.end() - 1;
+        for (; ; --rit) {
+            if (rit->num == parent) {
+                return rit->id;
+            }
+            if (rit == rules.end())
+                break;
         }
-        if (rit == rules.begin())
-            break;
     }
     return 0;
 }

@@ -455,17 +455,37 @@ size_t COROSSParser::getParaNum(const std::wstring& rest)
 
 std::wstring COROSSParser::getRuleNum(const std::wstring& rest)
 {
+    std::locale loc;
     std::wstring ru(L"ï.");
     size_t pos = rest.find(ru);
     if (pos != std::wstring::npos) {
         pos = pos + ru.length();
-        while (rest[pos] == L' ' || rest[pos] == L'\xA0')
+        size_t len = 0;
+        for (auto i = rest.begin() + pos; i < rest.end(); ++i) {
+            if (!std::isdigit((*i), loc) && (*i) != L'.' && (*i) != L')') {
+                pos++;
+            }
+            else {
+                len = 1;
+                break;
+            }
+        }
+/*        while (rest[pos] == L' ' || rest[pos] == L'\xA0')
             pos++;
-        size_t len = 1;
-        while ((pos + len) < rest.length() &&
+        size_t len = 1;*/
+        if (len > 0) {
+            size_t idx = len;
+            for (auto i = rest.begin() + pos + len; i < rest.end(); ++i, idx++) {
+                if (!std::isdigit((*i), loc) && (*i) != L'.' && (*i) != L')') {
+                    break;
+                }
+            }
+            return (rest.substr(pos, idx));
+        }
+/*        while ((pos + len) < rest.length() && 
                (rest[pos + len] != L' ' && rest[pos + len] != L'\xA0' && rest[pos + len] != L'§'))
             len++;
-        return std::wstring(rest.c_str(), pos, len);
+        return std::wstring(rest.c_str(), pos, len); */
     }
     return std::wstring(L"0");
 }
@@ -728,8 +748,8 @@ std::vector<std::wstring> COROSSParser::getWordsForIndex(const std::wstring& wor
             res.push_back(tmp);
     }
 
-    if (title)
-        return res;
+    //if (title)
+    //    return res;
 
     std::wstring all_keys(str);//.substr(offset, len));
     all_keys.append(L" ");
@@ -933,4 +953,22 @@ void COROSSParser::cutHead(std::wstring& str) {
             break;
         }
     }
+}
+
+size_t COROSSParser::checkToSkip(const std::wstring& interval, const size_t& start) {
+    size_t offset = 0;
+    for (auto i = interval.begin() + start; i != interval.end(); ++i) {
+        if ((*i) != '_')
+            break;
+        offset++;
+    }
+    for (auto t = tagsRuleParts.begin(); t != tagsRuleParts.end(); ++t) {
+        if (interval.length() - (start + offset) > (*t).length()) {
+            std::wstring sub = interval.substr(start + offset, (*t).length());
+            if (sub == (*t)) {
+                return ((*t).length() + offset);
+            }
+        }
+    }
+    return 0;
 }

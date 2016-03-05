@@ -327,7 +327,7 @@ protected:
     std::vector<std::wstring> tagsAccents;
     std::vector<std::wstring> tagsTitle;
     std::vector<std::wstring> tagsRuleParts;
-//// tmp
+    //// tmp
     std::map<size_t, size_t> wordIds;
 
     COROSSParserMorph morph;
@@ -396,6 +396,7 @@ protected:
     size_t getSearchMinLen(const std::wstring& str);
     size_t getPureLen(const std::wstring& pure);
     void correctSubst(substMap& subst);
+    size_t checkToSkip(const std::wstring& interval, const size_t& start);
 
     std::vector<std::wstring> split(const std::wstring& str, const wchar_t delim);
     size_t shiftLeft(const std::wstring& afull, size_t start);
