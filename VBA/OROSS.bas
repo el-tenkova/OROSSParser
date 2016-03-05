@@ -51,7 +51,7 @@ Public Function subRuleRegEx() As Object
     Set objRegExp = New RegExp
 
     'Set the pattern by using the Pattern property.
-    objRegExp.Pattern = "^\s*(\d+)\)\s*"
+    objRegExp.Pattern = "^(П\s*р\s*а\s*в\s*и\s*л\s*о\.\s*)*\s*(\d+)\)\s*"
 
     ' Set Case Insensitivity.
     objRegExp.IgnoreCase = False
@@ -75,7 +75,8 @@ Sub ParseOROSS()
     Set objRegExpSubRule = subRuleRegEx()
     
     Dim theDoc As Document
-    Set theDoc = Documents.Open("c:\IRYA\GuideORFO.doc") '"c:\IRYA\Справочник-test1.doc")
+    'Set theDoc = Documents.Open("c:\IRYA\GuideORFO.doc") '"c:\IRYA\Справочник-test1.doc")
+    Set theDoc = Documents.Open("c:\IRYA\Справочник-test1.doc")
     Dim para As Paragraph
     
     Set para = theDoc.Paragraphs.item(1)
@@ -88,7 +89,7 @@ Sub ParseOROSS()
     footNote = 1
 '    If orthoWait Then
     
-    For i = 1 To 1 'cp
+    For i = 1 To 1 ' cp
         If para.Range.Characters.count > 1 Then
             Call CheckPara(para, objParser)
         End If
@@ -100,7 +101,7 @@ Sub ParseOROSS()
 
  '   End If
     
-   ' Set theDoc = Documents.Open("c:\IRYA\OROS_2014 гранки март31-апр28 (1).doc") '"c:\IRYA\errors.doc")
+    'Set theDoc = Documents.Open("c:\IRYA\OROS_2014 гранки март31-апр28 (1).doc") '"c:\IRYA\errors.doc")
     Set theDoc = Documents.Open("c:\IRYA\errors.doc")
     Set para = theDoc.Paragraphs.item(1)
     cp = theDoc.Paragraphs.count
@@ -176,6 +177,7 @@ Sub CheckPara(para As Paragraph, oParser As Object)
                 End If
                 addPrev = False
                 ruleLen = IsRule(para)
+                subLen = IsSubRule(para)
                 If ruleLen <> 0 Then
                     Num = Trim$(para.Range.words.item(1))
                     prev = ""
@@ -193,18 +195,26 @@ Sub CheckPara(para As Paragraph, oParser As Object)
                         Else
                             Num = "0"
                         End If
+                        subLen = IsSubRule(para)
                     End If
                     'If Num = "П" Then
                     '    Num = "0"
                     'End If
                     ruleText = ""
+                    ruleNum = Num
                     If addPrev Then
-                        ruleText = ConvertText(para.Previous().Range.words, 1, 0) & "</p></p>"
+                        ruleText = ConvertText(para.Previous().Range.words, 1, 0) & " </p><p>"
+                        If subLen <> 0 Then
+                            res = oParser.addRule(Num, ruleText)
+                            SubNum = Trim$(Mid$(para.Range.text, 1, subLen))
+                            SubNum = Trim$(Mid$(SubNum, ruleLen, subLen - ruleLen))
+                            Num = Num & "." & SubNum
+                            ruleText = ""
+                        End If
                     End If
                     ruleText = ruleText & ConvertText(para.Range.words, 1, para.Range.words.count)
-                    res = oParser.addRule(CLng(Num), ruleText) 'Mid$(para.Range.text, ruleLen, Len(para.Range.text) - 1))
+                    res = oParser.addRule(Num, ruleText) 'Mid$(para.Range.text, ruleLen, Len(para.Range.text) - 1))
                     rule = True
-                    ruleNum = Num
                 Else
                     subLen = IsSubRule(para)
                     If rule And subLen <> 0 Then
@@ -398,6 +408,7 @@ Function DoReplacements(text As String) As String
     text = Replace(text, ChrW(&HD), "")
     text = Replace(text, ChrW(&H7), "")
     text = Replace(text, ChrW(&H1A), "-")
+    text = Replace(text, ChrW(&H1E), "-")
 '    text = Replace(text, ChrW$(&H7), "")
     For i = 1 To 3
         ch = "b"
@@ -485,6 +496,8 @@ Function ConvertText(words As words, start As Integer, finish As Integer, Option
     '            If para.Range.Words.item(j).Underline Then
                     For i = 1 To words.item(j).Characters.count
                         If words.item(j).Characters(i).text <> " " Then
+                            'ch = AscW(words.item(j).Characters(i).text)
+                            'Debug.Print ch
                             If words(j).Characters(i).Footnotes.count > 0 And Not noFootNote Then
                                 text = text & "<sup><a href=" & Chr(34) & "#foot" & Trim$(str$(footNote)) & Chr(34)
                                 text = text & " id=" & Chr(34) & "ft" & Trim$(str$(footNote)) & Chr(34) & " >"
@@ -794,7 +807,7 @@ Function CheckText(ByRef para As Paragraph) As String
             Set cellpara = cell.Range.Paragraphs.first
             cp = cell.Range.Paragraphs.count
             For i = 1 To cp
-                ruleText = ruleText & "<p>" & ConvertText(cellpara.Range.words, 1, 0) & "</p>"
+                ruleText = ruleText & "<p>" & ConvertText(cellpara.Range.words, 1, 0) & " </p>"
                 Set cellpara = cellpara.Next
             Next i
             ruleText = ruleText & "</td>"
