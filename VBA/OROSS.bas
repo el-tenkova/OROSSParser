@@ -102,7 +102,7 @@ Sub ParseOROSS()
  '   End If
     
     'Set theDoc = Documents.Open("c:\IRYA\OROS_2014 гранки март31-апр28 (1).doc") '"c:\IRYA\errors.doc")
-    Set theDoc = Documents.Open("c:\IRYA\errors.doc")
+    Set theDoc = Documents.Open("c:\IRYA\errors3.doc")
     Set para = theDoc.Paragraphs.item(1)
     cp = theDoc.Paragraphs.count
     
@@ -706,7 +706,7 @@ Function CheckArticle(para As Paragraph, oParser As Object) As Paragraph
     Dim noAccent As Boolean
     If wc > 2 Then
         For i = 1 To wc
-            If Not para.Range.words(i).Bold And Not Trim$(para.Range.words(i)) = "," And Not Trim$(para.Range.words(i)) = "-" And Not Trim$(para.Range.words(i)) = "и" Then
+            If Not para.Range.words(i).Bold And Not Trim$(para.Range.words(i)) = "," And Not Trim$(para.Range.words(i)) = "-" And Not Trim$(para.Range.words(i)) = "и" And Not Trim$(para.Range.words(i)) = "Е" Then
                 noAccent = True
                 title = ConvertText(para.Range.words, 1, i - 1) ', noAccent)
                 Exit For
