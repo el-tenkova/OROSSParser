@@ -1312,12 +1312,12 @@ std::vector<std::wstring> COROSSParser::addTitleToIndex(artMap::iterator ait) {
     if (ait->second.title.length() == 0)
         return (std::vector<std::wstring>());
 
+
     std::wstring interval(ait->second.text.substr(ait->second.index[0].start, ait->second.index[0].len));
     std::wstring key(interval);
 
     size_t offset = 0;
-    size_t len = 0;
-    size_t start = 0;
+    size_t len = ait->second.index[0].start;
     size_t utf_len = getUtfLen(ait->second.text, 0, ait->second.index[0].start);
 
     std::wstring under_b(L"<u>");
@@ -1325,49 +1325,50 @@ std::vector<std::wstring> COROSSParser::addTitleToIndex(artMap::iterator ait) {
     std::wstring accent(L"&#x301");
 
     key = getSpecMarkedArticle(key);
-    std::vector<std::wstring> vw = getWordsForIndex(key, offset, len, true);
-        
+
+    std::vector<std::wstring> vw = getFullWords(key, offset, len);
+
     if (offset >= under_b.length() &&
-        interval.substr(start + offset - under_b.length(), under_b.length()) == under_b) {
+        interval.substr(offset - under_b.length(), under_b.length()) == under_b) {
         offset -= under_b.length();
         len += under_b.length();
     }
     if (key.length() - (offset + len) > under_e.length()
-        && interval.substr(start + offset + len, under_e.length()) == under_e)
+        && interval.substr(offset + len, under_e.length()) == under_e)
         len += under_e.length();
     if (key.length() - (offset + len) > accent.length() &&
-        interval.substr(start + offset + len, accent.length()) == accent)
+        interval.substr(offset + len, accent.length()) == accent)
         len += accent.length();
 
     size_t key_utf_len = getUtfLen(key, offset, len);
     for (auto it = vw.begin(); it != vw.end(); ++it) {
-        if (it == vw.begin()) {
-            key = getPureWord(key.substr(offset, len));
-            removeParentheses(key);
+        /*        if (it == vw.begin()) {
+        key = getPureWord(key.substr(offset, len));
+        removeParentheses(key);
         }
-        else
-            key = getPureWord((*it));
+        else */
+        key = getPureWord((*it));
 
         (*it) = key;
         //                    prepareOrthoKey(key);
         if (key.length() > 0) {
+            //            prepareOrthoKey(key);
             prepareTitle(key);
             cutTail(key);
+
             std::transform(key.begin(), key.end(), key.begin(),
                 std::bind2nd(std::ptr_fun(&std::tolower<wchar_t>), russian));
             if (stopDic.find(key) == stopDic.end()) {
-//                place cp = { ait->second.id, getUtfLen(ait->second.text, 0, ait->second.index[0].start + offset), key_utf_len, L'1' };
-                place cp = { ait->second.id, 0, 0, 0, 0, titleWord };
+                place cp = { ait->second.id, utf_len + getUtfLen(interval, 0, offset), key_utf_len, 1, 1, titleWord };
                 wordMap::iterator wit = words.find(key);
                 if (wit == words.end()) {
                     artIdVct av;
                     av.push_back(cp);
                     word cw = { wordId, av };
-/*                    if (key.find(L',') != std::wstring::npos) {
-                        int a = 0;
-                        a++;
+                    /*                    if (key.find(L',') != std::wstring::npos) {
+                    int a = 0;
+                    a++;
                     } */
-
                     words.insert(std::pair<std::wstring, word>(key, cw));
                     ait->second.words.push_back(wordId);
                     wordId++;
@@ -1384,12 +1385,14 @@ std::vector<std::wstring> COROSSParser::addTitleToIndex(artMap::iterator ait) {
                     }
                     if (add)
                         wit->second.arts.push_back(cp);
+
+                    //                    ait->second.words.push_back(wit->second.id);
+                    //                    wit->second.arts.push_back(cp);
                 }
             }
         }
     }
     return vw; //key;
-
 }
 
 std::vector<std::wstring> COROSSParser::addWordToTutorialIndex(const size_t& id,
@@ -1536,6 +1539,16 @@ void COROSSParser::addArticlesToIndex() {
                             arts.write((*w).c_str(), (*w).length());
                             arts.write(caret.c_str(), caret.length());
                         }
+                    }
+                }
+            }
+            if (ait->second.title.find_first_of(L" /") != std::wstring::npos) {
+                // add full title (with space and /) to index
+                std::vector<std::wstring> vw = addTitleToIndex(ait);
+                if (vw.size() != 0) {
+                    for (auto w = vw.begin(); w != vw.end(); ++w) {
+                        arts.write((*w).c_str(), (*w).length());
+                        arts.write(caret.c_str(), caret.length());
                     }
                 }
             }

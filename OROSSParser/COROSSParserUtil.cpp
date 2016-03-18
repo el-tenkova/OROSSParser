@@ -659,7 +659,8 @@ std::wstring COROSSParser::getPureWord(const std::wstring& word) {
     return pure;
 }
 
-std::vector<std::wstring> COROSSParser::getWordsForIndex(const std::wstring& word, size_t& offset, size_t &len, bool title) {
+std::vector<std::wstring> COROSSParser::getFullWords(const std::wstring& word, size_t& offset, size_t &len, bool title) {
+
     std::vector<std::wstring> res;
     std::wstring str(word);
     offset = 0;
@@ -669,20 +670,20 @@ std::vector<std::wstring> COROSSParser::getWordsForIndex(const std::wstring& wor
 
     std::regex_iterator<std::wstring::iterator> rit(str.begin(), str.end(), e);
     std::regex_iterator<std::wstring::iterator> rend;
-//    std::wstring 
-//    size_t pref = 0;
+    //    std::wstring 
+    //    size_t pref = 0;
     std::wstring tmp;
     std::wstring suff;
     while (rit != rend) {
         tmp.append((*rit).prefix());
         suff = (*rit).suffix();
-//        pref += (*rit).prefix().length() + (*rit).str().length();
+        //        pref += (*rit).prefix().length() + (*rit).str().length();
         ++rit;
     }
-    if (tmp.length() != 0  || suff.length() != 0) {
+    if (tmp.length() != 0 || suff.length() != 0) {
         tmp.append(suff);
     }
-//    std::wstring::iterator i = str.begin();
+    //    std::wstring::iterator i = str.begin();
     auto i = str.begin();
     for (i; i < str.end(); ++i) {
         if (!(std::ispunct((*i), loc) || std::isdigit((*i), loc)))
@@ -705,9 +706,9 @@ std::vector<std::wstring> COROSSParser::getWordsForIndex(const std::wstring& wor
         return res;
 
     removeParentheses(str);
-/*    if (str.find(L',') != std::wstring::npos) {
-        int a = 0;
-        a++;
+    /*    if (str.find(L',') != std::wstring::npos) {
+    int a = 0;
+    a++;
     } */
 
     res.push_back(str);
@@ -740,20 +741,32 @@ std::vector<std::wstring> COROSSParser::getWordsForIndex(const std::wstring& wor
             }
         }
         removeParentheses(tmp);
-/*        if (str.find(L',') != std::wstring::npos) {
-            int a = 0;
-            a++;
+        /*        if (str.find(L',') != std::wstring::npos) {
+        int a = 0;
+        a++;
         }*/
         if (tmp.length() != 0 && tmp.length() != str.length())
             res.push_back(tmp);
     }
+    return res;
+}
+
+std::vector<std::wstring> COROSSParser::getWordsForIndex(const std::wstring& word, size_t& offset, size_t &len, bool title) {
 
     //if (title)
     //    return res;
+    std::vector<std::wstring> res = getFullWords(word, offset, len);
+    if (res.size() == 0)
+        return res;
 
-    std::wstring all_keys(str);//.substr(offset, len));
+    std::wstring all_keys(res[0]);//.substr(offset, len));
     all_keys.append(L" ");
-    all_keys.append(tmp);
+    if (res.size() > 1)
+        all_keys.append(res[1]);
+
+    if (title == false)
+        res.clear();
+
     size_t pos = all_keys.find(L"/");
     if (pos != std::wstring::npos) {
         while (pos != std::wstring::npos) {
