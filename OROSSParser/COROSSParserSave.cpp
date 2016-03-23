@@ -920,6 +920,7 @@ void COROSSParser::makeFootNotesTable(std::wofstream& result)
 {
     std::wstring str(L"\nCREATE TABLE IF NOT EXISTS footnotes (\n\
     id int(11) NOT NULL,\n\
+    id_tile int(11) NOT NULL,\n\
     id_para int(11) NOT NULL,\n\
     id_rule int(11) NOT NULL,\n\
     text TEXT NOT NULL,\n\
@@ -945,9 +946,11 @@ void COROSSParser::makeFootNotesTable(std::wofstream& result)
     footMap::iterator rit = footnotes.begin();
     for (rit; rit != footnotes.end(); ++rit) {
         str.clear();
-        str.append(L"INSERT INTO footnotes (id, id_para, id_rule, text) \n\
+        str.append(L"INSERT INTO footnotes (id, id_tile, id_para, id_rule, text) \n\
 VALUES (");
         str.append(std::to_wstring(rit->second.id));
+        str.append(L",");
+        str.append(std::to_wstring(rit->second.tile));
         str.append(L",");
         str.append(std::to_wstring(rit->second.para));
         str.append(L",");
