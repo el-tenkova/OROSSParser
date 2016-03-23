@@ -15,8 +15,8 @@
 #define SL_D_RAZD   L"<i>слитно/дефисно/раздельно</i>"
 #define PROVER_GLASN L"<i>провер€ема€ гласна€</i>"
 #define PARA21  21
-#define SAVE_SEARCH false
-#define LOAD_SEARCH true
+#define SAVE_SEARCH true //false
+#define LOAD_SEARCH false //true
 
 //COROSSParser::str_words_articles(L"INSERT INTO words_articles (id, id_article) ");
 
@@ -141,8 +141,13 @@ STDMETHODIMP COROSSParser::AddPart( BSTR Name, /*[out, retval]*/ long *hRes )
 STDMETHODIMP COROSSParser::AddTile( BSTR Name, /* [out, retval]*/ long *hRes )
 {
     tile ct = {tileId, curPart->second.id};
+    std::wstring name(Name);
+    size_t sup = name.find(L"<sup>");
+    if (sup != std::wstring::npos) {
+        name = name.substr(0, sup);
+    }
 //    curTile = curPart->second.tiles.find(Name);
-    curTile = tiles.find(Name);
+    curTile = tiles.find(name);
     if (curTile == tiles.end())
     {
         tiles.insert(std::pair<std::wstring, tile>(Name, ct));
@@ -287,14 +292,16 @@ STDMETHODIMP COROSSParser::AddInfoToRule( BSTR Info, /*[out, retval]*/ long *hRe
 STDMETHODIMP COROSSParser::AddFootNote( long ID, BSTR Text, /*[out, retval]*/ long *hRes )
 {
     std::wstring text(Text);
-    footnote cf = {size_t(ID), 0, 0, Text};
+    footnote cf = {size_t(ID), 0, 0, 0, Text};
     footMap::iterator fit = footnotes.find(ID);
     if (fit == footnotes.end())
     {
         footnotes.insert(std::pair<size_t, footnote>((size_t)ID, cf));
     }
     else {
-        fit->second.para = curPara->second.id;
+        fit->second.tile = curTile->second.id;
+        if (curPara->second.title.length() > 0)
+            fit->second.para = curPara->second.id;
         if (curPara->second.rules.size() > 0)
 //            fit->second.rule = (curPara->second.rules.end() - 1)->id;
             fit->second.rule = *(curPara->second.rules.end() - 1);

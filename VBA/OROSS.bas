@@ -75,7 +75,7 @@ Sub ParseOROSS()
     Set objRegExpSubRule = subRuleRegEx()
     
     Dim theDoc As Document
-    'Set theDoc = Documents.Open("c:\IRYA\GuideORFO.doc") '"c:\IRYA\Справочник-test1.doc")
+'    Set theDoc = Documents.Open("c:\IRYA\GuideORFO.doc") '"c:\IRYA\Справочник-test1.doc")
     Set theDoc = Documents.Open("c:\IRYA\Справочник-test1.doc")
     Dim para As Paragraph
     
@@ -89,7 +89,7 @@ Sub ParseOROSS()
     footNote = 1
 '    If orthoWait Then
     
-    For i = 1 To 1 ' cp
+    For i = 1 To cp
         If para.Range.Characters.count > 1 Then
             Call CheckPara(para, objParser)
         End If
@@ -155,7 +155,23 @@ Sub CheckPara(para As Paragraph, oParser As Object)
         res = oParser.addPart(Mid$(para.Range.text, 1, Len(para.Range.text) - 1))
     Else
         If IsTile(para) Then
-            tileName = Mid$(para.Range.text, 1, Len(para.Range.text) - 1)
+            tileName = getTextWithFoot(para.Range.words) 'Mid$(para.Range.text, 1, Len(para.Range.text) - 1)
+            
+'            Dim words As words
+'            Set words = para.Range.words
+'            For j = 1 To words.count
+'                For i = 1 To words.item(j).Characters.count - 1
+'                    If words(j).Characters(i).Footnotes.count > 0 And Not noFootNote Then
+'                        tileName = tileName & "<sup><a href=" & Chr(34) & "#foot" & Trim$(str$(footNote)) & Chr(34)
+'                        tileName = tileName & " id=" & Chr(34) & "ft" & Trim$(str$(footNote)) & Chr(34) & " >"
+'                        tileName = tileName & "[" & Trim$(str$(footNote)) & "]</a></sup>"
+'                        footNote = footNote + 1
+'                    Else
+'                        tileName = tileName & words.item(j).Characters(i).text
+'                    End If
+'                Next i
+'            Next j
+            'tileName =
             tile = True
             rule = False
         Else
@@ -494,7 +510,9 @@ Function ConvertText(words As words, start As Integer, finish As Integer, Option
                     text = text + "<i>"
                 End If
     '            If para.Range.Words.item(j).Underline Then
+                    'Debug.Print words.item(j).text
                     For i = 1 To words.item(j).Characters.count
+'                        Debug.Print AscW(words.item(j).Characters(i).text)
                         If words.item(j).Characters(i).text <> " " Then
                             'ch = AscW(words.item(j).Characters(i).text)
                             'Debug.Print ch
@@ -822,4 +840,46 @@ Function CheckText(ByRef para As Paragraph) As String
         ruleText = ConvertText(para.Range.words, 1, para.Range.words.count)
     End If
     CheckText = ruleText
+End Function
+
+Sub SaveForeign()
+    Dim fsT As Object
+    Set fsT = CreateObject("ADODB.Stream")
+    fsT.Type = 2
+    fsT.Charset = "utf-8"
+    fsT.Open
+
+    Set theDoc = Documents.Open("c:\IRYA\with-dash1.doc")
+    Dim table As table
+    Set table = ActiveDocument.Tables.item(1)
+    cr = table.Rows.count
+    For i = 1 To cr
+        text = table.cell(i, 1).Range.text
+        text = Replace$(text, ChrW(&H7), "")
+        text = Replace$(text, ChrW(&HD), "")
+        text = Trim$(text)
+        fsT.WriteText (LCase$(text) & vbCrLf)
+    Next i
+    
+    fsT.SaveToFile "c:\IRYA\foreign.txt", 2
+    fsT.Close
+
+End Sub
+Function getTextWithFoot(words As words) As String
+    text = ""
+    For j = 1 To words.count
+        For i = 1 To words.item(j).Characters.count
+            If words(j).Characters(i).Footnotes.count > 0 And Not noFootNote Then
+                text = text & "<sup><a href=" & Chr(34) & "#foot" & Trim$(str$(footNote)) & Chr(34)
+                text = text & " id=" & Chr(34) & "ft" & Trim$(str$(footNote)) & Chr(34) & " >"
+                text = text & "[" & Trim$(str$(footNote)) & "]</a></sup>"
+                footNote = footNote + 1
+            Else
+                If words.item(j).Characters(i).text <> ChrW(&HD) Then
+                    text = text & words.item(j).Characters(i).text
+                End If
+            End If
+        Next i
+    Next j
+    getTextWithFoot = text
 End Function

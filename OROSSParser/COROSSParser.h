@@ -114,6 +114,7 @@ typedef std::map<std::wstring, hist> histMap;
 
 struct footnote {
     size_t id;
+    size_t tile;
     size_t para;
     size_t rule;
     std::wstring text;
