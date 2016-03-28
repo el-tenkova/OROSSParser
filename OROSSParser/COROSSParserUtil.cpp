@@ -310,9 +310,19 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
     std::wregex e(L"\\(\\s*слово[^\\(\\)]*\\)");
     std::wsmatch cm;
     tmp.clear();
+    // \s*[^\\(\\)]*\s* == слово
     while (std::regex_search(search.cbegin(), search.cend(), cm, e)) {
         tmp.append(cm.prefix(), 0, cm.prefix().length() - 1);
-        tmp.append(L"(\\(\\s*[^\\(\\)]*\\))* ");
+        tmp.append(L"(\\");
+        std::wstring intro = cm[0].str().substr(0, cm[0].str().length() - 2);
+        size_t pos = intro.find(L"слово");
+        while (pos != std::wstring::npos) {
+            intro.replace(pos, 5, L" [^\\(\\)]* ");
+            pos = intro.find(L"слово", pos + 5);
+        }
+        tmp.append(intro);
+        tmp.append(L"\\))* ");
+//        tmp.append(L"(\\(\\s*[^\\(\\)]*\\))* ");
         search = cm.suffix();
     }
     tmp.append(search);
@@ -397,6 +407,20 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
         if (pos > 1 && tmp[pos - 1] != ' ')
             tmp.replace(pos, 2, L" \\]");
         pos = tmp.find(L"\\]", pos + 3);
+    }
+    // возможный пробел перед ), после (
+    pos = tmp.find(L"\\(");
+    while (pos != std::wstring::npos) {
+        if (pos > 1 && tmp[pos + 1] != ' ')
+            tmp.replace(pos, 2, L"\\( ");
+        pos = tmp.find(L"\\(", pos + 3);
+    }
+
+    pos = tmp.find(L"\\)");
+    while (pos != std::wstring::npos) {
+        if (pos > 1 && tmp[pos - 1] != ' ')
+            tmp.replace(pos, 2, L" \\)");
+        pos = tmp.find(L"\\)", pos + 3);
     }
 
     pos = tmp.find(L' ');
