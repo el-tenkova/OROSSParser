@@ -831,12 +831,9 @@ std::vector<std::wstring> COROSSParser::getWordsForIndex(const std::wstring& wor
                             break;
                         }
                     }
-                    if (!split) {
-                        (*kit) = glue;
-                        if (resit != res.end()) {
-                            (*resit) = glue;
-                        }
-                        // do not split,
+                    (*kit) = glue;
+                    if (resit != res.end()) {
+                        (*resit) = glue;
                     }
                 }
                 else {
