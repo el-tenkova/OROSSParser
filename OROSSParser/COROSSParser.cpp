@@ -606,6 +606,7 @@ STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]
     */
 //    ca.text = recoveryBoldItalic(ca.text, a);
     articles.insert(std::pair<size_t, article>(artId, ca));
+    titles.insert(std::pair<std::wstring, size_t>(ca.title, artId));
     artId++;
 
     *hRes = S_OK;

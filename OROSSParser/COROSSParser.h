@@ -69,6 +69,8 @@ struct article {
 };
 
 typedef std::map<size_t, article> artMap;
+typedef std::map<std::wstring, size_t> titleMap;
+
 struct place {
     size_t id; // article id
     size_t start; // position of word in article
@@ -299,6 +301,7 @@ protected:
     wordMap words;
     mistakeMap mistakes;
     artMap articles;
+    titleMap titles;
     footMap footnotes;
     histMap historic;
     std::map<std::wstring, size_t> stopDic;

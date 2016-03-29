@@ -1055,10 +1055,22 @@ void COROSSParser::makeMistakesTable(std::wofstream& result) {
 }
 
 void COROSSParser::presaveArticles(bool saveSearch) {
+    artMap sorted;
+    artId = 1;
+    // sort by title
+    auto tit = titles.begin();
+    for (tit; tit != titles.end(); ++tit) {
+        article ca = articles[tit->second];
+        ca.id = artId;
+        sorted.insert(std::pair<size_t, article>(artId, ca));
+        artId++;
+    }
+    articles.clear();
+    articles = sorted;
     processIndex(saveSearch);
     processComments();
     wordId = 1;
-    wordMap::iterator wit = words.begin();
+    auto wit = words.begin();
     for (wit; wit != words.end(); ++wit) {
         wit->second.id = wordId;
         wordId++;
