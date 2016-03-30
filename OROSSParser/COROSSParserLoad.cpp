@@ -6,6 +6,8 @@
 #include <regex>
 #include <sstream>
 
+#include <functional>
+
 #include "OROSSParser_i.h"
 #include "COROSSParser.h"
 
@@ -143,24 +145,78 @@ void COROSSParser::loadDic(const std::wstring& dict)
 {
     std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
     // load data to search in articles
-    std::wifstream f(dict, std::wifstream::binary);
+    std::wifstream arts(dict, std::wifstream::binary);
 
-    if (f.is_open()) {
-        f.imbue(loc);
-        f.seekg(3);
-        objType type = None;
-        while (!f.eof()) {
+    if (arts.is_open()) {
+        arts.imbue(loc);
+        arts.seekg(3);
+        std::wstring key;
+        article ca;
+        ca.id = 0;
+        while (!arts.eof()) {
             std::wstring str(L"");
-            std::getline(f, str);
+            std::getline(arts, str);
             if (str.length() == 0)
                 continue;
-            addItem(type, str);
-            type = checkInStr(str);
-            //            if (type == Articles_Historic)
-            //                break;
+            std::vector<std::wstring> parts = split(str, L'\t');
+            if (parts[0] == L"a:") {
+                if (ca.id != 0) {
+                    articles.insert(std::pair<size_t, article>(ca.id, ca));
+                    std::wstring title_l(ca.title);
+                    std::transform(title_l.begin(), title_l.end(), title_l.begin(),
+                        std::bind2nd(std::ptr_fun(&std::tolower<wchar_t>), russian));
+                    titles.insert(std::pair<std::wstring, size_t>(title_l, ca.id));
+                }
+                ca.id = std::stol(parts[1]);
+            }
+            else if (parts[0] == L"a_title:") {
+                ca.title = parts[1];
+            }
+            else if (parts[0] == L"a_text:") {
+                ca.text = parts[1];
+            }
+            else if (parts[0] == L"a_src:") {
+                ca.src = parts[1];
+            }
+            else if (parts[0] == L"a_rtf:") {
+                ca.rtf = parts[1];
+            }
+            else if (parts[0] == L"a_f:") {
+                std::vector<std::wstring> formulas = split(parts[1], L',');
+                for (auto it = formulas.begin(); it != formulas.end(); ++it) {
+                    ca.formulas.push_back(std::stol(*it));
+                }
+            }
+            else if (parts[0] == L"a_o:") {
+                std::vector<std::wstring> orthos = split(parts[1], L',');
+                for (auto it = orthos.begin(); it != orthos.end(); ++it) {
+                    ca.orthos.push_back(std::stol(*it));
+                }
+            }
+            else if (parts[0] == L"a_c:") {
+                std::vector<std::wstring> comments = split(parts[1], L',');
+                for (auto it = comments.begin(); it != comments.end(); ++it) {
+                    ca.comments.push_back(std::stol(*it));
+                }
+            }
+            else if (parts[0] == L"a_d:") {
+                dummy cd;
+                std::vector<std::wstring> p = split(parts[1], L',');
+                cd.start = std::stol(p[0]);
+                cd.len = p[1] == L"-1" ? std::wstring::npos : std::stol(p[1]);
+                cd.type = (char)p[2][0];
+                ca.index.push_back(cd);
+            }
         }
-        f.close();
-    }
+        if (ca.id != 0) {
+            articles.insert(std::pair<size_t, article>(ca.id, ca));
+            std::wstring title_l(ca.title);
+            std::transform(title_l.begin(), title_l.end(), title_l.begin(),
+                std::bind2nd(std::ptr_fun(&std::tolower<wchar_t>), russian));
+            titles.insert(std::pair<std::wstring, size_t>(title_l, ca.id));
+        }
+        arts.close();
+    } 
 }
 
 COROSSParser::objType COROSSParser::checkInStr(const std::wstring& str) {
