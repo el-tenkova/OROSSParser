@@ -304,6 +304,9 @@ void COROSSParser::saveArticles()
             str.append(L"a_rtf:\t"); // rtf
             str.append(ait->second.rtf);
             str.append(L"\n");
+            str.append(L"a_tl:\t");
+            str.append(std::to_wstring(ait->second.titleLen)); // id
+            str.append(L"\n");
             arts.write(str.c_str(), str.length());
             // formulas
             if (ait->second.formulas.size() != 0) {

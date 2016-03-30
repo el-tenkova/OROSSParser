@@ -182,6 +182,9 @@ void COROSSParser::loadDic(const std::wstring& dict)
             else if (parts[0] == L"a_rtf:") {
                 ca.rtf = parts[1];
             }
+            else if (parts[0] == L"a_tl:") {
+                ca.titleLen = std::stol(parts[1]);
+            }
             else if (parts[0] == L"a_f:") {
                 std::vector<std::wstring> formulas = split(parts[1], L',');
                 for (auto it = formulas.begin(); it != formulas.end(); ++it) {
