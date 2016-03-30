@@ -428,26 +428,16 @@ STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]
     std::wstring a(art);
     std::vector<size_t> paraVct(0);
 
-  //  std::wstring html = 
     std::wstring pure;
     pure = getPureArticle(ca.text);
-//    ca.index.push_back({ pure.length(), ca.text.length() - pure.length() });
 
     substMap substs;
     getPara(a, pure, paraVct, substs);
-/*    if (html.length() > 0) {
-        ca.text = html;
-    }
-    else {*/
+
     if (ca.text.length() == 0) {
         ca.text = a;
     }
 
-/*    if (html.length() > 0 )
-        pure = getPureArticle(html);
-    else
-        pure = getPureArticle(a);
-*/
     size_t pure_len = getPureWord(getSpecMarkedArticle(ca.src)).length(); //getPureLen(ca.src); //pure);
     getOrthos(ca.text /*html*/, pure, pure_len, paraVct, ca.orthos, substs);
     getFormulas(ca.text /*html */, pure, pure_len, paraVct, ca.orthos, ca.formulas, substs, ca.index);
@@ -458,23 +448,6 @@ STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]
     if (substs.size() > 0) {
         correctSubst(substs);
 
-         /*   substMap::iterator sit2 = substs.begin();
-            for (sit2; sit2 != substs.end(); ++sit2) {
-                if (sit->second.type == sit2->second.type && sit->second.id == sit2->second.id)
-                    continue;
-                if (sit->first == sit2->first && sit->second.len == sit2->second.len) {
-                    if (sit->second.type == ORTHO_SUBST) {
-                        substMap::iterator next = sit;
-                        next++;
-                        if (next != substs.end() && next->second.type == FORMULA_SUBST && !IsPair(sit->second.id, next->second.id)) {
-                            sit->second.ok = 0;
-                            ca.orthos.erase(std::find(ca.orthos.begin(), ca.orthos.end(), sit->second.id));
-                            break;
-                        }
-                    }
-                }
-            }
-        }*/
         a.clear();
         a.append(html);
         html.clear();
@@ -554,56 +527,6 @@ STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]
         ca.text = html;
     }
 
-/*    html = getFormulas(html, pure, paraVct, ca.orthos, ca.formulas);
-    if (html.length() > 0) {
-        ca.text = html;
-    }*/
-
-/*    std::wstring title_keys(title);
-    size_t pos = title_keys.find_first_of(L"-,");
-    while (pos != std::wstring::npos) {
-        title_keys[pos]= L' ';
-        pos = title_keys.find_first_of(L"-,", pos + 1);
-    }
-    std::wistringstream iss(title_keys.c_str());
-    std::vector<std::wstring> keys;
-    std::copy(std::istream_iterator<std::wstring, wchar_t>(iss),
-              std::istream_iterator<std::wstring, wchar_t>(),
-              std::back_inserter(keys));
-
-    std::vector<std::wstring>::iterator kit = keys.begin();
-    for (kit; kit != keys.end(); ++kit) {
-        prepareOrthoKey(*kit);
-    }
-    prepareOrthoKey(title_keys);
-    keys.push_back(title_keys);
-    keys.erase(std::remove(keys.begin(), keys.end(), L""), keys.end());
-    keys.erase(std::remove(keys.begin(), keys.end(), L"è"), keys.end());
-    std::sort(keys.begin(), keys.end());
-    std::vector<std::wstring>::iterator it = std::unique(keys.begin(), keys.end());
-    keys.resize( std::distance(keys.begin(), it) );
-
-    for (kit = keys.begin(); kit != keys.end(); ++kit) {
-        std::wstring key = *kit;
-
-        std::transform(key.begin(), key.end(), key.begin(),
-            std::bind2nd(std::ptr_fun(&std::tolower<wchar_t>), russian));
-
-        wordMap::iterator wit = words.find(key);
-        if (wit == words.end()) {
-            artIdVct av;
-            av.push_back({ ca.id, 0, 0, L'1' });
-            word cw = { wordId, av };
-
-            words.insert(std::pair<std::wstring, word>(key, cw));
-            wordId++;
-        }
-        else {
-            wit->second.arts.push_back({ ca.id, 0, 0, L'1' });
-        }
-    }
-    */
-//    ca.text = recoveryBoldItalic(ca.text, a);
     articles.insert(std::pair<size_t, article>(artId, ca));
 
     // convert title to lower case
