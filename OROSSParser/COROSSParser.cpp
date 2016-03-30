@@ -94,6 +94,9 @@ STDMETHODIMP COROSSParser::Init( modeName Mode, long* hRes )
 
     loadSearchData(LOAD_SEARCH);
     loadStopDic(L"c:\\IRYA\\stop.txt");
+    if (mode == Update) {
+        loadDic(L"c:\\IRYA\\arts.txt");
+    }
     return *hRes;
 }
 
@@ -420,12 +423,17 @@ STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]
 
     ca.index.push_back({ tagsTitle[0].length(), titleLen, TITLE_WORD });
     titleLen += tagsTitle[0].length() + tagsTitle[1].length();
+    ca.titleLen = titleLen;
 
-/*    if (artId == 1160) {
-        int a = 0;
-        a++;
-    }*/
-    std::wstring a(art);
+    processArticle(ca);
+
+    *hRes = S_OK;
+    return S_OK;
+}
+
+void COROSSParser::processArticle(article& ca) {
+
+    std::wstring a(ca.src);
     std::vector<size_t> paraVct(0);
 
     std::wstring pure;
@@ -451,7 +459,7 @@ STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]
         a.clear();
         a.append(html);
         html.clear();
-//        html.append(title);
+        //        html.append(title);
         size_t len = 0;
         std::wstring proverka(L"проверка");
         for (substMap::iterator sit = substs.begin(); sit != substs.end(); ++sit) {
@@ -460,8 +468,8 @@ STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]
                 if (svit->ok == 0)
                     continue;
                 if (sit->first >= len) {
-                    if (html.length() == 0 && sit->first > titleLen)
-                        ca.index.push_back({ titleLen, sit->first - titleLen, ARTICLE_WORD});
+                    if (html.length() == 0 && sit->first > ca.titleLen)
+                        ca.index.push_back({ ca.titleLen, sit->first - ca.titleLen, ARTICLE_WORD });
                     else
                         ca.index.push_back({ html.length(), sit->first - len, ARTICLE_WORD });
                     html.append(a.substr(len, sit->first - len));
@@ -490,8 +498,8 @@ STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]
                         //todo : remove formula or ortho from vector
                     }
                 }
-//                html.append(svit->substitution);
-//                len = sit->first + svit->len;
+                //                html.append(svit->substitution);
+                //                len = sit->first + svit->len;
                 break;
             }
         }
@@ -520,7 +528,7 @@ STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]
 
     }
     else {
-        ca.index.push_back({ titleLen, std::wstring::npos, ARTICLE_WORD });
+        ca.index.push_back({ ca.titleLen, std::wstring::npos, ARTICLE_WORD });
     }
 
     if (html.length() > 0) {
@@ -536,8 +544,6 @@ STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]
     titles.insert(std::pair<std::wstring, size_t>(title_l, artId));
     artId++;
 
-    *hRes = S_OK;
-    return S_OK;
 }
 
 std::wstring COROSSParser::getPureArticle(const std::wstring& art, bool full)

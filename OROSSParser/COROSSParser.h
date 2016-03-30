@@ -54,6 +54,11 @@ struct subst {
 
 typedef std::map<size_t, std::vector<subst> > substMap;
 
+#define ARTICLE_STATE_NEUTRAL 1
+#define ARTICLE_STATE_NEW 2
+#define ARTICLE_STATE_EDITED 3
+#define ARTICLE_STATE_TO_DELETE 4
+
 struct article {
     size_t id;
     std::wstring title;
@@ -65,6 +70,8 @@ struct article {
     std::vector<size_t> comments;
     dummyVct index;
     std::vector<size_t> words;
+    size_t state;
+    size_t titleLen;
 };
 
 typedef std::map<size_t, article> artMap;
@@ -356,6 +363,7 @@ protected:
     void processComments();
     void processIndex(bool saveSearch = false);
     void processMistakes();
+    void processArticle(article& ca);
 
     void addArticlesToIndex();
     void addTutorialToIndex();

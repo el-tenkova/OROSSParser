@@ -161,6 +161,7 @@ void COROSSParser::loadDic(const std::wstring& dict)
             std::vector<std::wstring> parts = split(str, L'\t');
             if (parts[0] == L"a:") {
                 if (ca.id != 0) {
+                    ca.state = ARTICLE_STATE_TO_DELETE;
                     articles.insert(std::pair<size_t, article>(ca.id, ca));
                     std::wstring title_l(ca.title);
                     std::transform(title_l.begin(), title_l.end(), title_l.begin(),
@@ -209,6 +210,7 @@ void COROSSParser::loadDic(const std::wstring& dict)
             }
         }
         if (ca.id != 0) {
+            ca.state = ARTICLE_STATE_TO_DELETE;
             articles.insert(std::pair<size_t, article>(ca.id, ca));
             std::wstring title_l(ca.title);
             std::transform(title_l.begin(), title_l.end(), title_l.begin(),
