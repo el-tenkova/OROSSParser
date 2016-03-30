@@ -339,7 +339,7 @@ protected:
     void loadSearchData(bool loadSearch = false);
     void loadDic(const std::wstring& dict);
     void loadStopDic(const std::wstring& dict);
-    void COROSSParser::loadMorph();
+    void loadMorph();
 
     void makeSQL();
     void makePartsTable(std::wofstream& result);
