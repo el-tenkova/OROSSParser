@@ -15,8 +15,8 @@
 #define SL_D_RAZD   L"<i>слитно/дефисно/раздельно</i>"
 #define PROVER_GLASN L"<i>провер€ема€ гласна€</i>"
 #define PARA21  21
-#define SAVE_SEARCH true //false
-#define LOAD_SEARCH false //true
+#define SAVE_SEARCH false
+#define LOAD_SEARCH true
 
 //COROSSParser::str_words_articles(L"INSERT INTO words_articles (id, id_article) ");
 
@@ -604,7 +604,12 @@ STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]
     */
 //    ca.text = recoveryBoldItalic(ca.text, a);
     articles.insert(std::pair<size_t, article>(artId, ca));
-    titles.insert(std::pair<std::wstring, size_t>(ca.title, artId));
+
+    // convert title to lower case
+    std::wstring title_l(ca.title);
+    std::transform(title_l.begin(), title_l.end(), title_l.begin(),
+        std::bind2nd(std::ptr_fun(&std::tolower<wchar_t>), russian));
+    titles.insert(std::pair<std::wstring, size_t>(title_l, artId));
     artId++;
 
     *hRes = S_OK;
