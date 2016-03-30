@@ -93,7 +93,6 @@ STDMETHODIMP COROSSParser::Init( modeName Mode, long* hRes )
     mode = Mode;
 
     loadSearchData(LOAD_SEARCH);
-//    loadHistoric();
     loadStopDic(L"c:\\IRYA\\stop.txt");
     return *hRes;
 }
@@ -451,7 +450,6 @@ STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]
     size_t pure_len = getPureWord(getSpecMarkedArticle(ca.src)).length(); //getPureLen(ca.src); //pure);
     getOrthos(ca.text /*html*/, pure, pure_len, paraVct, ca.orthos, substs);
     getFormulas(ca.text /*html */, pure, pure_len, paraVct, ca.orthos, ca.formulas, substs, ca.index);
-//    getHistoric(pure, ca.historic);
 
 
     std::wstring html = ca.text;
@@ -1125,26 +1123,6 @@ size_t COROSSParser::getParentRule(const std::wstring& Num) {
         }
     }
     return 0;
-}
-
-void COROSSParser::getHistoric(const std::wstring& pure, std::vector<size_t>& histvct) {
-
-    histMap::iterator hit = historic.begin();
-    for (hit; hit != historic.end(); ++hit) {
-        std::vector<std::wstring>::iterator it = hit->second.search.begin();
-        for (it; it != hit->second.search.end(); ++it) {
-            std::wstring search(*it);
-            std::wregex e(search);
-            std::wsmatch cm;
-            if (std::regex_search(pure.cbegin(), pure.cend(), cm, e)) {
-                histvct.push_back(hit->second.id);
-            }
-        }
-    }
-    std::sort(histvct.begin(), histvct.end());
-    std::vector<size_t>::iterator it = std::unique(histvct.begin(), histvct.end());
-    histvct.resize(std::distance(histvct.begin(), it));
-
 }
 
 void COROSSParser::correctSubst(substMap& substs) {

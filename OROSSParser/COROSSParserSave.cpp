@@ -762,14 +762,6 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
     result.write(str.c_str(), str.length());
 
     str.clear();
-    str.append(L"\nCREATE TABLE IF NOT EXISTS articles_historic (\n\
-    id int(11) NOT NULL,\n\
-    id_historic int(11) NOT NULL,\n\
-    PRIMARY KEY (id, id_historic) \n\
-    );\n\n");
-    result.write(str.c_str(), str.length());
-
-    str.clear();
     str.append(L"\nCREATE TABLE IF NOT EXISTS articles_comments (\n\
     id int(11) NOT NULL,\n\
     id_comment int(11) NOT NULL,\n\
@@ -838,18 +830,6 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
             str.append(std::to_wstring(ait->second.id));
             str.append(L",");
             str.append(std::to_wstring(*fit));
-            str.append(L");\n");
-            result.write(str.c_str(), str.length());
-        }
-        std::vector<size_t>::iterator hit = ait->second.historic.begin();
-        for (hit; hit != ait->second.historic.end(); ++hit) {
-            str.clear();
-            str.append(str_articles_historic); //L"INSERT INTO articles_historic (id, id_historic) 
-            str.append(L"\n\
-                        VALUES (");
-            str.append(std::to_wstring(ait->second.id));
-            str.append(L",");
-            str.append(std::to_wstring(*hit));
             str.append(L");\n");
             result.write(str.c_str(), str.length());
         }
@@ -977,36 +957,6 @@ VALUES (");
         str.append(std::to_wstring(rit->second.rule));
         str.append(L");\n");
         result.write(str.c_str(), str.length()); */
-    }
-}
-
-void COROSSParser::makeHistoricTable(std::wofstream& result)
-{
-    std::wstring str(L"\nCREATE TABLE IF NOT EXISTS historic (\n\
-    id int(11) NOT NULL,\n\
-    name varchar(200) NOT NULL,\n\
-    abbr varchar(200) NOT NULL,\n\
-    PRIMARY KEY (id) \n\
-    );\n\n");
-    result.write(str.c_str(), str.length());
-
-    histMap::iterator hit = historic.begin();
-    for (hit; hit != historic.end(); ++hit) {
-        str.clear();
-        str.append(L"INSERT INTO historic (id, name, abbr) \n\
-VALUES (");
-        str.append(std::to_wstring(hit->second.id));
-        str.append(L",'");
-        str.append(hit->second.name);
-        str.append(L"','");
-        std::vector<std::wstring>::iterator it = hit->second.abbr.begin();
-        for (it; it != hit->second.abbr.end(); ++it) {
-            str.append(*it);
-            if (it + 1 != hit->second.abbr.end())
-                str.append(L",");
-        }
-        str.append(L"');\n");
-        result.write(str.c_str(), str.length());
     }
 }
 

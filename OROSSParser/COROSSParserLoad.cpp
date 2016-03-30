@@ -139,42 +139,6 @@ void COROSSParser::loadSearchData(bool loadSearch)
     }
 }
 
-void COROSSParser::loadHistoric()
-{
-    std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
-    // load data to search in articles
-    std::wifstream f(L"c:\\IRYA\\historic.txt", std::wifstream::binary);
-
-    if (f.is_open()) {
-        f.imbue(loc);
-        f.seekg(3);
-        size_t histId = 1;
-        while (!f.eof()) {
-            std::wstring str(L"");
-            std::getline(f, str);
-            if (str.length() == 0)
-                continue;
-            std::vector<std::wstring> parts = split(str, L'\t');
-            if (parts.size() != 2)
-                continue;
-            std::wstring key(parts[1]);
-            prepareOrthoKey(key);
-            histMap::iterator it = historic.find(key);
-            hist ch = {histId, parts[1]};
-            if (it == historic.end()) {
-                historic.insert(std::pair<std::wstring, hist>(key, ch));
-                it = historic.find(key);
-                histId++;
-            }
-            if (it != historic.end()) {
-                it->second.abbr.push_back(parts[0]);
-                it->second.search.push_back(std::wstring(prepareForSearch(parts[0])).append(L"\\s*").insert(0, L"[\\( ]"));
-            }
-        }
-        f.close();
-    }
-}
-
 void COROSSParser::loadDic(const std::wstring& dict)
 {
     std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
@@ -212,8 +176,6 @@ COROSSParser::objType COROSSParser::checkInStr(const std::wstring& str) {
         type = Articles_Formulas;
     else if (str_articles_comments == str)
         type = Articles_Comments;
-    else if (str_articles_historic == str)
-        type = Articles_Historic;
     else if (str_articles == str)
         type = Articles;
 
@@ -236,9 +198,6 @@ void COROSSParser::addItem(COROSSParser::objType type, const std::wstring& str) 
             break;
         case Articles_Comments:
             addComment2Article(str);
-            break;
-        case Articles_Historic:
-            addHistoric2Article(str);
             break;
         case Articles:
             addArticle(str);
@@ -335,20 +294,6 @@ void COROSSParser::addComment2Article(const std::wstring& str) {
         else {
             article ca = { vct[0] };
             ca.comments.push_back(vct[1]);
-            articles.insert(std::pair<size_t, article>(vct[0], ca));
-        }
-    }
-}
-
-void COROSSParser::addHistoric2Article(const std::wstring& str) {
-    std::vector<size_t> vct = splitValues(str);
-    if (vct.size() == 2) {
-        artMap::iterator ait = articles.find(vct[0]);
-        if (ait != articles.end())
-            ait->second.historic.push_back(vct[1]);
-        else {
-            article ca = { vct[0] };
-            ca.historic.push_back(vct[1]);
             articles.insert(std::pair<size_t, article>(vct[0], ca));
         }
     }

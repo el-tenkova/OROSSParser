@@ -62,7 +62,6 @@ struct article {
     std::wstring rtf;
     std::vector<size_t> formulas;
     std::vector<size_t> orthos;
-    std::vector<size_t> historic;
     std::vector<size_t> comments;
     dummyVct index;
     std::vector<size_t> words;
@@ -219,7 +218,6 @@ class ATL_NO_VTABLE COROSSParser :
         Articles_Orthos,
         Articles_Formulas,
         Articles_Comments,
-        Articles_Historic,
         Articles
     };
     const std::wstring str_words;
@@ -230,7 +228,6 @@ class ATL_NO_VTABLE COROSSParser :
     const std::wstring str_articles_paras;
     const std::wstring str_articles_formulas;
     const std::wstring str_articles_comments;
-    const std::wstring str_articles_historic;
     const std::wstring str_articles;
     const std::wstring str_values;
     const std::wstring str_sup1;
@@ -256,7 +253,6 @@ public:
       str_articles_orthos(L"INSERT INTO articles_orthos (id, id_ortho) "),
       str_articles_formulas(L"INSERT INTO articles_formulas (id, id_formula) "),
       str_articles_comments(L"INSERT INTO articles_comments (id, id_comment) "),
-      str_articles_historic(L"INSERT INTO articles_historic (id, id_historic) "),
  //     str_articles(L"INSERT INTO articles (id, title, text, rtf, src, comment_id) "), //!!!!
         str_articles(L"INSERT INTO articles (id, title, text, rtf, src) "), //!!!!
         str_values(L"    VALUES ("),
@@ -303,7 +299,6 @@ protected:
     artMap articles;
     titleMap titles;
     footMap footnotes;
-    histMap historic;
     std::map<std::wstring, size_t> stopDic;
 
   //  orthoMap orthos;
@@ -341,7 +336,6 @@ protected:
     void presaveArticles(bool saveSearch = false);
 
     void loadSearchData(bool loadSearch = false);
-    void loadHistoric();
     void loadDic(const std::wstring& dict);
     void loadStopDic(const std::wstring& dict);
     void COROSSParser::loadMorph();
@@ -354,7 +348,6 @@ protected:
     void makeOrthogrTable(std::wofstream& result);
     void makeFormulaTable(std::wofstream& result);
     void makeFootNotesTable(std::wofstream& result);
-    void makeHistoricTable(std::wofstream& result);
     void makeWordsTable(const std::locale& loc);
     void makeArticlesTable(const std::locale& loc);
     void makeMistakesTable(std::wofstream& result);
@@ -393,7 +386,6 @@ protected:
     void getPara(const std::wstring& article, const std::wstring& pure, std::vector<size_t>& paraVct, substMap& substs);
     void getOrthos(const std::wstring& article, const std::wstring& pure, const size_t& src_len, const std::vector<size_t>& paraVct, std::vector<size_t>& orthos, substMap& substs);
     void getFormulas(const std::wstring& article, const std::wstring& pure, const size_t& src_len, const std::vector<size_t>& paraVct, std::vector<size_t>& orthos, std::vector<size_t>& formulas, substMap& substs, dummyVct& index);
-    void getHistoric(const std::wstring& pure, std::vector<size_t>& histvct);
     void getTags(const std::wstring& text, const std::wstring& tag, std::vector<size_t>& tagsVct);
     size_t getRuleId(const size_t& para, const std::wstring& Num);
     size_t getParentRule(const std::wstring& Num);
@@ -414,7 +406,6 @@ protected:
     void addOrtho2Article(const std::wstring& str);
     void addFormula2Article(const std::wstring& str);
     void addComment2Article(const std::wstring& str);
-    void addHistoric2Article(const std::wstring& str);
     void addArticle(const std::wstring& str);
     std::vector<size_t> splitValues(const std::wstring& str);
 
