@@ -280,6 +280,84 @@ void COROSSParser::saveForSearch()
 
 }
 
+void COROSSParser::saveArticles()
+{
+    std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
+    // save data for search in articles
+    std::wofstream arts(L"c:\\IRYA\\arts.txt", std::wofstream::binary | std::wofstream::trunc);
+
+    if (arts.is_open()) {
+        arts.imbue(loc);
+        for (auto ait = articles.begin(); ait != articles.end(); ++ait) {
+            std::wstring str(L"a:");
+            str.append(std::to_wstring(ait->second.id)); // id
+            str.append(L"\n");
+            str.append(L"a_title:"); // title
+            str.append(ait->second.title);
+            str.append(L"\n");
+            str.append(L"a_text:"); // text
+            str.append(ait->second.text);
+            str.append(L"\n");
+            str.append(L"a_src:"); // src
+            str.append(ait->second.src);
+            str.append(L"\n");
+            str.append(L"a_rtf"); // rtf
+            str.append(ait->second.rtf);
+            str.append(L"\n");
+            arts.write(str.c_str(), str.length());
+            // formulas
+            if (ait->second.formulas.size() != 0) {
+                str.clear();
+                str.append(L"a_f:");
+                for (auto fit = ait->second.formulas.begin(); fit != ait->second.formulas.end(); ++fit) {
+                    str.append(std::to_wstring((*fit)));
+                    str.append(L",");
+                }
+                str[str.length() - 1] = L'\n';
+                arts.write(str.c_str(), str.length());
+            }
+            // orthos
+            if (ait->second.orthos.size() != 0) {
+                str.clear();
+                str.append(L"a_o:");
+                for (auto oit = ait->second.orthos.begin(); oit != ait->second.orthos.end(); ++oit) {
+                    str.append(std::to_wstring((*oit)));
+                    str.append(L",");
+                }
+                str[str.length() - 1] = L'\n';
+                arts.write(str.c_str(), str.length());
+            }
+            // comments
+            if (ait->second.comments.size() != 0) {
+                str.clear();
+                str.append(L"a_c:");
+                for (auto cit = ait->second.comments.begin(); cit != ait->second.comments.end(); ++cit) {
+                    str.append(std::to_wstring((*cit)));
+                    str.append(L",");
+                }
+                str[str.length() - 1] = L'\n';
+                arts.write(str.c_str(), str.length());
+            }
+            // dummy
+            if (ait->second.index.size() != 0) {
+                // one line for each dummy
+                for (auto cit = ait->second.index.begin(); cit != ait->second.index.end(); ++cit) {
+                    str.clear();
+                    str.append(L"a_d:");
+                    str.append(std::to_wstring(cit->start));
+                    str.append(L",");
+                    str.append(std::to_wstring(cit->len));
+                    str.append(L",");
+                    str.append(std::to_wstring(cit->type));
+                    str.append(L"\n");
+                    arts.write(str.c_str(), str.length());
+                }
+            }
+        }
+        arts.close();
+    }
+}
+
 void COROSSParser::makeSQL()
 {
     std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());

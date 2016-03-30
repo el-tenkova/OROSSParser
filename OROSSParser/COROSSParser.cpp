@@ -100,6 +100,7 @@ STDMETHODIMP COROSSParser::Init( modeName Mode, long* hRes )
 STDMETHODIMP COROSSParser::Terminate( long* hRes )
 {
     presaveArticles(SAVE_SEARCH);
+    saveArticles();
     makeSQL();
     saveData(SAVE_SEARCH);
     error.close();

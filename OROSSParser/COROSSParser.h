@@ -334,6 +334,7 @@ protected:
     void saveData(bool saveSearch = false);
     void saveForSearch();
     void presaveArticles(bool saveSearch = false);
+    void saveArticles();
 
     void loadSearchData(bool loadSearch = false);
     void loadDic(const std::wstring& dict);
