@@ -289,26 +289,26 @@ void COROSSParser::saveArticles()
     if (arts.is_open()) {
         arts.imbue(loc);
         for (auto ait = articles.begin(); ait != articles.end(); ++ait) {
-            std::wstring str(L"a:");
+            std::wstring str(L"a:\t");
             str.append(std::to_wstring(ait->second.id)); // id
             str.append(L"\n");
-            str.append(L"a_title:"); // title
+            str.append(L"a_title:\t"); // title
             str.append(ait->second.title);
             str.append(L"\n");
-            str.append(L"a_text:"); // text
+            str.append(L"a_text:\t"); // text
             str.append(ait->second.text);
             str.append(L"\n");
-            str.append(L"a_src:"); // src
+            str.append(L"a_src:\t"); // src
             str.append(ait->second.src);
             str.append(L"\n");
-            str.append(L"a_rtf"); // rtf
+            str.append(L"a_rtf:\t"); // rtf
             str.append(ait->second.rtf);
             str.append(L"\n");
             arts.write(str.c_str(), str.length());
             // formulas
             if (ait->second.formulas.size() != 0) {
                 str.clear();
-                str.append(L"a_f:");
+                str.append(L"a_f:\t");
                 for (auto fit = ait->second.formulas.begin(); fit != ait->second.formulas.end(); ++fit) {
                     str.append(std::to_wstring((*fit)));
                     str.append(L",");
@@ -319,7 +319,7 @@ void COROSSParser::saveArticles()
             // orthos
             if (ait->second.orthos.size() != 0) {
                 str.clear();
-                str.append(L"a_o:");
+                str.append(L"a_o:\t");
                 for (auto oit = ait->second.orthos.begin(); oit != ait->second.orthos.end(); ++oit) {
                     str.append(std::to_wstring((*oit)));
                     str.append(L",");
@@ -330,7 +330,7 @@ void COROSSParser::saveArticles()
             // comments
             if (ait->second.comments.size() != 0) {
                 str.clear();
-                str.append(L"a_c:");
+                str.append(L"a_c:\t");
                 for (auto cit = ait->second.comments.begin(); cit != ait->second.comments.end(); ++cit) {
                     str.append(std::to_wstring((*cit)));
                     str.append(L",");
@@ -343,10 +343,13 @@ void COROSSParser::saveArticles()
                 // one line for each dummy
                 for (auto cit = ait->second.index.begin(); cit != ait->second.index.end(); ++cit) {
                     str.clear();
-                    str.append(L"a_d:");
+                    str.append(L"a_d:\t");
                     str.append(std::to_wstring(cit->start));
                     str.append(L",");
-                    str.append(std::to_wstring(cit->len));
+                    if (cit->len == std::wstring::npos)
+                        str.append(L"-1");
+                    else
+                        str.append(std::to_wstring(cit->len));
                     str.append(L",");
                     str.append(std::to_wstring(cit->type));
                     str.append(L"\n");
