@@ -353,6 +353,8 @@ protected:
 
     COROSSParserMorph morph;
 
+    void processArticles();
+
     void saveData(bool saveSearch = false);
     void saveForSearch();
     void presaveArticles(bool saveSearch = false);
@@ -408,8 +410,8 @@ protected:
 
     size_t getParaNum(const std::wstring& rest);
     std::wstring getRuleNum(const std::wstring& rest);
-    void getPara(const std::wstring& article, const std::wstring& pure, std::vector<size_t>& paraVct, substMap& substs);
-    void getOrthos(const std::wstring& article, const std::wstring& pure, const size_t& src_len, const std::vector<size_t>& paraVct, std::vector<size_t>& orthos, substMap& substs);
+    void getPara(const size_t& id_art, const std::wstring& article, const std::wstring& pure, std::vector<size_t>& paraVct, substMap& substs);
+    void getOrthos(const size_t& id_art, const std::wstring& article, const std::wstring& pure, const size_t& src_len, const std::vector<size_t>& paraVct, std::vector<size_t>& orthos, substMap& substs);
     void getFormulas(const std::wstring& article, const std::wstring& pure, const size_t& src_len, const std::vector<size_t>& paraVct, std::vector<size_t>& orthos, std::vector<size_t>& formulas, substMap& substs, dummyVct& index);
     void getTags(const std::wstring& text, const std::wstring& tag, std::vector<size_t>& tagsVct);
     size_t getRuleId(const size_t& para, const std::wstring& Num);

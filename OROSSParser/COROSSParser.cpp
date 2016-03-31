@@ -102,8 +102,8 @@ STDMETHODIMP COROSSParser::Init( modeName Mode, long* hRes )
 
 STDMETHODIMP COROSSParser::Terminate( long* hRes )
 {
+    processArticles();
     presaveArticles(SAVE_SEARCH);
-    saveArticles();
     makeSQL();
     saveData(SAVE_SEARCH);
     error.close();
@@ -414,21 +414,96 @@ STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]
     correctText(title);
     size_t titleLen = title.length();
     prepareTitle(title);
+    
+    bool found = false;
+    if (mode == Update) {
+        std::wstring title_l(title);
+        std::transform(title_l.begin(), title_l.end(), title_l.begin(),
+            std::bind2nd(std::ptr_fun(&std::tolower<wchar_t>), russian));
+        auto tit = titles.find(title_l);
+        if (tit != titles.end()) {
+            auto ait = articles.find(tit->second);
+            if (ait->second.src == art) {
+                ait->second.state = ARTICLE_STATE_NEUTRAL;
+            }
+            else {
+                ait->second.state = ARTICLE_STATE_EDITED;
+                ait->second.text = art;
+                ait->second.src = art;
+                ait->second.title = title;
+                ait->second.rtf = toRTF(art);
 
+                ait->second.text.insert(titleLen, tagsTitle[1]);
+                ait->second.text.insert(0, tagsTitle[0]);
 
-    article ca = {artId, title, art, art, toRTF(art)};
+                ait->second.index.clear();
+                ait->second.index.push_back({ tagsTitle[0].length(), titleLen, TITLE_WORD });
+                titleLen += tagsTitle[0].length() + tagsTitle[1].length();
 
-    ca.text.insert(titleLen, tagsTitle[1]);
-    ca.text.insert(0, tagsTitle[0]);
+                ait->second.titleLen = titleLen;
 
-    ca.index.push_back({ tagsTitle[0].length(), titleLen, TITLE_WORD });
-    titleLen += tagsTitle[0].length() + tagsTitle[1].length();
-    ca.titleLen = titleLen;
+                ait->second.formulas.clear();
+                ait->second.orthos.clear();
+                ait->second.comments.clear();
 
-    processArticle(ca);
+//                processArticle(ait->second);
+            }
+            found = true;
+        }
+    }
+    else if (mode == Create || found == false) {
+        article ca = { artId, title, art, art, toRTF(art) };
 
+        ca.state = ARTICLE_STATE_NEW;
+
+        ca.text.insert(titleLen, tagsTitle[1]);
+        ca.text.insert(0, tagsTitle[0]);
+
+        ca.index.push_back({ tagsTitle[0].length(), titleLen, TITLE_WORD });
+        titleLen += tagsTitle[0].length() + tagsTitle[1].length();
+
+        ca.titleLen = titleLen;
+
+        // add to articles
+        articles.insert(std::pair<size_t, article>(artId, ca));
+
+        // convert title to lower case
+        std::wstring title_l(ca.title);
+        prepareSearchTitle(title_l);
+//        std::transform(title_l.begin(), title_l.end(), title_l.begin(),
+ //           std::bind2nd(std::ptr_fun(&std::tolower<wchar_t>), russian));
+        titles.insert(std::pair<std::wstring, size_t>(title_l, artId));
+        artId++;
+
+//        processArticle(ca);
+    }
     *hRes = S_OK;
     return S_OK;
+}
+
+void COROSSParser::processArticles() {
+
+    artMap sorted;
+    artId = 1;
+    // sort by title
+    auto tit = titles.begin();
+    for (tit; tit != titles.end(); ++tit) {
+        article ca = articles[tit->second];
+        if (ca.state != ARTICLE_STATE_TO_DELETE) {
+            ca.id = artId;
+            sorted.insert(std::pair<size_t, article>(artId, ca));
+            artId++;
+        }
+    }
+    articles.clear();
+    articles = sorted;
+    // save articles without commentary information
+    saveArticles();
+
+    for (auto ait = articles.begin(); ait != articles.end(); ++ait) {
+        if (ait->second.state != ARTICLE_STATE_TO_DELETE)
+            processArticle(ait->second);
+    }
 }
 
 void COROSSParser::processArticle(article& ca) {
@@ -440,14 +515,14 @@ void COROSSParser::processArticle(article& ca) {
     pure = getPureArticle(ca.text);
 
     substMap substs;
-    getPara(a, pure, paraVct, substs);
+    getPara(ca.id, a, pure, paraVct, substs);
 
     if (ca.text.length() == 0) {
         ca.text = a;
     }
 
     size_t pure_len = getPureWord(getSpecMarkedArticle(ca.src)).length(); //getPureLen(ca.src); //pure);
-    getOrthos(ca.text /*html*/, pure, pure_len, paraVct, ca.orthos, substs);
+    getOrthos(ca.id, ca.text /*html*/, pure, pure_len, paraVct, ca.orthos, substs);
     getFormulas(ca.text /*html */, pure, pure_len, paraVct, ca.orthos, ca.formulas, substs, ca.index);
 
 
@@ -535,15 +610,16 @@ void COROSSParser::processArticle(article& ca) {
         ca.text = html;
     }
 
-    articles.insert(std::pair<size_t, article>(artId, ca));
+/*    if (ca.state == ARTICLE_STATE_NEW) {
+        articles.insert(std::pair<size_t, article>(artId, ca));
 
-    // convert title to lower case
-    std::wstring title_l(ca.title);
-    std::transform(title_l.begin(), title_l.end(), title_l.begin(),
-        std::bind2nd(std::ptr_fun(&std::tolower<wchar_t>), russian));
-    titles.insert(std::pair<std::wstring, size_t>(title_l, artId));
-    artId++;
-
+        // convert title to lower case
+        std::wstring title_l(ca.title);
+        std::transform(title_l.begin(), title_l.end(), title_l.begin(),
+            std::bind2nd(std::ptr_fun(&std::tolower<wchar_t>), russian));
+        titles.insert(std::pair<std::wstring, size_t>(title_l, artId));
+        artId++;
+    } */
 }
 
 std::wstring COROSSParser::getPureArticle(const std::wstring& art, bool full)
@@ -572,7 +648,7 @@ std::wstring COROSSParser::getPureArticle(const std::wstring& art, bool full)
     return pure;
 }
 
-void COROSSParser::getPara(const std::wstring& article, const std::wstring& pure, std::vector<size_t>& paraVct, substMap& substs)
+void COROSSParser::getPara(const size_t& id_art, const std::wstring& article, const std::wstring& pure, std::vector<size_t>& paraVct, substMap& substs)
 {
     std::wstring html(L"");
     std::wstring a(pure);//article);
@@ -615,7 +691,7 @@ void COROSSParser::getPara(const std::wstring& article, const std::wstring& pure
             subst cs = { PARA_SUBST, parait->second.id, len /*m.str().length()*/, link, 1 };
             std::wstring art_id_1(L"art_id=\"1\"");
             size_t pos = cs.substitution.find(art_id_1);
-            std::wstring art_id = L"art_id=\"" + std::to_wstring(artId) + L"\"";
+            std::wstring art_id = L"art_id=\"" + std::to_wstring(id_art) + L"\"";
             while (pos != std::wstring::npos) {
                 cs.substitution.replace(pos, art_id_1.length(), art_id);
                 pos = cs.substitution.find(art_id_1, pos + 1);
@@ -666,12 +742,12 @@ void COROSSParser::getPara(const std::wstring& article, const std::wstring& pure
         for (svit; svit != sit->second.end(); ++svit) {
             size_t pos = svit->substitution.find(L"#rules_");
             while (pos != std::wstring::npos) {
-                svit->substitution.insert(pos + 6, std::to_wstring(artId));
+                svit->substitution.insert(pos + 6, std::to_wstring(id_art));
                 pos = svit->substitution.find(L"#rules_", pos + 6);
             }
             pos = svit->substitution.find(L"#paras_");
             while (pos != std::wstring::npos) {
-                svit->substitution.insert(pos + 6, std::to_wstring(artId));
+                svit->substitution.insert(pos + 6, std::to_wstring(id_art));
                 pos = svit->substitution.find(L"#paras_", pos + 6);
             }
         }
@@ -685,7 +761,7 @@ void COROSSParser::getPara(const std::wstring& article, const std::wstring& pure
 //    return html;
 }
 
-void COROSSParser::getOrthos(const std::wstring& article, const std::wstring& pure, const size_t& src_len, const std::vector<size_t>& paraVct, std::vector<size_t>& orthos, substMap& substs)
+void COROSSParser::getOrthos(const size_t& id_art, const std::wstring& article, const std::wstring& pure, const size_t& src_len, const std::vector<size_t>& paraVct, std::vector<size_t>& orthos, substMap& substs)
 {
     std::wstring a(pure);
     std::wstring afull(article);
@@ -712,11 +788,11 @@ void COROSSParser::getOrthos(const std::wstring& article, const std::wstring& pu
                     size_t shift = shiftLeft(afull, cm.prefix().length());
                     subst cs = {ORTHO_SUBST, oit->second.id, cm.str().length() + shift, L"", 0};
                     cs.substitution.append(L"<a class=\"accordion-toggle orthogramm\" art_id=\"");
-                    cs.substitution.append(std::to_wstring(artId));
+                    cs.substitution.append(std::to_wstring(id_art));
                     cs.substitution.append(L"\" ortho_id=\"");
                     cs.substitution.append(std::to_wstring(oit->second.id));
                     cs.substitution.append(L"\" href=\"#formulas");
-                    cs.substitution.append(std::to_wstring(artId));
+                    cs.substitution.append(std::to_wstring(id_art));
                     cs.substitution.append(L"_");
                     cs.substitution.append(std::to_wstring(oit->second.id));
                     cs.substitution.append(L"\" data-parent=\"#accordionOrthos\" data-toggle=\"collapse\" style=\"text-transform:none\" >");

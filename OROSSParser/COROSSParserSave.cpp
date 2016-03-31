@@ -1092,22 +1092,6 @@ void COROSSParser::makeMistakesTable(std::wofstream& result) {
 }
 
 void COROSSParser::presaveArticles(bool saveSearch) {
-    artMap sorted;
-    artId = 1;
-    // sort by title
-    auto tit = titles.begin();
-    for (tit; tit != titles.end(); ++tit) {
-        article ca = articles[tit->second];
-        if (ca.state != ARTICLE_STATE_TO_DELETE) {
-            ca.id = artId;
-            sorted.insert(std::pair<size_t, article>(artId, ca));
-            artId++;
-        }
-    }
-    articles.clear();
-    articles = sorted;
-    // save articles without commentary information
-    saveArticles();
 
     processIndex(saveSearch);
     processComments();
