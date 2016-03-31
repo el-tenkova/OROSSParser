@@ -217,8 +217,7 @@ void COROSSParser::loadDic(const std::wstring& dict)
             ca.state = ARTICLE_STATE_TO_DELETE;
             articles.insert(std::pair<size_t, article>(ca.id, ca));
             std::wstring title_l(ca.title);
-            std::transform(title_l.begin(), title_l.end(), title_l.begin(),
-                std::bind2nd(std::ptr_fun(&std::tolower<wchar_t>), russian));
+            prepareSearchTitle(title_l);
             titles.insert(std::pair<std::wstring, size_t>(title_l, ca.id));
         }
         arts.close();
