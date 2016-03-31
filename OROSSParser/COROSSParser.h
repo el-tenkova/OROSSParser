@@ -387,6 +387,7 @@ protected:
 
     void prepareOrthoKey(std::wstring& key);
     void prepareTitle(std::wstring& title);
+    void prepareSearchTitle(std::wstring &title);
     void prepareComment(std::wstring& comment);
     std::wstring prepareForSearch(const std::wstring& ortho);
     std::wstring prepareRest(const std::wstring& Rest);

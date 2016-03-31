@@ -173,6 +173,16 @@ void COROSSParser::prepareTitle(std::wstring& title)
     }
 }
 
+void COROSSParser::prepareSearchTitle(std::wstring &title) {
+    std::transform(title.begin(), title.end(), title.begin(),
+        std::bind2nd(std::ptr_fun(&std::tolower<wchar_t>), russian));
+    size_t pos = title.find(L'…');
+    while (pos != std::wstring::npos) {
+        title.replace(pos, 1, L"...");
+        pos = title.find(L'…', pos + 1);
+    }
+}
+
 void COROSSParser::prepareComment(std::wstring& comment)
 {
     size_t pos = comment.find(str_sup1);
