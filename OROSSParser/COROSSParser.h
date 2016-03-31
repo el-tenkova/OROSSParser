@@ -72,6 +72,21 @@ struct article {
     std::vector<size_t> words;
     size_t state;
     size_t titleLen;
+    //
+    void clear() {
+        id = 0;
+        title.clear();
+        text.clear();
+        src.clear();
+        rtf.clear();
+        formulas.clear();
+        orthos.clear();
+        comments.clear();
+        index.clear();
+        words.clear();
+        state = ARTICLE_STATE_NEW;
+        titleLen = 0;
+    };
 };
 
 typedef std::map<size_t, article> artMap;

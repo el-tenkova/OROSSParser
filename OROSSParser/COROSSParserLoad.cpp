@@ -168,6 +168,7 @@ void COROSSParser::loadDic(const std::wstring& dict)
                         std::bind2nd(std::ptr_fun(&std::tolower<wchar_t>), russian));
                     titles.insert(std::pair<std::wstring, size_t>(title_l, ca.id));
                 }
+                ca.clear();
                 ca.id = std::stol(parts[1]);
             }
             else if (parts[0] == L"a_title:") {
@@ -197,12 +198,12 @@ void COROSSParser::loadDic(const std::wstring& dict)
                     ca.orthos.push_back(std::stol(*it));
                 }
             }
-            else if (parts[0] == L"a_c:") {
+/*            else if (parts[0] == L"a_c:") {
                 std::vector<std::wstring> comments = split(parts[1], L',');
                 for (auto it = comments.begin(); it != comments.end(); ++it) {
                     ca.comments.push_back(std::stol(*it));
                 }
-            }
+            } */
             else if (parts[0] == L"a_d:") {
                 dummy cd;
                 std::vector<std::wstring> p = split(parts[1], L',');
