@@ -331,7 +331,7 @@ void COROSSParser::saveArticles()
                 arts.write(str.c_str(), str.length());
             }
             // comments
-            if (ait->second.comments.size() != 0) {
+/*            if (ait->second.comments.size() != 0) {
                 str.clear();
                 str.append(L"a_c:\t");
                 for (auto cit = ait->second.comments.begin(); cit != ait->second.comments.end(); ++cit) {
@@ -340,7 +340,7 @@ void COROSSParser::saveArticles()
                 }
                 str[str.length() - 1] = L'\n';
                 arts.write(str.c_str(), str.length());
-            }
+            } */
             // dummy
             if (ait->second.index.size() != 0) {
                 // one line for each dummy
@@ -858,7 +858,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
     size_t idx = 0;
     for (; ait != articles.end(); ++ait)
     {
-        if (idx == 7999) {
+/*        if (idx == 7999) {
             idx = 0;
             n++;
             result.close();
@@ -873,6 +873,9 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
             else
                 return;
         }
+*/
+        if (ait->second.state == ARTICLE_STATE_TO_DELETE)
+            continue;
 
         str.clear();
         //
@@ -1095,12 +1098,17 @@ void COROSSParser::presaveArticles(bool saveSearch) {
     auto tit = titles.begin();
     for (tit; tit != titles.end(); ++tit) {
         article ca = articles[tit->second];
-        ca.id = artId;
-        sorted.insert(std::pair<size_t, article>(artId, ca));
-        artId++;
+        if (ca.state != ARTICLE_STATE_TO_DELETE) {
+            ca.id = artId;
+            sorted.insert(std::pair<size_t, article>(artId, ca));
+            artId++;
+        }
     }
     articles.clear();
     articles = sorted;
+    // save articles without commentary information
+    saveArticles();
+
     processIndex(saveSearch);
     processComments();
     wordId = 1;
@@ -1123,6 +1131,8 @@ void COROSSParser::processComments() {
 //    std::wregex search(smotri);
 
     for (it; it != articles.end(); ++it) {
+        if (it->second.state == ARTICLE_STATE_TO_DELETE)
+            continue;
         std::wstring pure;
         pure = getSpecMarkedArticle(it->second.text); // full = true
         for (size_t i = 0; i < 2; i++) {
@@ -1553,6 +1563,9 @@ void COROSSParser::addArticlesToIndex() {
         arts.imbue(loc);
         artMap::iterator ait = articles.begin();
         for (; ait != articles.end(); ++ait) {
+            if (ait->second.state == ARTICLE_STATE_TO_DELETE)
+                continue;
+
             arts.write(L"-----------------------", wcslen(L"-----------------------"));
             arts.write(caret.c_str(), caret.length());
             size_t group = 1;
@@ -1767,6 +1780,9 @@ void COROSSParser::printArticles() {
         html.imbue(loc);
         artMap::iterator ait = articles.begin();
         for (; ait != articles.end(); ++ait) {
+            if (ait->second.state == ARTICLE_STATE_TO_DELETE)
+                continue;
+
             html.write(L"<p>-----------------------</p>", wcslen(L"<p>-----------------------</p>"));
             html.write(para_b.c_str(), para_b.length());
             html.write(ait->second.text.c_str(), ait->second.text.length());
