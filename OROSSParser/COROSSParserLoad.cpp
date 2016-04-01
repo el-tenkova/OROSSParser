@@ -167,6 +167,7 @@ void COROSSParser::loadDic(const std::wstring& dict)
                     std::transform(title_l.begin(), title_l.end(), title_l.begin(),
                         std::bind2nd(std::ptr_fun(&std::tolower<wchar_t>), russian));
                     titles.insert(std::pair<std::wstring, size_t>(title_l, ca.id));
+                    artId = ca.id;
                 }
                 ca.clear();
                 ca.id = std::stol(parts[1]);
@@ -219,7 +220,10 @@ void COROSSParser::loadDic(const std::wstring& dict)
             std::wstring title_l(ca.title);
             prepareSearchTitle(title_l);
             titles.insert(std::pair<std::wstring, size_t>(title_l, ca.id));
+            artId = ca.id;
         }
+        if (artId != 1)
+            artId++; // for new articles in update mode
         arts.close();
     } 
 }

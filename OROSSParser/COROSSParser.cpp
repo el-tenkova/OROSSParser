@@ -446,12 +446,11 @@ STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]
                 ait->second.orthos.clear();
                 ait->second.comments.clear();
 
-//                processArticle(ait->second);
             }
             found = true;
         }
     }
-    else if (mode == Create || found == false) {
+    if (mode == Create || found == false) {
         article ca = { artId, title, art, art, toRTF(art) };
 
         ca.state = ARTICLE_STATE_NEW;
@@ -466,16 +465,12 @@ STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]
 
         // add to articles
         articles.insert(std::pair<size_t, article>(artId, ca));
-
         // convert title to lower case
         std::wstring title_l(ca.title);
         prepareSearchTitle(title_l);
-//        std::transform(title_l.begin(), title_l.end(), title_l.begin(),
- //           std::bind2nd(std::ptr_fun(&std::tolower<wchar_t>), russian));
         titles.insert(std::pair<std::wstring, size_t>(title_l, artId));
         artId++;
 
-//        processArticle(ca);
     }
     *hRes = S_OK;
     return S_OK;
