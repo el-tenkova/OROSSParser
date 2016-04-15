@@ -19,22 +19,15 @@
 #define FORMULA_SUBST 2
 #define PARA_SUBST 3
 
-#define TITLE_WORD 1
-#define LINK_WORD 2
-#define ARTICLE_WORD 3
-#define FORMULA_EXAMPLE 4
-#define RULE_TEXT_WORD 5
-#define RULE_INFO_WORD 6
-#define FOOTNOTE_WORD 7
-#define PARA_WORD 8
-
 const wchar_t titleWord = L'1';
 const wchar_t articleWord = L'2';
+const wchar_t linkWord = L'3';
 const wchar_t ruleWord = L'4';
 const wchar_t formulaWord = L'5';
 const wchar_t formulaExampleWord = L'6';
 const wchar_t footnoteWord = L'7';
 const wchar_t orthogrWord = L'8';
+const wchar_t ruleTitleWord = L'9';
 
 struct dummy {
     size_t start;
@@ -90,7 +83,7 @@ struct article {
 };
 
 typedef std::map<size_t, article> artMap;
-typedef std::map<std::wstring, size_t> titleMap;
+typedef std::map<std::wstring, std::vector<size_t> > titleMap;
 
 struct place {
     size_t id; // article id
@@ -194,6 +187,13 @@ struct rule {
 };
 typedef std::vector<rule> ruleVct;
 
+struct rule_title {
+    size_t para;
+    std::wstring num;
+    std::wstring title;
+};
+typedef std::vector<rule_title> ruleTitleVct;
+
 struct pararest {
     std::wstring link;
     std::wstring search;
@@ -217,6 +217,7 @@ typedef std::map<size_t, para> paraMap;
 struct tile {
     size_t id;
     size_t part;
+    std::wstring name;
     std::vector<size_t> paras;
 };
 
@@ -300,6 +301,7 @@ public:
     STDMETHOD(AddPara)( long Num, BSTR Para, /*[out, retval]*/ long *hRes );
     STDMETHOD(AddExamplesToPara)( BSTR Examples, /*[out, retval]*/ long *hRes );
     STDMETHOD(AddRule)( BSTR Num, BSTR Rule, /*[out, retval]*/ long *hRes );
+    STDMETHOD(AddRuleTitle)(BSTR Num, BSTR Title, /*[out, retval]*/ long *hRes);
     STDMETHOD(AddOrthogr)( BSTR Orthogr, BSTR Formula, BSTR Example, BSTR Rest, long IsActive, long IsPrefix, /*[out, retval]*/ long *hRes );
     STDMETHOD(AddArticle)( BSTR Title, BSTR Article, /*[out, retval]*/ long *hRes );
     STDMETHOD(AddInfoToRule)( BSTR Info, /*[out, retval]*/ long *hRes );
@@ -316,6 +318,7 @@ protected:
     tileMap tiles;
     paraMap paras;
     ruleVct rules;
+    ruleTitleVct ruleTitles;
     wordMap words;
     mistakeMap mistakes;
     artMap articles;

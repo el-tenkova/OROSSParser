@@ -161,12 +161,21 @@ void COROSSParser::loadDic(const std::wstring& dict)
             std::vector<std::wstring> parts = split(str, L'\t');
             if (parts[0] == L"a:") {
                 if (ca.id != 0) {
-                    ca.state = ARTICLE_STATE_TO_DELETE;
+                    ca.state = mode != Rebuild ? ARTICLE_STATE_TO_DELETE : ARTICLE_STATE_NEUTRAL;
                     articles.insert(std::pair<size_t, article>(ca.id, ca));
                     std::wstring title_l(ca.title);
-                    std::transform(title_l.begin(), title_l.end(), title_l.begin(),
-                        std::bind2nd(std::ptr_fun(&std::tolower<wchar_t>), russian));
-                    titles.insert(std::pair<std::wstring, size_t>(title_l, ca.id));
+                    prepareSearchTitle(title_l);
+//                    std::transform(title_l.begin(), title_l.end(), title_l.begin(),
+//                        std::bind2nd(std::ptr_fun(&std::tolower<wchar_t>), russian));
+                    auto tit = titles.find(title_l);
+                    if (tit == titles.end()) {
+                        std::vector<size_t> artVct;
+                        artVct.push_back(ca.id);
+                        titles.insert(std::pair<std::wstring, std::vector<size_t> >(title_l, artVct));
+                    }
+                    else {
+                        tit->second.push_back(ca.id);
+                    }
                     artId = ca.id;
                 }
                 ca.clear();
@@ -215,11 +224,19 @@ void COROSSParser::loadDic(const std::wstring& dict)
             }
         }
         if (ca.id != 0) {
-            ca.state = ARTICLE_STATE_TO_DELETE;
+            ca.state = mode != Rebuild ? ARTICLE_STATE_TO_DELETE : ARTICLE_STATE_NEUTRAL;
             articles.insert(std::pair<size_t, article>(ca.id, ca));
             std::wstring title_l(ca.title);
             prepareSearchTitle(title_l);
-            titles.insert(std::pair<std::wstring, size_t>(title_l, ca.id));
+            auto tit = titles.find(title_l);
+            if (tit == titles.end()) {
+                std::vector<size_t> artVct;
+                artVct.push_back(ca.id);
+                titles.insert(std::pair<std::wstring, std::vector<size_t> >(title_l, artVct));
+            }
+            else {
+                tit->second.push_back(ca.id);
+            }
             artId = ca.id;
         }
         if (artId != 1)

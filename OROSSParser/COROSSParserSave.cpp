@@ -354,7 +354,7 @@ void COROSSParser::saveArticles()
                     else
                         str.append(std::to_wstring(cit->len));
                     str.append(L",");
-                    str.append(std::to_wstring(cit->type));
+                    str.append(std::wstring(1, cit->type));
                     str.append(L"\n");
                     arts.write(str.c_str(), str.length());
                 }
@@ -419,6 +419,7 @@ void COROSSParser::makeTileTable(std::wofstream& result)
 {
     std::wstring str(L"\nCREATE TABLE IF NOT EXISTS tiles (\n\
     id int(11) NOT NULL,\n\
+    title varchar(200) NOT NULL,\n\
     name varchar(200) NOT NULL,\n\
     PRIMARY KEY (id) \n\
     );\n\n");
@@ -428,11 +429,13 @@ void COROSSParser::makeTileTable(std::wofstream& result)
     for (; tit != tiles.end(); ++tit)
     {
         str.clear();
-        str.append(L"INSERT INTO tiles (id, name) \n\
+        str.append(L"INSERT INTO tiles (id, title, name) \n\
     VALUES (");
         str.append(std::to_wstring(tit->second.id));
         str.append(L",'");
         str.append(tit->first);
+        str.append(L"','");
+        str.append(tit->second.name);
         str.append(L"');\n");
         result.write(str.c_str(), str.length());
     }
@@ -536,6 +539,7 @@ void COROSSParser::makeRuleTable(std::wofstream& result)
     num VARCHAR(10) NOT NULL, \n\
     text TEXT NOT NULL,\n\
     info TEXT NOT NULL,\n\
+    title TEXT NOT NULL,\n\
     PRIMARY KEY (id) \n\
     );\n\n");
 
@@ -545,7 +549,7 @@ void COROSSParser::makeRuleTable(std::wofstream& result)
     for (; ruleit != rules.end(); ++ruleit)
     {
         str.clear();
-        str.append(L"INSERT INTO rules (id, id_para, id_parent, num, text, info) \n\
+        str.append(L"INSERT INTO rules (id, id_para, id_parent, num, text, info, title) \n\
     VALUES (");
         str.append(std::to_wstring(ruleit->id));
         str.append(L",");
@@ -558,6 +562,8 @@ void COROSSParser::makeRuleTable(std::wofstream& result)
         str.append(ruleit->text);
         str.append(L"','");
         str.append(ruleit->info);
+        str.append(L"','");
+        str.append(ruleit->title);
         str.append(L"');\n");
         result.write(str.c_str(), str.length());
     }
@@ -858,7 +864,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
     size_t idx = 0;
     for (; ait != articles.end(); ++ait)
     {
-/*        if (idx == 7999) {
+        if (idx == 7999) {
             idx = 0;
             n++;
             result.close();
@@ -873,7 +879,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
             else
                 return;
         }
-*/
+
         if (ait->second.state == ARTICLE_STATE_TO_DELETE)
             continue;
 
@@ -1563,7 +1569,7 @@ void COROSSParser::addArticlesToIndex() {
 //                if (dit->type == TITLE_WORD && pos != std::wstring::npos)
 //                    addTitleToIndex(ait);
                 while (pos != std::wstring::npos) {
-                    std::vector<std::wstring> vw = addWordToIndex(ait, interval, pos, start, utf_len, dit->type == TITLE_WORD ? titleWord : articleWord, group, number);
+                    std::vector<std::wstring> vw = addWordToIndex(ait, interval, pos, start, utf_len, dit->type == titleWord ? titleWord : articleWord, group, number);
                     if (vw.size() != 0) {
                         number++;
                         for (auto w = vw.begin(); w != vw.end(); ++w) {
@@ -1579,7 +1585,7 @@ void COROSSParser::addArticlesToIndex() {
 //                if (start == 0 && dit->type == TITLE_WORD)
 //                    continue; // do not add title another time
                 if (start < interval.length()) {
-                    std::vector<std::wstring> vw = addWordToIndex(ait, interval, pos, start, utf_len, dit->type == TITLE_WORD ? titleWord : articleWord, group, number);
+                    std::vector<std::wstring> vw = addWordToIndex(ait, interval, pos, start, utf_len, dit->type == titleWord ? titleWord : articleWord, group, number);
                     if (vw.size() != 0) {
                         for (auto w = vw.begin(); w != vw.end(); ++w) {
                             arts.write((*w).c_str(), (*w).length());
@@ -1664,6 +1670,29 @@ void COROSSParser::addTutorialToIndex() {
             }
             if (start < interval.length()) {
                 std::vector<std::wstring> vw = addWordToTutorialIndex(r.id, interval, pos, start, utf_len, ruleWord, number);
+            }
+            // add rule title to index
+            if (r.title.length() > 0) {
+                interval.clear();
+                interval.append(r.title);
+                interval = getSpecMarkedArticle(interval);
+                pos = interval.find(L' ');
+                start = 0;
+                utf_len = 0;
+                number = 1;
+                while (pos != std::wstring::npos) {
+                    std::vector<std::wstring> vw = addWordToTutorialIndex(r.id, interval, pos, start, utf_len, ruleTitleWord, number);
+                    if (vw.size() != 0) {
+                        number++;
+                    }
+                    start = pos + 1;
+                    if (start > interval.length())
+                        break;
+                    pos = interval.find(L" ", start);
+                }
+                if (start < interval.length()) {
+                    std::vector<std::wstring> vw = addWordToTutorialIndex(r.id, interval, pos, start, utf_len, ruleTitleWord, number);
+                }
             }
         }
         for (auto oit = parait->second.orthos.begin(); oit != parait->second.orthos.end(); ++oit) {

@@ -94,7 +94,7 @@ STDMETHODIMP COROSSParser::Init( modeName Mode, long* hRes )
 
     loadSearchData(LOAD_SEARCH);
     loadStopDic(L"c:\\IRYA\\stop.txt");
-    if (mode == Update) {
+    if (mode == Update || mode == Rebuild) {
         loadDic(L"c:\\IRYA\\arts.txt");
     }
     return *hRes;
@@ -143,7 +143,7 @@ STDMETHODIMP COROSSParser::AddPart( BSTR Name, /*[out, retval]*/ long *hRes )
 
 STDMETHODIMP COROSSParser::AddTile( BSTR Name, /* [out, retval]*/ long *hRes )
 {
-    tile ct = {tileId, curPart->second.id};
+    tile ct = {tileId, curPart->second.id, L""};
     std::wstring name(Name);
     size_t sup = name.find(L"<sup>");
     if (sup != std::wstring::npos) {
@@ -157,6 +157,9 @@ STDMETHODIMP COROSSParser::AddTile( BSTR Name, /* [out, retval]*/ long *hRes )
         curTile = tiles.find(Name);
         curPart->second.tiles.push_back(tileId);
         tileId++;
+    }
+    else {
+        curTile->second.name = std::wstring(Name);
     }
     *hRes = S_OK;
     return S_OK;
@@ -248,7 +251,26 @@ STDMETHODIMP COROSSParser::AddExamplesToPara( BSTR Examples, /*[out, retval]*/ l
     return S_OK;
 }
 
-STDMETHODIMP COROSSParser::AddRule( BSTR Num, BSTR Name, /* [out, retval]*/ long *hRes )
+STDMETHODIMP COROSSParser::AddRuleTitle(BSTR Num, BSTR Title, /* [out, retval]*/ long *hRes)
+{
+    std::wstring title(Title);
+    correctText(title);
+    std::wstring num(Num);
+    auto it = ruleTitles.begin();
+    for (it; it != ruleTitles.end(); ++it) {
+        if (curPara->second.id == it->para && it->num == num) {
+            break;
+        }
+    }
+    if (it == ruleTitles.end()) {
+        rule_title crt = { curPara->second.id, num, title };
+        ruleTitles.push_back(crt);
+    }
+    *hRes = S_OK;
+    return S_OK;
+}
+
+STDMETHODIMP COROSSParser::AddRule(BSTR Num, BSTR Name, /* [out, retval]*/ long *hRes)
 {
     std::wstring name(Name);
     correctText(name);
@@ -262,17 +284,24 @@ STDMETHODIMP COROSSParser::AddRule( BSTR Num, BSTR Name, /* [out, retval]*/ long
             error.write(L"\n", wcslen(L"\n"));
         }
     }
-    rule cr = {ruleId, curPara->second.id, parentId, wcslen(Num) != 0 ? Num : L"1", L"", name};
+    std::wstring title = L"";
+    for (auto it = ruleTitles.begin(); it != ruleTitles.end(); ++it) {
+        if (it->para == curPara->second.id && it->num == num) {
+            title = it->title;
+            break;
+        }
+    }
+    rule cr = { ruleId, curPara->second.id, parentId, wcslen(Num) != 0 ? Num : L"1", title, name };
     rules.push_back(cr);
     curPara->second.rules.push_back(ruleId);
     ruleId++;
-/*    curPara = paras.find(Num);
+    /*    curPara = paras.find(Num);
     if (curPara == paras.end())
     {
-        paras.insert(std::pair<size_t, para>((size_t)Num, cp));
-        curPara = paras.find(Num);
-        curTile->second.paras.push_back(Num);
-        paraId = Num;
+    paras.insert(std::pair<size_t, para>((size_t)Num, cp));
+    curPara = paras.find(Num);
+    curTile->second.paras.push_back(Num);
+    paraId = Num;
     } */
     *hRes = S_OK;
     return S_OK;
@@ -418,36 +447,40 @@ STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]
     bool found = false;
     if (mode == Update) {
         std::wstring title_l(title);
-        std::transform(title_l.begin(), title_l.end(), title_l.begin(),
-            std::bind2nd(std::ptr_fun(&std::tolower<wchar_t>), russian));
+        prepareSearchTitle(title_l);
+//        std::transform(title_l.begin(), title_l.end(), title_l.begin(),
+//            std::bind2nd(std::ptr_fun(&std::tolower<wchar_t>), russian));
         auto tit = titles.find(title_l);
         if (tit != titles.end()) {
-            auto ait = articles.find(tit->second);
-            if (ait->second.src == art) {
-                ait->second.state = ARTICLE_STATE_NEUTRAL;
+            for (auto it = tit->second.begin(); it != tit->second.end(); ++it) {
+                auto ait = articles.find(*it);
+                if (ait->second.src == art) {
+                    ait->second.state = ARTICLE_STATE_NEUTRAL;
+                    found = true;
+                }
+/*                else {
+                    ait->second.state = ARTICLE_STATE_EDITED;
+                    ait->second.text = art;
+                    ait->second.src = art;
+                    ait->second.title = title;
+                    ait->second.rtf = toRTF(art);
+
+                    ait->second.text.insert(titleLen, tagsTitle[1]);
+                    ait->second.text.insert(0, tagsTitle[0]);
+
+                    ait->second.index.clear();
+                    ait->second.index.push_back({ tagsTitle[0].length(), titleLen, TITLE_WORD });
+                    titleLen += tagsTitle[0].length() + tagsTitle[1].length();
+
+                    ait->second.titleLen = titleLen;
+
+                    ait->second.formulas.clear();
+                    ait->second.orthos.clear();
+                    ait->second.comments.clear();
+
+                }
+                found = true; */
             }
-            else {
-                ait->second.state = ARTICLE_STATE_EDITED;
-                ait->second.text = art;
-                ait->second.src = art;
-                ait->second.title = title;
-                ait->second.rtf = toRTF(art);
-
-                ait->second.text.insert(titleLen, tagsTitle[1]);
-                ait->second.text.insert(0, tagsTitle[0]);
-
-                ait->second.index.clear();
-                ait->second.index.push_back({ tagsTitle[0].length(), titleLen, TITLE_WORD });
-                titleLen += tagsTitle[0].length() + tagsTitle[1].length();
-
-                ait->second.titleLen = titleLen;
-
-                ait->second.formulas.clear();
-                ait->second.orthos.clear();
-                ait->second.comments.clear();
-
-            }
-            found = true;
         }
     }
     if (mode == Create || found == false) {
@@ -458,7 +491,7 @@ STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]
         ca.text.insert(titleLen, tagsTitle[1]);
         ca.text.insert(0, tagsTitle[0]);
 
-        ca.index.push_back({ tagsTitle[0].length(), titleLen, TITLE_WORD });
+        ca.index.push_back({ tagsTitle[0].length(), titleLen, titleWord });
         titleLen += tagsTitle[0].length() + tagsTitle[1].length();
 
         ca.titleLen = titleLen;
@@ -468,7 +501,15 @@ STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]
         // convert title to lower case
         std::wstring title_l(ca.title);
         prepareSearchTitle(title_l);
-        titles.insert(std::pair<std::wstring, size_t>(title_l, artId));
+        auto tit = titles.find(title_l);
+        if (tit == titles.end()) {
+            std::vector<size_t> artVct;
+            artVct.push_back(ca.id);
+            titles.insert(std::pair < std::wstring, std::vector<size_t> > (title_l, artVct));
+        }
+        else {
+            tit->second.push_back(artId);
+        }
         artId++;
 
     }
@@ -483,22 +524,30 @@ void COROSSParser::processArticles() {
     // sort by title
     auto tit = titles.begin();
     for (tit; tit != titles.end(); ++tit) {
-        article ca = articles[tit->second];
-        if (ca.state != ARTICLE_STATE_TO_DELETE) {
-            ca.id = artId;
-            sorted.insert(std::pair<size_t, article>(artId, ca));
-            artId++;
+        for (auto it = tit->second.begin(); it != tit->second.end(); ++it) {
+            article ca = articles[(*it)];
+            if (ca.state != ARTICLE_STATE_TO_DELETE) {
+                ca.id = artId;
+                sorted.insert(std::pair<size_t, article>(artId, ca));
+                artId++;
+            }
         }
     }
     articles.clear();
     articles = sorted;
-    // save articles without commentary information
-    saveArticles();
 
     for (auto ait = articles.begin(); ait != articles.end(); ++ait) {
-        if (ait->second.state != ARTICLE_STATE_TO_DELETE)
+        if (ait->second.state == ARTICLE_STATE_NEW) {//ARTICLE_STATE_TO_DELETE)
             processArticle(ait->second);
+            std::wstring mess(L"New article was processed:");
+            mess.append(ait->second.title);
+            mess.append(L"\n");
+            error.write(mess.c_str(), mess.length());
+
+        }
     }
+    // save articles without commentary information
+    saveArticles();
 }
 
 void COROSSParser::processArticle(article& ca) {
@@ -539,9 +588,9 @@ void COROSSParser::processArticle(article& ca) {
                     continue;
                 if (sit->first >= len) {
                     if (html.length() == 0 && sit->first > ca.titleLen)
-                        ca.index.push_back({ ca.titleLen, sit->first - ca.titleLen, ARTICLE_WORD });
+                        ca.index.push_back({ ca.titleLen, sit->first - ca.titleLen, articleWord });
                     else
-                        ca.index.push_back({ html.length(), sit->first - len, ARTICLE_WORD });
+                        ca.index.push_back({ html.length(), sit->first - len, articleWord });
                     html.append(a.substr(len, sit->first - len));
                     size_t hlen = html.length();
                     html.append(svit->substitution);
@@ -551,7 +600,7 @@ void COROSSParser::processArticle(article& ca) {
                             std::wstring interval(html.substr(hlen + dit->start, dit->len));
                             if (interval.substr(0, proverka.length()) == proverka)
                                 continue;
-                            ca.index.push_back({ hlen + dit->start, dit->len, LINK_WORD });
+                            ca.index.push_back({ hlen + dit->start, dit->len, linkWord });
                         }
                     }
                     len = sit->first + svit->len;
@@ -574,7 +623,7 @@ void COROSSParser::processArticle(article& ca) {
             }
         }
         if (len < a.length()) {
-            ca.index.push_back({ html.length(), std::wstring::npos, ARTICLE_WORD });
+            ca.index.push_back({ html.length(), std::wstring::npos, articleWord });
         }
         html.append(a.substr(len));
 
@@ -598,7 +647,7 @@ void COROSSParser::processArticle(article& ca) {
 
     }
     else {
-        ca.index.push_back({ ca.titleLen, std::wstring::npos, ARTICLE_WORD });
+        ca.index.push_back({ ca.titleLen, std::wstring::npos, articleWord });
     }
 
     if (html.length() > 0) {
@@ -897,7 +946,7 @@ void COROSSParser::getFormulas(const std::wstring& article, const std::wstring& 
                         for (size_t m = 1; m < (*rit).size(); m++) {
                             //offset += (*rit).position(m);
                             if ((*rit)[m].matched == true) {
-                                dummy d = { (size_t)((*rit).position(m) - pref - ((*rit).prefix().length() + 1 - shift))/*(*rit).position(0)) + 1*/, (size_t)(*rit).length(m), LINK_WORD };
+                                dummy d = { (size_t)((*rit).position(m) - pref - ((*rit).prefix().length() + 1 - shift))/*(*rit).position(0)) + 1*/, (size_t)(*rit).length(m), linkWord };
                                 d.start += cs.substitution.length() - (cs.len + wcslen(L"</a >"));
                                 cs.index.push_back(d);
                             }
