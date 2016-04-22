@@ -1123,6 +1123,9 @@ void COROSSParser::processComments() {
     for (it; it != articles.end(); ++it) {
         if (it->second.state == ARTICLE_STATE_TO_DELETE)
             continue;
+        if (it->second.text.find(L"—м.") == std::wstring::npos &&
+            it->second.text.find(L"см.") == std::wstring::npos)
+            continue;
         std::wstring pure;
         pure = getSpecMarkedArticle(it->second.text); // full = true
         for (size_t i = 0; i < 2; i++) {
