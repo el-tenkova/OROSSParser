@@ -527,7 +527,10 @@ void COROSSParser::processArticles() {
         for (auto it = tit->second.begin(); it != tit->second.end(); ++it) {
             article ca = articles[(*it)];
             if (ca.state != ARTICLE_STATE_TO_DELETE) {
-                ca.id = artId;
+                if (ca.id != artId) {
+                    replaceArtId(ca.text, ca.id, artId);
+                    ca.id = artId;
+                }
                 sorted.insert(std::pair<size_t, article>(artId, ca));
                 artId++;
             }
