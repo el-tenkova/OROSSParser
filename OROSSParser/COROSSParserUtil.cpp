@@ -789,7 +789,7 @@ std::vector<std::wstring> COROSSParser::getWordsForIndex(const std::wstring& wor
 
     //if (title)
     //    return res;
-    std::vector<std::wstring> res = getFullWords(word, offset, len);
+    std::vector<std::wstring> res = getFullWords(word, offset, len, title);
     if (res.size() == 0)
         return res;
 
@@ -1015,4 +1015,33 @@ size_t COROSSParser::checkToSkip(const std::wstring& interval, const size_t& sta
         }
     }
     return 0;
+}
+
+void COROSSParser::replaceArtId(std::wstring& article, const size_t& curId, const size_t newId)
+{
+    for (size_t i = 0; i < 3; i++) {
+        std::wstring from(L"");
+        std::wstring to(L"");
+        switch (i) {
+            case 0:
+                from.append(L"formulas_");
+                to.append(L"formulas_");
+                break;
+            case 1:
+                from.append(L"paras_");
+                to.append(L"paras_");
+                break;
+            case 2:
+                from.append(L"rules_");
+                to.append(L"rules_");
+                break;
+        }
+        from.append(std::to_wstring(curId));
+        to.append(std::to_wstring(newId));
+        size_t pos = article.find(from);
+        while (pos != std::wstring::npos) {
+            article.replace(pos, from.length(), to);
+            pos = article.find(from, pos + from.length());
+        }
+    }
 }
