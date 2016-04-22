@@ -429,14 +429,6 @@ protected:
     size_t shiftLeft(const std::wstring& afull, size_t start);
     std::wstring toRTF(const std::wstring& article);
 
-    COROSSParser::objType checkInStr(const std::wstring& str);
-    void addItem(COROSSParser::objType type, const std::wstring& str);
-    void addWord(const std::wstring& str);
-    void addArticle2Word(const std::wstring& str);
-    void addOrtho2Article(const std::wstring& str);
-    void addFormula2Article(const std::wstring& str);
-    void addComment2Article(const std::wstring& str);
-    void addArticle(const std::wstring& str);
     std::vector<size_t> splitValues(const std::wstring& str);
 
     wordMap::iterator findWord(const size_t& id);
@@ -444,6 +436,7 @@ protected:
     bool IsActiveOrtho(size_t formula_id);
     size_t getUtfLen(const std::wstring& str, const size_t&start, const size_t& len);
     void shiftWords(artMap::iterator& ait, const size_t& begin, const size_t& shift1, const size_t& end, const size_t& shift2);
+    void replaceArtId(std::wstring& article, const size_t& curId, const size_t newId);
 };
 
 #endif //__KHPARSER_H_
