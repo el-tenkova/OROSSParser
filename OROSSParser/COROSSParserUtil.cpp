@@ -181,6 +181,21 @@ void COROSSParser::prepareSearchTitle(std::wstring &title) {
         title.replace(pos, 1, L"...");
         pos = title.find(L'…', pos + 1);
     }
+    pos = title.find(L'\u00b9'); // superscript one
+    while (pos != std::wstring::npos) {
+        title.replace(pos, 1, L"1");
+        pos = title.find(L'\u00b9', pos + 1);
+    }
+    pos = title.find(L'\u00b2'); // superscript two
+    while (pos != std::wstring::npos) {
+        title.replace(pos, 1, L"2");
+        pos = title.find(L'\u00b2', pos + 1);
+    }
+    pos = title.find(L'\u00b3'); // superscript three
+    while (pos != std::wstring::npos) {
+        title.replace(pos, 1, L"3");
+        pos = title.find(L'\u00b3', pos + 1);
+    }
 }
 
 void COROSSParser::prepareComment(std::wstring& comment)
