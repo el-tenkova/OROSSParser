@@ -289,6 +289,8 @@ void COROSSParser::saveArticles()
     if (arts.is_open()) {
         arts.imbue(loc);
         for (auto ait = articles.begin(); ait != articles.end(); ++ait) {
+            if (ait->second.dic != dicOROSS)
+                continue;
             std::wstring str(L"a:\t");
             str.append(std::to_wstring(ait->second.id)); // id
             str.append(L"\n");
@@ -811,6 +813,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
 
     std::wstring str(L"\nCREATE TABLE IF NOT EXISTS articles (\n\
     id int(11) NOT NULL,\n\
+    dic int(2) NOT NULL,\n\
     title varchar(256) NOT NULL,\n\
     text TEXT NOT NULL,\n\
     rtf TEXT NOT NULL,\n\
@@ -941,10 +944,12 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
         }
 
         str.clear();
-        str.append(str_articles);//L"INSERT INTO articles (id, title, text, rtf, src) 
+        str.append(str_articles);//L"INSERT INTO articles (id, dic, title, text, rtf, src) 
         str.append(L"\n\
 VALUES (");
         str.append(std::to_wstring(ait->second.id));
+        str.append(L",");
+        str.append(std::to_wstring(ait->second.dic));
         str.append(L",'");
         str.append(ait->second.title);
         str.append(L"','");
@@ -1112,8 +1117,8 @@ void COROSSParser::presaveArticles(bool saveSearch) {
 }
 
 void COROSSParser::processComments() {
-    std::wstring sm_komment(L"(\\s*[—|с]м\\.\\s*коммент\\.\\s*к\\s*)([_\\u00B9\\u00B2\\u00B3а-€ј-я®Є\\<sup\\>123\\</sup\\>]+[-]*[Е]*[\\.]*\\s*)([_\\u00B9\\u00B2\\u00B3а-€ј-я®Є\\<sup\\>123\\</sup\\>]*)");//
-    std::wstring smotri(L"(\\s*[—|с]м\\.\\s*)([_\\u00B9\\u00B2\\u00B3а-€ј-я®Є\\<sup\\>123\\</sup\\>]+[-]*[Е]*[\\.]*\\s*)([_\\u00B9\\u00B2\\u00B3а-€ј-я®Є\\<sup\\>123\\</sup\\>]*)");//L"\\s[—|с]м\\.\\s*");
+    std::wstring sm_komment(L"(\\s*[—|с]м\\.\\s*коммент\\.\\s*к\\s*)([_\\u00B9\\u00B2\\u00B3а-€ј-я®Є\\<sup\\>123\\</sup\\>]+[-]*[Е]*([\\.]{3})*\\s*)([_\\u00B9\\u00B2\\u00B3а-€ј-я®Є\\<sup\\>123\\</sup\\>]*)");//
+    std::wstring smotri(L"(\\s*[—|с]м\\.\\s*)([_\\u00B9\\u00B2\\u00B3а-€ј-я®Є\\<sup\\>123\\</sup\\>]+[-]*[Е]*([\\.]{3})*\\s*)([_\\u00B9\\u00B2\\u00B3а-€ј-я®Є\\<sup\\>123\\</sup\\>]*)");//L"\\s[—|с]м\\.\\s*");
     artMap::iterator it = articles.begin();
     std::wstring romb(L"</p><p>\u25ca");
     std::locale loc;
@@ -1143,8 +1148,8 @@ void COROSSParser::processComments() {
                 if (word != L"коммент") {
                     size_t begin = (*rit).prefix().length() + (*rit)[1].str().length();
                     size_t end = begin;
-                    if (i == 0 && (*rit).size() > 3)
-                        word = word + (*rit)[3].str();
+                    if (i == 0 && (*rit).size() > 4)
+                        word = word + (*rit)[4].str();
 
                     end += word.length();
 /*                    for (auto i = word.end() - 1; i != word.end(); ++i) {
