@@ -196,6 +196,12 @@ void COROSSParser::prepareSearchTitle(std::wstring &title) {
         title.replace(pos, 1, L"3");
         pos = title.find(L'\u00b3', pos + 1);
     }
+
+    pos = title.find(L';'); 
+    while (pos != std::wstring::npos) {
+        title.replace(pos, 1, L"");
+        pos = title.find(L';', pos + 1);
+    }
 }
 
 void COROSSParser::prepareComment(std::wstring& comment)
@@ -1032,31 +1038,66 @@ size_t COROSSParser::checkToSkip(const std::wstring& interval, const size_t& sta
     return 0;
 }
 
-void COROSSParser::replaceArtId(std::wstring& article, const size_t& curId, const size_t newId)
+void COROSSParser::replaceArtId(article& a, std::wstring& article, const size_t& curId, const size_t newId)
 {
-    for (size_t i = 0; i < 3; i++) {
+    for (size_t i = 0; i < 4; i++) {
         std::wstring from(L"");
         std::wstring to(L"");
         switch (i) {
             case 0:
-                from.append(L"formulas_");
-                to.append(L"formulas_");
+                from.append(L"formulas");
+                to.append(L"formulas");
                 break;
             case 1:
-                from.append(L"paras_");
-                to.append(L"paras_");
+                from.append(L"paras");
+                to.append(L"paras");
                 break;
             case 2:
-                from.append(L"rules_");
-                to.append(L"rules_");
+                from.append(L"rules");
+                to.append(L"rules");
+                break;
+            case 3:
+                from.append(L"art_id=\"");
+                to.append(L"art_id=\"");
                 break;
         }
         from.append(std::to_wstring(curId));
         to.append(std::to_wstring(newId));
         size_t pos = article.find(from);
         while (pos != std::wstring::npos) {
+            int delta = (int)(to.length() - from.length());
             article.replace(pos, from.length(), to);
+            if (delta != 0) {
+                for (auto it = a.index.begin(); it != a.index.end(); ++it) {
+                    if (it->start > pos) {
+                        it->start += delta;
+                    }
+                    else if (it->start + it->len > pos) {
+                        it->start += delta;
+                        it->len += delta;
+                    }
+                }
+            }
             pos = article.find(from, pos + from.length());
+        }
+    }
+}
+
+void COROSSParser::replaceSup(std::wstring& str)
+{
+    std::vector<std::wstring> from;
+    std::vector<std::wstring> to;
+    from.push_back(L"<sup>1</sup>");
+    to.push_back(L"\u00B9");
+    from.push_back(L"<sup>2</sup>");
+    to.push_back(L"\u00B2");
+    from.push_back(L"<sup>3</sup>");
+    to.push_back(L"\u00B3");
+    for (auto it_from = from.begin(), it_to = to.begin(); it_from != from.end(); ++it_from, ++it_to) {
+        size_t pos = str.find((*it_from));
+        while (pos != std::wstring::npos) {
+            str.replace(pos, (*it_from).length(), *(it_to));
+            pos = str.find((*it_from), pos + 1);
         }
     }
 }
