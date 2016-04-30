@@ -271,6 +271,13 @@ void COROSSParser::correctText(std::wstring& text)
         text.replace(pos, 1, L"-");
         pos = text.find(L"\u001e");
     }
+
+    pos = text.find(L"\t");
+    while (pos != std::wstring::npos) {
+        text.replace(pos, 1, L"");
+        pos = text.find(L"\t");
+    }
+
     std::vector<std::wstring>::iterator it = tagsAccents.begin();
     for (it; it != tagsAccents.end(); it += 2) {
         pos = text.find(*it);
