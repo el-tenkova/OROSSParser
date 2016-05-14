@@ -8,6 +8,7 @@ Dim ruleNum As String
 Dim objRegExpRule As Object
 Dim objRegExpRuleSimp As Object
 Dim objRegExpSubRule As Object
+Dim objRegExpRuleTitle As Object
 
 Dim footNote As Integer
 
@@ -63,33 +64,50 @@ Public Function subRuleRegEx() As Object
      Set subRuleRegEx = objRegExp
     
 End Function
+Public Function ruleTitleRegEx() As Object
+    ' Create a regular expression object.
+    Set objRegExp = New RegExp
+
+    'Set the pattern by using the Pattern property.
+    objRegExp.Pattern = "^\s*(\d+)\.\s*"
+
+    ' Set Case Insensitivity.
+    objRegExp.IgnoreCase = False
+
+    'Set global applicability.
+    objRegExp.Global = True
+
+    'Test whether the String can be compared.
+     Set ruleTitleRegEx = objRegExp
+    
+End Function
 
 Sub ParseOROSS()
    
     Dim objParser As Object
     Set objParser = New OROSSParser
-    res = objParser.Init(OROSSParserLib.Create)
+    res = objParser.Init(OROSSParserLib.Update) 'Create)
     
     Set objRegExpRule = ruleRegEx()
     Set objRegExpRuleSimp = ruleSimpRegEx()
     Set objRegExpSubRule = subRuleRegEx()
+    Set objRegExpRuleTitle = ruleTitleRegEx()
     
     Dim theDoc As Document
-'    Set theDoc = Documents.Open("c:\IRYA\GuideORFO.doc") '"c:\IRYA\Справочник-test1.doc")
-    Set theDoc = Documents.Open("c:\IRYA\Справочник-test1.doc")
+    Set theDoc = Documents.Open("c:\IRYA\GuideORFO.doc") '"c:\IRYA\Справочник-test1.doc")
+'    Set theDoc = Documents.Open("c:\IRYA\Справочник-test1.doc")
     Dim para As Paragraph
     
-    Set para = theDoc.Paragraphs.item(1)
+    Set para = theDoc.Paragraphs.Item(1)
     cp = theDoc.Paragraphs.count
     
     tile = False
     orthoWait = False
-    
+        
     Call CheckFootNotes(theDoc, objParser)
     footNote = 1
 '    If orthoWait Then
-    
-    For i = 1 To cp
+    For i = 1 To 1 'cp
         If para.Range.Characters.count > 1 Then
             Call CheckPara(para, objParser)
         End If
@@ -101,21 +119,25 @@ Sub ParseOROSS()
 
  '   End If
     
-    'Set theDoc = Documents.Open("c:\IRYA\OROS_2014 гранки март31-апр28 (1).doc") '"c:\IRYA\errors.doc")
-    Set theDoc = Documents.Open("c:\IRYA\errors3.doc")
-    Set para = theDoc.Paragraphs.item(1)
+    'Set theDoc = Documents.Open("c:\IRYA\OROS_2014 гранки закрыт для правки.doc") '"c:\IRYA\errors.doc")
+    Set theDoc = Documents.Open("c:\IRYA\Update\rus_accents.docx") '"c:\IRYA\errors.doc")
+    Set para = theDoc.Paragraphs.Item(1)
     cp = theDoc.Paragraphs.count
     
     For i = 1 To cp
-        If Not para Is Nothing Then
-            If para.Range.Characters.count > 1 Then
-                Set para = CheckArticle(para, objParser)
+'        If i > 19230 Then
+            If Not para Is Nothing Then
+                If para.Range.Characters.count > 1 Then
+                    Set para = CheckArticle(para, objParser)
+                Else
+                    Set para = para.Next()
+                End If
             Else
-                Set para = para.Next()
+                Exit For
             End If
-        Else
-            Exit For
-        End If
+ '       Else
+ '           Set para = para.Next()
+ '       End If
     Next i
     
     res = objParser.Terminate()
@@ -128,7 +150,7 @@ Sub CheckFootNotes(theDoc As Document, oParser As Object)
     idx = 1
     If cn > 0 Then
         For i = 1 To cn
-            Set note = theDoc.Range.Footnotes.item(i)
+            Set note = theDoc.Range.Footnotes.Item(i)
             text = ""
             text = text & "<sup><a href=" & Chr(34) & "#ft" & Trim$(str$(idx)) & Chr(34)
             text = text & " id=" & Chr(34) & "foot" & Trim$(str$(idx)) & Chr(34) & " >"
@@ -182,10 +204,11 @@ Sub CheckPara(para As Paragraph, oParser As Object)
                     tile = False
                     tileName = ""
                 End If
-                Num = Trim$(para.Range.words.item(2))
+                Num = Trim$(para.Range.words.Item(2))
                 If Num = "1" Then
                     Debug.Print "para 40"
                 End If
+                paraNum = para.Range
                 Call AddPara(Num, para, oParser)
             Else
                 If tile Then
@@ -195,11 +218,11 @@ Sub CheckPara(para As Paragraph, oParser As Object)
                 ruleLen = IsRule(para)
                 subLen = IsSubRule(para)
                 If ruleLen <> 0 Then
-                    Num = Trim$(para.Range.words.item(1))
+                    Num = Trim$(para.Range.words.Item(1))
                     prev = ""
                     If Not IsDigit(Num) Then
                         For w = 1 To para.Previous().Range.words.count
-                            prev = Trim$(para.Previous().Range.words.item(w))
+                            prev = Trim$(para.Previous().Range.words.Item(w))
                             If Len(prev) > 0 Then
                                 Exit For
                             End If
@@ -248,6 +271,15 @@ Sub CheckPara(para As Paragraph, oParser As Object)
                                 ruleText = CheckText(para)
 '                                ruleText = ConvertText(para.Range.words, 1, para.Range.words.count)
                                 res = oParser.AddInfoToRule(ruleText)
+                            Else
+                                ruleTitleLen = IsRuleTitle(para)
+                                If ruleTitleLen <> 0 Then
+                                    ruleTitleLen = InStr(para.Range.text, ".") - 1
+                                    Num = Trim$(Mid$(para.Range.text, 1, ruleTitleLen))
+                                    ruleTitle = ConvertText(para.Range.words, 1, para.Range.words.count)
+                                    ruleTitle = Trim$(Mid$(ruleTitle, ruleTitleLen + 2))
+                                    res = oParser.AddRuleTitle(Num, ruleTitle)
+                                End If
                             End If
                         End If
                     End If
@@ -318,14 +350,14 @@ Sub AddPara(Num As String, para As Paragraph, objParser As Object)
     Dim count As Integer
     Done = 0
     If InStr(para.Range.text, "1)") = 0 Then
-        word = Trim$(para.Range.words.item(para.Range.words.count - 1))
+        word = Trim$(para.Range.words.Item(para.Range.words.count - 1))
         If Trim$(word) = ")" Then
             comma = 0
             cl = 1
             op = 0
             count = 0 ' para.Range.Words.item(para.Range.Words.count - 1).Characters.count
             For i = para.Range.words.count - 2 To 1 Step -1
-                word = Trim$(para.Range.words.item(i))
+                word = Trim$(para.Range.words.Item(i))
                 count = count + 1 'para.Range.Words.item(i).Characters.count
                 If InStr(word, ")") <> 0 Then
                     cl = cl + 1
@@ -403,6 +435,42 @@ Function IsSubRule(para As Paragraph) As Long
         IsSubRule = 0
     End If
 End Function
+Function IsRuleTitle(para As Paragraph) As Long
+    Dim prev As Paragraph
+    Dim text As String
+    text = para.Range.text
+    Dim simple As Boolean
+    simple = False
+    Set colMatches = objRegExpRuleTitle.Execute(text) ' Execute search.
+    If colMatches.count > 0 Then
+        ok = False
+        Set prev = para.Previous
+        Do While Not prev Is Nothing
+            If IsPara(prev) Then
+                ok = True
+                Exit Do
+            Else
+                text = prev.Range.text
+                Set colMatchesPrev = objRegExpRuleTitle.Execute(text)
+                If colMatchesPrev.count = 0 Then
+                    Exit Do
+                End If
+            End If
+            Set prev = prev.Previous
+        Loop
+        If ok = True Then
+            For Each objMatch In colMatches   ' Iterate Matches collection.
+                IsRuleTitle = objMatch.length
+                Exit For
+            Next objMatch
+        Else
+            IsRuleTitle = 0
+        End If
+    Else
+        IsRuleTitle = 0
+    End If
+End Function
+
 Function DoReplacements(text As String) As String
 
     text = Replace(text, "<b><i>" & ChrW$(&HD) & ChrW$(&H7) & "</i></b>", "")
@@ -425,6 +493,7 @@ Function DoReplacements(text As String) As String
     text = Replace(text, ChrW(&H7), "")
     text = Replace(text, ChrW(&H1A), "-")
     text = Replace(text, ChrW(&H1E), "-")
+    text = Replace(text, ChrW(&H2D), "-")
 '    text = Replace(text, ChrW$(&H7), "")
     For i = 1 To 3
         ch = "b"
@@ -503,17 +572,17 @@ Function ConvertText(words As words, start As Integer, finish As Integer, Option
 '                text = text & "[" & Trim$(str$(footNote)) & "]</a></sup>"
 '                footNote = footNote + 1
  '           Else
-                If words.item(j).Bold Then
+                If words.Item(j).Bold Then
                     text = text + "<b>"
                 End If
-                If words.item(j).Italic Then
+                If words.Item(j).Italic Then
                     text = text + "<i>"
                 End If
     '            If para.Range.Words.item(j).Underline Then
                     'Debug.Print words.item(j).text
-                    For i = 1 To words.item(j).Characters.count
+                    For i = 1 To words.Item(j).Characters.count
 '                        Debug.Print AscW(words.item(j).Characters(i).text)
-                        If words.item(j).Characters(i).text <> " " Then
+                        If words.Item(j).Characters(i).text <> " " Then
                             'ch = AscW(words.item(j).Characters(i).text)
                             'Debug.Print ch
                             If words(j).Characters(i).Footnotes.count > 0 And Not noFootNote Then
@@ -522,25 +591,25 @@ Function ConvertText(words As words, start As Integer, finish As Integer, Option
                                 text = text & "[" & Trim$(str$(footNote)) & "]</a></sup>"
                                 footNote = footNote + 1
                             Else
-                                If words.item(j).Characters(i) = "#" Then
+                                If words.Item(j).Characters(i) = "#" Then
                                     text = text + "&#x301"
                                 Else
-                                    If words.item(j).Characters(i).Font.Superscript <> 0 Then
-                                        text = text + "<sup>" + words.item(j).Characters(i).text + "</sup>"
+                                    If words.Item(j).Characters(i).Font.Superscript <> 0 Then
+                                        text = text + "<sup>" + words.Item(j).Characters(i).text + "</sup>"
                                     Else
-                                        If words.item(j).Characters(i).Font.Subscript <> 0 Then
-                                            text = text + "<sub>" + words.item(j).Characters(i).text + "</sub>"
+                                        If words.Item(j).Characters(i).Font.Subscript <> 0 Then
+                                            text = text + "<sub>" + words.Item(j).Characters(i).text + "</sub>"
                                         Else
-                                            If words.item(j).Characters(i).Underline Then
-                                                text = text + "<u>" + words.item(j).Characters(i).text
-                                                If Not noAccent And words.item(j).Characters(i).Font.name = "Times Roman Cyr Acsent" Then
+                                            If words.Item(j).Characters(i).Underline Then
+                                                text = text + "<u>" + words.Item(j).Characters(i).text
+                                                If Not noAccent And words.Item(j).Characters(i).Font.name = "Times Roman Cyr Acsent" Then
                                                     text = text + "&#x301"
                                                 End If
                                                 text = text + "</u>"
                                             Else
-                                                Code = AscW(words.item(j).Characters(i).text)
-                                                text = text + words.item(j).Characters(i).text
-                                                If Not noAccent And words.item(j).Characters(i).Font.name = "Times Roman Cyr Acsent" Then
+                                                Code = AscW(words.Item(j).Characters(i).text)
+                                                text = text + words.Item(j).Characters(i).text
+                                                If Not noAccent And words.Item(j).Characters(i).Font.name = "Times Roman Cyr Acsent" Then
                                                     text = text + "&#x301"
                                                 End If
                                             End If
@@ -549,7 +618,7 @@ Function ConvertText(words As words, start As Integer, finish As Integer, Option
                                 End If
                             End If
                         Else
-                            text = text + words.item(j).Characters(i).text
+                            text = text + words.Item(j).Characters(i).text
                         End If
                     Next i
      '           Else
@@ -558,10 +627,10 @@ Function ConvertText(words As words, start As Integer, finish As Integer, Option
                 length1 = Len(text)
                 text = Trim$(text)
                 length2 = Len(text)
-                If words.item(j).Italic Then
+                If words.Item(j).Italic Then
                     text = text + "</i>"
                 End If
-                If words.item(j).Bold Then
+                If words.Item(j).Bold Then
                     text = text + "</b>"
                 End If
                 If (length1 > length2) Then
@@ -816,9 +885,9 @@ Function CheckText(ByRef para As Paragraph) As String
                     ruleText = ruleText & "<td rowspan=" & Chr(34) & Trim$(str$(rowspan)) & Chr(34) & ">"
                 Else
                     If colspan > 1 Then
-                        ruleText = ruleText & "<td colspan=" & Chr(34) & Trim$(str$(colspan)) & Chr(34) & " >"
+                        ruleText = ruleText & "<td rowspan=" & Chr(34) & "1" & Chr(34) & " colspan=" & Chr(34) & Trim$(str$(colspan)) & Chr(34) & " >"
                     Else
-                        ruleText = ruleText & "<td>"
+                        ruleText = ruleText & "<td rowspan=" & Chr(34) & "1" & Chr(34) & " colspan=" & Chr(34) & "1" & Chr(34) > ""
                     End If
                 End If
             End If
@@ -851,7 +920,7 @@ Sub SaveForeign()
 
     Set theDoc = Documents.Open("c:\IRYA\with-dash1.doc")
     Dim table As table
-    Set table = ActiveDocument.Tables.item(1)
+    Set table = ActiveDocument.Tables.Item(1)
     cr = table.Rows.count
     For i = 1 To cr
         text = table.cell(i, 1).Range.text
@@ -868,15 +937,15 @@ End Sub
 Function getTextWithFoot(words As words) As String
     text = ""
     For j = 1 To words.count
-        For i = 1 To words.item(j).Characters.count
+        For i = 1 To words.Item(j).Characters.count
             If words(j).Characters(i).Footnotes.count > 0 And Not noFootNote Then
                 text = text & "<sup><a href=" & Chr(34) & "#foot" & Trim$(str$(footNote)) & Chr(34)
                 text = text & " id=" & Chr(34) & "ft" & Trim$(str$(footNote)) & Chr(34) & " >"
                 text = text & "[" & Trim$(str$(footNote)) & "]</a></sup>"
                 footNote = footNote + 1
             Else
-                If words.item(j).Characters(i).text <> ChrW(&HD) Then
-                    text = text & words.item(j).Characters(i).text
+                If words.Item(j).Characters(i).text <> ChrW(&HD) Then
+                    text = text & words.Item(j).Characters(i).text
                 End If
             End If
         Next i
