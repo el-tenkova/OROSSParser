@@ -355,7 +355,7 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
         std::wstring intro = cm[0].str().substr(0, cm[0].str().length() - 2);
         size_t pos = intro.find(L"слово");
         while (pos != std::wstring::npos) {
-            intro.replace(pos, 5, L" [^\\(\\)]* ");
+            intro.replace(pos, 5, L" [^\\A\\B]* ");
             pos = intro.find(L"слово", pos + 5);
         }
         tmp.append(intro);
@@ -372,7 +372,7 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
     tmp.clear();
     while (std::regex_search(search.cbegin(), search.cend(), cm, e4)) {
         tmp.append(cm.prefix(), 0, cm.prefix().length() - 1);
-        tmp.append(L"(\\(\\s*[^\\(\\)]*\\))* ");
+        tmp.append(L"(\\(\\s*[^\\A\\B]*\\))* ");
         search = cm.suffix().str();
     }
     tmp.append(search);
@@ -384,7 +384,7 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
     tmp.clear();
     while (std::regex_search(search.cbegin(), search.cend(), cm, e1)) {
         tmp.append(cm.prefix().str());
-        tmp.append(L"(\\s*[^\\(\\)]*\\)* ");
+        tmp.append(L"(\\s*[^\\A\\B]*\\)* ");
         search = cm.suffix().str();
     }
     tmp.append(search);
@@ -496,8 +496,20 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
 
     pos = tmp.find(L"\\/");
     while (pos != std::wstring::npos) {
-        tmp.replace(pos, 2, L"\\/\\s*");
-        pos = tmp.find(L"\\/", pos + 1);
+        tmp.replace(pos, 2, L"\\s*\\/\\s*");
+        pos = tmp.find(L"\\/", pos + 6);
+    }
+
+    pos = tmp.find(L"A");
+    while (pos != std::wstring::npos) {
+        tmp.replace(pos, 1, L"(");
+        pos = tmp.find(L"A", pos);
+    }
+
+    pos = tmp.find(L"B");
+    while (pos != std::wstring::npos) {
+        tmp.replace(pos, 1, L")");
+        pos = tmp.find(L"B", pos);
     }
 
     return tmp;
