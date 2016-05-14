@@ -1840,3 +1840,35 @@ void COROSSParser::processMistakes() {
         }
     }
 }
+
+void COROSSParser::makeTutorialUpdate()
+{
+    std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
+    std::wofstream update(L"c:\\IRYA\\update_contents.sql", std::wofstream::binary);
+
+    std::wstring str(L"");
+    if (update.is_open()) {
+        update.imbue(loc);
+        for (auto parait = paras.begin(); parait != paras.end(); ++parait) {
+            for (auto oit = parait->second.orthos.begin(); oit != parait->second.orthos.end(); ++oit) {
+                str.clear();
+                str.append(L"UPDATE orthos SET art_count='");
+                str.append(std::to_wstring(oit->second.art_count));
+                str.append(L"' WHERE id=");
+                str.append(std::to_wstring(oit->second.id));
+                str.append(L";\n");
+                update.write(str.c_str(), str.length());
+                for (auto fit = oit->second.formulas.begin(); fit != oit->second.formulas.end(); ++fit) {
+                    str.clear();
+                    str.append(L"UPDATE formulas SET art_count='");
+                    str.append(std::to_wstring(fit->second.art_count));
+                    str.append(L"' WHERE id=");
+                    str.append(std::to_wstring(fit->second.id));
+                    str.append(L";\n");
+                    update.write(str.c_str(), str.length());
+                }
+            }
+        }
+        update.close();
+    }
+}

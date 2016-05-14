@@ -385,6 +385,7 @@ protected:
     void makeWordsTable(const std::locale& loc);
     void makeArticlesTable(const std::locale& loc);
     void makeMistakesTable(std::wofstream& result);
+    void makeTutorialUpdate();
 
     void processComments();
     void processIndex(bool saveSearch = false);
