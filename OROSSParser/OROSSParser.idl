@@ -12,6 +12,7 @@ import "ocidl.idl";
         Create = 0,
         Update,
         Rebuild,
+        AddROS,
     }modeName;
 
 
