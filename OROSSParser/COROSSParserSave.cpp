@@ -289,7 +289,7 @@ void COROSSParser::saveArticles()
     if (arts.is_open()) {
         arts.imbue(loc);
         for (auto ait = articles.begin(); ait != articles.end(); ++ait) {
-            if (ait->second.dic != dicOROSS)
+            if (ait->second.dic != dicOROSS || ait->second.state == ARTICLE_STATE_TO_DELETE)
                 continue;
             std::wstring str(L"a:\t");
             str.append(std::to_wstring(ait->second.id)); // id
@@ -579,6 +579,7 @@ void COROSSParser::makeOrthogrTable(std::wofstream& result)
     active BOOLEAN,\n\
     name varchar(256) NOT NULL,\n\
     rtf varchar(1024) NOT NULL,\n\
+    art_count int(11),\n\
     PRIMARY KEY (id) \n\
     );\n\n");
     result.write(str.c_str(), str.length());
@@ -597,7 +598,7 @@ void COROSSParser::makeOrthogrTable(std::wofstream& result)
         orthoMap::iterator ot = parait->second.orthos.begin();
         for (ot; ot != parait->second.orthos.end(); ++ot) {
             str.clear();
-            str.append(L"INSERT INTO orthos (id, id_para, active, name, rtf) \n\
+            str.append(L"INSERT INTO orthos (id, id_para, active, name, rtf, art_count) \n\
         VALUES (");
             str.append(std::to_wstring(ot->second.id));
             str.append(L",");
@@ -608,7 +609,9 @@ void COROSSParser::makeOrthogrTable(std::wofstream& result)
             str.append(ot->second.name);
             str.append(L"','");
             str.append(ot->second.rtf);
-            str.append(L"');\n");
+            str.append(L"',");
+            str.append(L"0");
+            str.append(L");\n");
             result.write(str.c_str(), str.length());
             for (auto rit = ot->second.rules.begin(); rit != ot->second.rules.end(); ++rit) {
                 str.clear();
@@ -636,6 +639,7 @@ void COROSSParser::makeFormulaTable(std::wofstream& result)
     example varchar(256),\n\
     rest varchar(256),\n\
     is_prefix BOOLEAN, \n\
+    art_count int(11), \n\
     PRIMARY KEY (id) \n\
     );\n\n");
     result.write(str.c_str(), str.length());
@@ -648,7 +652,7 @@ void COROSSParser::makeFormulaTable(std::wofstream& result)
             formMap::iterator ft = ot->second.formulas.begin();
             for (ft; ft != ot->second.formulas.end(); ++ft) {
                 str.clear();
-                str.append(L"INSERT INTO formulas (id, id_ortho, id_para, id_rule, name, rtf, example, rest, is_prefix) \n\
+                str.append(L"INSERT INTO formulas (id, id_ortho, id_para, id_rule, name, rtf, example, rest, is_prefix, art_count) \n\
                 VALUES (");
                 str.append(std::to_wstring(ft->second.id));
                 str.append(L",");
@@ -667,6 +671,8 @@ void COROSSParser::makeFormulaTable(std::wofstream& result)
                 str.append(ft->second.rest);
                 str.append(L"',");
                 str.append(std::to_wstring(ft->second.is_prefix));
+                str.append(L",");
+                str.append(L"0");
                 str.append(L");\n");
                 result.write(str.c_str(), str.length());
             }
@@ -1199,7 +1205,7 @@ void COROSSParser::processComments() {
                         artIdVct::iterator ait = wit->second.arts.begin();
                         for (ait; ait != wit->second.arts.end(); ++ait) {
                             article a = articles[ait->id];
-                            if (a.id != it->second.id && isEqualToTitle(word, a.title) == true) {
+                            if (a.id != it->second.id && isEqualToTitle(word, a.title) == true && a.dic == it->second.dic) {
                                 std::vector<size_t>::iterator cit = it->second.comments.begin();
                                 for (cit; cit != it->second.comments.end(); ++cit) {
                                     if ((*cit) == a.id)

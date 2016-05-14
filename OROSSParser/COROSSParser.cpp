@@ -94,8 +94,11 @@ STDMETHODIMP COROSSParser::Init( modeName Mode, long* hRes )
 
     loadSearchData(LOAD_SEARCH);
     loadStopDic(L"c:\\IRYA\\stop.txt");
-    if (mode == Update || mode == Rebuild) {
-        loadDic(L"c:\\IRYA\\arts.txt");
+    if (mode == AddROS) {
+        loadROS(L"c:\\IRYA\\OROSSParser\\Data\\ROS_2012.txt");
+    }
+    if (mode != Create) {
+        loadDic(L"c:\\IRYA\\OROSSParser\\Data\\arts.txt");
     }
     return *hRes;
 }
@@ -103,8 +106,10 @@ STDMETHODIMP COROSSParser::Init( modeName Mode, long* hRes )
 STDMETHODIMP COROSSParser::Terminate( long* hRes )
 {
     processArticles();
-    presaveArticles(SAVE_SEARCH);
-    makeSQL();
+    if (mode != Create) {
+        presaveArticles(SAVE_SEARCH);
+        makeSQL();
+    }
     saveData(SAVE_SEARCH);
     error.close();
     return S_OK;
@@ -458,6 +463,9 @@ STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]
                     ait->second.state = ARTICLE_STATE_NEUTRAL;
                     found = true;
                 }
+                else {
+                    ait->second.state = ARTICLE_STATE_TO_DELETE;
+                }
 /*                else {
                     ait->second.state = ARTICLE_STATE_EDITED;
                     ait->second.text = art;
@@ -484,7 +492,7 @@ STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]
         }
     }
     if (mode == Create || found == false) {
-        article ca = { artId, title, art, art, toRTF(art) };
+        article ca = { artId, dicOROSS, title, art, art, toRTF(art) };
 
         ca.state = ARTICLE_STATE_NEW;
 
@@ -526,11 +534,13 @@ void COROSSParser::processArticles() {
     for (tit; tit != titles.end(); ++tit) {
         for (auto it = tit->second.begin(); it != tit->second.end(); ++it) {
             article ca = articles[(*it)];
-            if (ca.state != ARTICLE_STATE_TO_DELETE) {
+            if (ca.dic == dicOROSS && ca.state != ARTICLE_STATE_TO_DELETE) {
                 if (ca.id != artId) {
-                    replaceArtId(ca.text, ca.id, artId);
-                    ca.id = artId;
+                    replaceArtId(ca, ca.text, ca.id, artId);
                 }
+            }
+            if (ca.state != ARTICLE_STATE_TO_DELETE) {
+                ca.id = artId;
                 sorted.insert(std::pair<size_t, article>(artId, ca));
                 artId++;
             }
@@ -540,7 +550,7 @@ void COROSSParser::processArticles() {
     articles = sorted;
 
     for (auto ait = articles.begin(); ait != articles.end(); ++ait) {
-        if (ait->second.state == ARTICLE_STATE_NEW) {//ARTICLE_STATE_TO_DELETE)
+        if (ait->second.dic == dicOROSS && ait->second.state == ARTICLE_STATE_NEW) {//ARTICLE_STATE_TO_DELETE)
             processArticle(ait->second);
             std::wstring mess(L"New article was processed:");
             mess.append(ait->second.title);
@@ -550,7 +560,8 @@ void COROSSParser::processArticles() {
         }
     }
     // save articles without commentary information
-    saveArticles();
+    if (mode == Update || mode == Create)
+        saveArticles();
 }
 
 void COROSSParser::processArticle(article& ca) {
@@ -911,7 +922,7 @@ void COROSSParser::getFormulas(const std::wstring& article, const std::wstring& 
                     continue;
                 std::wstring formula(fit->second.search);
                 //formula.append(L"\\s*");
-                formula.insert(0, L"[\\: ]");
+                formula.insert(0, L"[\\:\\s]");
                 std::wregex f(formula);
                 std::regex_iterator<std::wstring::iterator> rit(a.begin(), a.end(), f);
                 std::regex_iterator<std::wstring::iterator> rend;
@@ -1276,5 +1287,31 @@ void COROSSParser::correctSubst(substMap& substs) {
                 len = sit->first + svit->len;
             }
         }*/
+    }
+}
+
+void COROSSParser::countArticles()
+{
+    std::map<size_t, size_t> artsOrthos;
+    std::map<size_t, size_t> artsFormulas;
+    for (auto ait = articles.begin(); ait != articles.end(); ++ait) {
+        for (auto it = ait->second.formulas.begin(); it != ait->second.formulas.end(); ++it) {
+            auto fit = artsFormulas.find((*it));
+            if (fit == artsFormulas.end())
+                artsFormulas.insert(std::pair<size_t, size_t>((*it), 1));
+            else
+                fit->second++;
+        }
+    }
+    for (auto parait = paras.begin(); parait != paras.end(); ++parait) {
+        for (auto oit = parait->second.orthos.begin(); oit != parait->second.orthos.end(); ++oit) {
+            for (auto fit = oit->second.formulas.begin(); fit != oit->second.formulas.end(); ++fit) {
+                auto it = artsFormulas.find(fit->second.id);
+                if (it != artsFormulas.end()) {
+                    fit->second.art_count = it->second;
+                    oit->second.art_count += it->second;
+                }
+            }
+        }
     }
 }

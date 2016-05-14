@@ -19,6 +19,9 @@
 #define FORMULA_SUBST 2
 #define PARA_SUBST 3
 
+const wchar_t dicROS = L'1';
+const wchar_t dicOROSS = L'2';
+
 const wchar_t titleWord = L'1';
 const wchar_t articleWord = L'2';
 const wchar_t linkWord = L'3';
@@ -54,6 +57,7 @@ typedef std::map<size_t, std::vector<subst> > substMap;
 
 struct article {
     size_t id;
+    wchar_t dic;
     std::wstring title;
     std::wstring text;
     std::wstring src;
@@ -68,6 +72,7 @@ struct article {
     //
     void clear() {
         id = 0;
+        dic = dicOROSS;
         title.clear();
         text.clear();
         src.clear();
@@ -277,7 +282,7 @@ public:
       str_articles_formulas(L"INSERT INTO articles_formulas (id, id_formula) "),
       str_articles_comments(L"INSERT INTO articles_comments (id, id_comment) "),
  //     str_articles(L"INSERT INTO articles (id, title, text, rtf, src, comment_id) "), //!!!!
-        str_articles(L"INSERT INTO articles (id, title, text, rtf, src) "), //!!!!
+        str_articles(L"INSERT INTO articles (id, dic, title, text, rtf, src) "), //!!!!
         str_values(L"    VALUES ("),
         str_sup1(L"<sup>1</sup>"),
         str_sup2(L"<sup>2</sup>"),
@@ -366,6 +371,7 @@ protected:
     void loadSearchData(bool loadSearch = false);
     void loadDic(const std::wstring& dict);
     void loadStopDic(const std::wstring& dict);
+    void loadROS(const std::wstring& dict);
     void loadMorph();
 
     void makeSQL();
@@ -389,6 +395,7 @@ protected:
     void addTutorialToIndex();
 
     void printArticles();
+    void countArticles();
 
     void prepareOrthoKey(std::wstring& key);
     void prepareTitle(std::wstring& title);
@@ -410,6 +417,7 @@ protected:
     void removeParentheses(std::wstring& str);
     void cutTail(std::wstring& str);
     void cutHead(std::wstring& str);
+    void replaceSup(std::wstring& str);
 
     size_t getParaNum(const std::wstring& rest);
     std::wstring getRuleNum(const std::wstring& rest);
@@ -436,7 +444,7 @@ protected:
     bool IsActiveOrtho(size_t formula_id);
     size_t getUtfLen(const std::wstring& str, const size_t&start, const size_t& len);
     void shiftWords(artMap::iterator& ait, const size_t& begin, const size_t& shift1, const size_t& end, const size_t& shift2);
-    void replaceArtId(std::wstring& article, const size_t& curId, const size_t newId);
+    void replaceArtId(article& a, std::wstring& article, const size_t& curId, const size_t newId);
 };
 
 #endif //__KHPARSER_H_
