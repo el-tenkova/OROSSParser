@@ -387,6 +387,7 @@ void COROSSParser::makeSQL()
         makeFootNotesTable(result_contents);
        // makeHistoricTable(result_contents);
         makeWordsTable(loc);
+        makeBigrammsTable(loc);
         makeMistakesTable(result_mistakes);
         makeArticlesTable(loc);
         result_contents.close();
@@ -803,6 +804,75 @@ void COROSSParser::makeWordsTable(const std::locale& loc)
     result.close();
 }
 
+void COROSSParser::makeBigrammsTable(const std::locale& loc)
+{
+    std::wstring filename(L"c:\\IRYA\\import_bigramms");
+    filename.append(L".sql");
+    std::wofstream result(filename, std::wofstream::binary);
+    if (result.is_open()) {
+        result.imbue(loc);
+    }
+    else {
+        return;
+    }
+    std::wstring str(L"\nCREATE TABLE IF NOT EXISTS bigramms (\n\
+    id int(11) NOT NULL,\n\
+    bigramm varchar(256) NOT NULL,\n\
+    PRIMARY KEY (id) \n\
+    );\n\n");
+    result.write(str.c_str(), str.length());
+
+    str.clear();
+    str.append(L"\nCREATE TABLE IF NOT EXISTS bigramms_articles (\n\
+    id int(11) NOT NULL,\n\
+    id_article int(11) NOT NULL,\n\
+    start int(11) NOT NULL, \n\
+    len int(11) NOT NULL, \n\
+    title int(10) NOT NULL,\n\
+    segment int(10) NOT NULL,\n\
+    number int(10) NOT NULL,\n\
+    PRIMARY KEY (id, id_article, start) \n\
+    );\n\n");
+    result.write(str.c_str(), str.length());
+
+    for (auto bit = bigramms.begin(); bit != bigramms.end(); ++bit) {
+
+        str.clear();
+        str.append(str_bigramms);
+        str.append(L"\n\
+    VALUES (");
+        str.append(std::to_wstring(bit->second.id));
+        str.append(L",'");
+        str.append(bit->first);
+        str.append(L"');\n");
+        result.write(str.c_str(), str.length());
+
+        artIdVct::iterator avt = bit->second.arts.begin();
+        for (avt; avt != bit->second.arts.end(); ++avt) {
+            str.clear();
+            str.append(str_bigramms_articles);
+            str.append(L"\n\
+    VALUES (");
+            str.append(std::to_wstring(bit->second.id));
+            str.append(L",");
+            str.append(std::to_wstring(avt->id));
+            str.append(L",");
+            str.append(std::to_wstring(avt->start));
+            str.append(L",");
+            str.append(std::to_wstring(avt->len));
+            str.append(L",");
+            str.append(std::wstring(1, avt->isTitle));
+            str.append(L",");
+            str.append(std::to_wstring(avt->group));
+            str.append(L",");
+            str.append(std::to_wstring(avt->number));
+            str.append(L");\n");
+            result.write(str.c_str(), str.length());
+        }
+    }
+    result.close();
+}
+
 void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& result)
 {
     size_t n = 1;
@@ -1118,13 +1188,19 @@ void COROSSParser::presaveArticles(bool saveSearch) {
         wit->second.id = wordId;
         wordId++;
     }
+    bigrId = 1;
+    auto bit = bigramms.begin();
+    for (bit; bit != bigramms.end(); ++bit) {
+        bit->second.id = bigrId;
+        bigrId++;
+    }
     processMistakes();
     printArticles();
 }
 
 void COROSSParser::processComments() {
-    std::wstring sm_komment(L"(\\s*[Ñ|ñ]ì\\.\\s*êîììåíò\\.\\s*ê\\s*)([_\\u00B9\\u00B2\\u00B3à-ÿÀ-ß¨¸\\<sup\\>123\\</sup\\>]+[-]*[…]*([\\.]{3})*\\s*)([_\\u00B9\\u00B2\\u00B3à-ÿÀ-ß¨¸\\<sup\\>123\\</sup\\>]*)");//
-    std::wstring smotri(L"(\\s*[Ñ|ñ]ì\\.\\s*)([_\\u00B9\\u00B2\\u00B3à-ÿÀ-ß¨¸\\<sup\\>123\\</sup\\>]+[-]*[…]*([\\.]{3})*\\s*)([_\\u00B9\\u00B2\\u00B3à-ÿÀ-ß¨¸\\<sup\\>123\\</sup\\>]*)");//L"\\s[Ñ|ñ]ì\\.\\s*");
+    std::wstring sm_komment(L"(\\s*_*[Ñ|ñ]ì_*\\._*\\s*êîììåíò\\.\\s*ê\\s*)([_\\u00B9\\u00B2\\u00B3à-ÿÀ-ß¨¸\\<sup\\>123\\</sup\\>]+[-]*[…]*([\\.]{3})*\\s*)([_\\u00B9\\u00B2\\u00B3à-ÿÀ-ß¨¸\\<sup\\>123\\</sup\\>]*)");//
+    std::wstring smotri(L"(\\s*_*[Ñ|ñ]ì_*\\._*\\s*)([_\\u00B9\\u00B2\\u00B3à-ÿÀ-ß¨¸\\<sup\\>123\\</sup\\>]+[-]*[…]*([\\.]{3})*\\s*)([_\\u00B9\\u00B2\\u00B3à-ÿÀ-ß¨¸\\<sup\\>123\\</sup\\>]*)");//L"\\s[Ñ|ñ]ì\\.\\s*");
     artMap::iterator it = articles.begin();
     std::wstring romb(L"</p><p>\u25ca");
     std::locale loc;
@@ -1572,6 +1648,7 @@ void COROSSParser::addArticlesToIndex() {
 
             arts.write(L"-----------------------", wcslen(L"-----------------------"));
             arts.write(caret.c_str(), caret.length());
+            std::map<std::wstring, size_t> art_words;
             size_t group = 1;
             dummyVct::iterator dit = ait->second.index.begin();
             for (dit; dit != ait->second.index.end(); ++dit, group++) {
@@ -1589,6 +1666,10 @@ void COROSSParser::addArticlesToIndex() {
                         for (auto w = vw.begin(); w != vw.end(); ++w) {
                             arts.write((*w).c_str(), (*w).length());
                             arts.write(caret.c_str(), caret.length());
+                        }
+                        if (vw.size() == 1) {
+                            if (art_words.find(*(vw.begin())) == art_words.end())
+                                art_words.insert(std::pair<std::wstring, size_t>(*(vw.begin()), 1));
                         }
                     }
                     start = pos + 1;
@@ -1623,6 +1704,43 @@ void COROSSParser::addArticlesToIndex() {
             std::vector<size_t>::iterator words_it = std::unique(ait->second.words.begin(), ait->second.words.end());
             ait->second.words.resize(std::distance(ait->second.words.begin(), words_it));
 
+            // check for bigramms
+            for (auto wit = art_words.begin(); wit != art_words.end(); ++wit) {
+                auto bit = bigrDic.find(wit->first);
+                if (bit != bigrDic.end()) {
+                    for (auto it = bit->second.begin(); it != bit->second.end(); ++it) {
+                        if (art_words.find((*it)) != art_words.end()) {
+                            auto one = words.find(wit->first);
+                            auto two = words.find((*it));
+                            for (auto oneit = one->second.arts.begin(); oneit != one->second.arts.end(); ++oneit) {
+                                if (oneit->id == ait->second.id) {
+                                    for (auto twoit = two->second.arts.begin(); twoit != two->second.arts.end(); ++twoit) {
+                                        if (twoit->id == ait->second.id) {
+                                            if (oneit->group == twoit->group && oneit->number + 1 == twoit->number) {
+                                                std::wstring bigramma(one->first);
+                                                bigramma.append(two->first);
+                                                place cp = { ait->second.id, oneit->start,
+                                                             (twoit->start + twoit->len) - oneit->start,
+                                                             oneit->group, oneit->number, articleWord };
+                                                auto bigrit = bigramms.find(bigramma);
+                                                if (bigrit == bigramms.end()) {
+                                                    bigramm cb = { bigrId++ };
+                                                    cb.arts.push_back(cp);
+                                                    bigramms.insert(std::pair<std::wstring, bigramm>(bigramma, cb));
+                                                }
+                                                else {
+                                                    bigrit->second.arts.push_back(cp);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                //for (auto it = )
+            }
 //            html.write(L"<p>-----------------------</p>", wcslen(L"<p>-----------------------</p>"));
 //            html.write(para_b.c_str(), para_b.length());
 //            html.write(ait->second.text.c_str(), ait->second.text.length());

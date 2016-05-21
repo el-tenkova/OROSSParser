@@ -93,7 +93,8 @@ STDMETHODIMP COROSSParser::Init( modeName Mode, long* hRes )
     mode = Mode;
 
     loadSearchData(LOAD_SEARCH);
-    loadStopDic(L"c:\\IRYA\\stop.txt");
+    loadStopDic(L"c:\\IRYA\\OROSSParser\\Data\\stop.txt");
+    loadBigramms(L"c:\\IRYA\\OROSSParser\\Data\\bigramms.txt");
     if (mode == AddROS) {
         loadROS(L"c:\\IRYA\\OROSSParser\\Data\\ROS_2012.txt");
     }
@@ -106,7 +107,7 @@ STDMETHODIMP COROSSParser::Init( modeName Mode, long* hRes )
 STDMETHODIMP COROSSParser::Terminate( long* hRes )
 {
     processArticles();
-    if (mode != Create) {
+    if (mode != Create && mode != Update) {
         presaveArticles(SAVE_SEARCH);
         makeSQL();
     }
@@ -560,8 +561,10 @@ void COROSSParser::processArticles() {
         }
     }
     // save articles without commentary information
-    if (mode == Update || mode == Create)
+    if (mode == Update || mode == Create) {
         saveArticles();
+        countArticles(); // update count of articles for orthos and formulas
+    }
 }
 
 void COROSSParser::processArticle(article& ca) {
@@ -1314,4 +1317,6 @@ void COROSSParser::countArticles()
             }
         }
     }
+    // save update.sql
+    makeTutorialUpdate();
 }

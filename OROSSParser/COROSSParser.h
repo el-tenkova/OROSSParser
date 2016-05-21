@@ -119,6 +119,12 @@ struct word {
 };
 typedef std::map<std::wstring, word> wordMap; //artIdVct > wordMap;
 
+struct bigramm {
+    size_t id;
+    artIdVct arts;
+};
+typedef std::map<std::wstring, bigramm> bigrMap; //artIdVct > wordMap;
+
 struct mistake {
     size_t id;
     std::vector<size_t> wordIds;
@@ -251,6 +257,8 @@ class ATL_NO_VTABLE COROSSParser :
     const std::wstring str_words;
     const std::wstring str_words_articles;
     const std::wstring str_words_tutorial;
+    const std::wstring str_bigramms;
+    const std::wstring str_bigramms_articles;
     const std::wstring str_articles_orthos;
     const std::wstring str_articles_rules;
     const std::wstring str_articles_paras;
@@ -272,12 +280,15 @@ public:
       formulaId(1),
       artId(1),
       wordId(1), //!!!
+      bigrId(1),
       mode(Create),
       russian("Russian"),
       error(L"c:\\IRYA\\error.txt", std::wofstream::binary),
       str_words(L"INSERT INTO words (id, word) "),
       str_words_articles(L"INSERT INTO words_articles (id, id_article, start, len, title, segment, number) "),
       str_words_tutorial(L"INSERT INTO words_tutorial (id, id_item, start, len, type, number) "),
+      str_bigramms(L"INSERT INTO bigramms (id, bigramm) "),
+      str_bigramms_articles(L"INSERT INTO bigramms_articles (id, id_article, start, len, title, segment, number) "),
       str_articles_orthos(L"INSERT INTO articles_orthos (id, id_ortho) "),
       str_articles_formulas(L"INSERT INTO articles_formulas (id, id_formula) "),
       str_articles_comments(L"INSERT INTO articles_comments (id, id_comment) "),
@@ -325,11 +336,13 @@ protected:
     ruleVct rules;
     ruleTitleVct ruleTitles;
     wordMap words;
+    bigrMap bigramms;
     mistakeMap mistakes;
     artMap articles;
     titleMap titles;
     footMap footnotes;
     std::map<std::wstring, size_t> stopDic;
+    std::map<std::wstring, std::vector<std::wstring> > bigrDic;
 
   //  orthoMap orthos;
     std::wofstream error;
@@ -342,6 +355,7 @@ protected:
     size_t formulaId;
     size_t artId;
     size_t wordId;
+    size_t bigrId;
   
   // Russian locale
     std::locale russian;
@@ -371,6 +385,7 @@ protected:
     void loadSearchData(bool loadSearch = false);
     void loadDic(const std::wstring& dict);
     void loadStopDic(const std::wstring& dict);
+    void loadBigramms(const std::wstring& dict);
     void loadROS(const std::wstring& dict);
     void loadMorph();
 
@@ -383,6 +398,7 @@ protected:
     void makeFormulaTable(std::wofstream& result);
     void makeFootNotesTable(std::wofstream& result);
     void makeWordsTable(const std::locale& loc);
+    void makeBigrammsTable(const std::locale& loc);
     void makeArticlesTable(const std::locale& loc);
     void makeMistakesTable(std::wofstream& result);
     void makeTutorialUpdate();

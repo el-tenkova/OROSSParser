@@ -455,3 +455,40 @@ void COROSSParser::loadROS(const std::wstring& dict) {
         }
     }
 }
+
+void COROSSParser::loadBigramms(const std::wstring& dict)
+{
+    std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
+    // load data to search in articles
+    std::wifstream bigr(dict, std::wifstream::binary);
+
+    if (bigr.is_open()) {
+        bigr.imbue(loc);
+        bigr.seekg(3);
+        while (!bigr.eof()) {
+            std::wstring str(L"");
+            std::getline(bigr, str);
+            str = str.substr(0, str.length() - 1);
+            if (str.length() == 0)
+                continue;
+
+            std::wistringstream iss(str.c_str());
+            std::vector<std::wstring> parts;
+            std::copy(std::istream_iterator<std::wstring, wchar_t>(iss),
+                      std::istream_iterator<std::wstring, wchar_t>(),
+                      std::back_inserter(parts));
+            if (parts.size() < 2)
+                continue;
+            auto bit = bigrDic.find(parts[0]);
+            if (bit == bigrDic.end()) {
+                std::vector<std::wstring> v;
+                v.push_back(parts[1]);
+                bigrDic.insert(std::pair<std::wstring, std::vector<std::wstring> >(parts[0], v));
+            }
+            else {
+                bit->second.push_back(parts[1]);
+            }
+        }
+        bigr.close();
+    }
+}
