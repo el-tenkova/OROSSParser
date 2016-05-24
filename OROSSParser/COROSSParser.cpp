@@ -7,7 +7,7 @@
 
 #include <iostream>
 #include <sstream>
-
+#include <cwctype>
 #include <functional>
 
 #define PART_END    3
@@ -95,6 +95,7 @@ STDMETHODIMP COROSSParser::Init( modeName Mode, long* hRes )
     loadSearchData(LOAD_SEARCH);
     loadStopDic(L"c:\\IRYA\\OROSSParser\\Data\\stop.txt");
     loadBigramms(L"c:\\IRYA\\OROSSParser\\Data\\bigramms.txt");
+    loadSymbolsMap(L"c:\\IRYA\\OROSSParser\\Data\\smap.txt");
     if (mode == AddROS) {
         loadROS(L"c:\\IRYA\\OROSSParser\\Data\\ROS_2012.txt");
     }
@@ -107,10 +108,10 @@ STDMETHODIMP COROSSParser::Init( modeName Mode, long* hRes )
 STDMETHODIMP COROSSParser::Terminate( long* hRes )
 {
     processArticles();
-    if (mode != Create && mode != Update) {
+//    if (mode != Create && mode != Update) {
         presaveArticles(SAVE_SEARCH);
         makeSQL();
-    }
+//    }
     saveData(SAVE_SEARCH);
     error.close();
     return S_OK;

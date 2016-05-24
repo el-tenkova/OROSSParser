@@ -786,6 +786,11 @@ std::vector<std::wstring> COROSSParser::getFullWords(const std::wstring& word, s
     } */
 
     res.push_back(str);
+    std::wstring mapped(str);
+    std::transform(str.begin(), str.end(), mapped.begin(), diacritics);
+    if (str != mapped) {
+        res.push_back(mapped);
+    }
     if (title == true && str.find(L' ') == std::wstring::npos &&
         str.find(L'-') == std::wstring::npos &&
         !morph.IsLemma(getPureWord(str))) {
@@ -819,8 +824,14 @@ std::vector<std::wstring> COROSSParser::getFullWords(const std::wstring& word, s
         int a = 0;
         a++;
         }*/
-        if (tmp.length() != 0 && tmp.length() != str.length())
+        if (tmp.length() != 0 && tmp.length() != str.length()) {
             res.push_back(tmp);
+            std::wstring mapped(tmp);
+            std::transform(tmp.begin(), tmp.end(), mapped.begin(), diacritics);
+            if (tmp != mapped) {
+                res.push_back(mapped);
+            }
+        }
     }
     return res;
 }
@@ -1120,3 +1131,4 @@ void COROSSParser::replaceSup(std::wstring& str)
         }
     }
 }
+

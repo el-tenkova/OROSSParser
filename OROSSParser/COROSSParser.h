@@ -14,6 +14,7 @@
 #include <codecvt>
 
 #include "COROSSParserMorph.h"
+#include "COROSSParserDiacr.h"
 
 #define ORTHO_SUBST 1
 #define FORMULA_SUBST 2
@@ -343,6 +344,7 @@ protected:
     footMap footnotes;
     std::map<std::wstring, size_t> stopDic;
     std::map<std::wstring, std::vector<std::wstring> > bigrDic;
+    std::map<wchar_t, wchar_t > symMap;
 
   //  orthoMap orthos;
     std::wofstream error;
@@ -374,6 +376,7 @@ protected:
     std::map<size_t, size_t> wordIds;
 
     COROSSParserMorph morph;
+    COROSSDiacritics diacritics;
 
     void processArticles();
 
@@ -388,6 +391,7 @@ protected:
     void loadBigramms(const std::wstring& dict);
     void loadROS(const std::wstring& dict);
     void loadMorph();
+    void loadSymbolsMap(const std::wstring& symbols);
 
     void makeSQL();
     void makePartsTable(std::wofstream& result);
@@ -462,6 +466,7 @@ protected:
     size_t getUtfLen(const std::wstring& str, const size_t&start, const size_t& len);
     void shiftWords(artMap::iterator& ait, const size_t& begin, const size_t& shift1, const size_t& end, const size_t& shift2);
     void replaceArtId(article& a, std::wstring& article, const size_t& curId, const size_t newId);
+//    wchar_t diacritics(wchar_t c);
 };
 
 #endif //__KHPARSER_H_

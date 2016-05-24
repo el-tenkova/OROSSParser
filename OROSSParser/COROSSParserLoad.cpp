@@ -492,3 +492,8 @@ void COROSSParser::loadBigramms(const std::wstring& dict)
         bigr.close();
     }
 }
+
+void COROSSParser::loadSymbolsMap(const std::wstring& symbols)
+{
+    diacritics.load(symbols);
+}
