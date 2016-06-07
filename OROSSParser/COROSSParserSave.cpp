@@ -697,6 +697,7 @@ void COROSSParser::makeWordsTable(const std::locale& loc)
     std::wstring str(L"\nCREATE TABLE IF NOT EXISTS words (\n\
     id int(11) NOT NULL,\n\
     word varchar(256) NOT NULL,\n\
+    art_count int(11), \n\
     PRIMARY KEY (id) \n\
     );\n\n");
     result.write(str.c_str(), str.length());
@@ -753,7 +754,9 @@ void COROSSParser::makeWordsTable(const std::locale& loc)
 //        str.append(std::wstring(1, wit->second.isTitle));
         str.append(L",'");
         str.append(wit->first);
-        str.append(L"');\n");
+        str.append(L"',");
+        str.append(std::to_wstring(wit->second.arts.size()));
+        str.append(L");\n");
         result.write(str.c_str(), str.length());
 
         artIdVct::iterator avt = wit->second.arts.begin();
@@ -818,6 +821,7 @@ void COROSSParser::makeBigrammsTable(const std::locale& loc)
     std::wstring str(L"\nCREATE TABLE IF NOT EXISTS bigramms (\n\
     id int(11) NOT NULL,\n\
     bigramm varchar(256) NOT NULL,\n\
+    art_count int(11), \n\
     PRIMARY KEY (id) \n\
     );\n\n");
     result.write(str.c_str(), str.length());
@@ -844,7 +848,9 @@ void COROSSParser::makeBigrammsTable(const std::locale& loc)
         str.append(std::to_wstring(bit->second.id));
         str.append(L",'");
         str.append(bit->first);
-        str.append(L"');\n");
+        str.append(L"',");
+        str.append(std::to_wstring(bit->second.arts.size()));
+        str.append(L");\n");
         result.write(str.c_str(), str.length());
 
         artIdVct::iterator avt = bit->second.arts.begin();
@@ -1211,7 +1217,9 @@ void COROSSParser::processComments() {
         if (it->second.state == ARTICLE_STATE_TO_DELETE)
             continue;
         if (it->second.text.find(L"—м.") == std::wstring::npos &&
-            it->second.text.find(L"см.") == std::wstring::npos)
+            it->second.text.find(L"см.") == std::wstring::npos &&
+            it->second.text.find(L"—м</i>.") == std::wstring::npos &&
+            it->second.text.find(L"см</i>.") == std::wstring::npos)
             continue;
         std::wstring pure;
         pure = getSpecMarkedArticle(it->second.text); // full = true
@@ -1686,6 +1694,10 @@ void COROSSParser::addArticlesToIndex() {
                             arts.write((*w).c_str(), (*w).length());
                             arts.write(caret.c_str(), caret.length());
                         }
+                        if (vw.size() == 1) {
+                            if (art_words.find(*(vw.begin())) == art_words.end())
+                                art_words.insert(std::pair<std::wstring, size_t>(*(vw.begin()), 1));
+                        }
                     }
                 }
             }
@@ -1719,18 +1731,23 @@ void COROSSParser::addArticlesToIndex() {
                                             if (oneit->group == twoit->group && oneit->number + 1 == twoit->number) {
                                                 std::wstring bigramma(one->first);
                                                 bigramma.append(two->first);
-                                                place cp = { ait->second.id, oneit->start,
-                                                             (twoit->start + twoit->len) - oneit->start,
+                                                size_t shift_l = shiftLeftUtf(ait->second.text, oneit->start);
+                                                place cp = { ait->second.id, oneit->start - shift_l,
+                                                             (twoit->start + twoit->len) - oneit->start + shift_l,
                                                              oneit->group, oneit->number, articleWord };
                                                 auto bigrit = bigramms.find(bigramma);
                                                 if (bigrit == bigramms.end()) {
                                                     bigramm cb = { bigrId++ };
                                                     cb.arts.push_back(cp);
                                                     bigramms.insert(std::pair<std::wstring, bigramm>(bigramma, cb));
+                                                    bigrit = bigramms.find(bigramma);
                                                 }
                                                 else {
                                                     bigrit->second.arts.push_back(cp);
                                                 }
+                                                if (std::find(ait->second.bigramms.begin(), ait->second.bigramms.end(), bigrit->second.id) == ait->second.bigramms.end())
+                                                    ait->second.bigramms.push_back(bigrit->second.id);
+
                                             }
                                         }
                                     }
@@ -1909,6 +1926,19 @@ void COROSSParser::shiftWords(artMap::iterator& ait, const size_t& begin, const 
                         it->start += shift1;
 //                    else if (it->start == begin)
 //                        it->start = end - it->len;
+            }
+        }
+    }
+    std::vector<size_t>::iterator bait = ait->second.bigramms.begin();
+    for (bait; bait != ait->second.bigramms.end(); ++bait) {
+        bigrMap::iterator bit = findBigramm((*bait));
+        if (bit != bigramms.end()) {
+            for (artIdVct::iterator it = bit->second.arts.begin(); it != bit->second.arts.end(); ++it) {
+                if (it->id == ait->second.id)
+                    if (it->start >= end)
+                        it->start += shift1 + shift2;
+                    else if (it->start >= begin)
+                        it->start += shift1;
             }
         }
     }

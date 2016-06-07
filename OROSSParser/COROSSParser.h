@@ -68,6 +68,7 @@ struct article {
     std::vector<size_t> comments;
     dummyVct index;
     std::vector<size_t> words;
+    std::vector<size_t> bigramms;
     size_t state;
     size_t titleLen;
     //
@@ -285,10 +286,10 @@ public:
       mode(Create),
       russian("Russian"),
       error(L"c:\\IRYA\\error.txt", std::wofstream::binary),
-      str_words(L"INSERT INTO words (id, word) "),
+      str_words(L"INSERT INTO words (id, word, art_count) "),
       str_words_articles(L"INSERT INTO words_articles (id, id_article, start, len, title, segment, number) "),
       str_words_tutorial(L"INSERT INTO words_tutorial (id, id_item, start, len, type, number) "),
-      str_bigramms(L"INSERT INTO bigramms (id, bigramm) "),
+      str_bigramms(L"INSERT INTO bigramms (id, bigramm, art_count) "),
       str_bigramms_articles(L"INSERT INTO bigramms_articles (id, id_article, start, len, title, segment, number) "),
       str_articles_orthos(L"INSERT INTO articles_orthos (id, id_ortho) "),
       str_articles_formulas(L"INSERT INTO articles_formulas (id, id_formula) "),
@@ -456,11 +457,13 @@ protected:
 
     std::vector<std::wstring> split(const std::wstring& str, const wchar_t delim);
     size_t shiftLeft(const std::wstring& afull, size_t start);
+    size_t shiftLeftUtf(const std::wstring& afull, size_t start);
     std::wstring toRTF(const std::wstring& article);
 
     std::vector<size_t> splitValues(const std::wstring& str);
 
     wordMap::iterator findWord(const size_t& id);
+    bigrMap::iterator findBigramm(const size_t& id);
     bool IsPair(size_t ortho_id, size_t formula_id);
     bool IsActiveOrtho(size_t formula_id);
     size_t getUtfLen(const std::wstring& str, const size_t&start, const size_t& len);

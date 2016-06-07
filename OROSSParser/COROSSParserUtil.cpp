@@ -34,6 +34,18 @@ size_t COROSSParser::shiftLeft(const std::wstring& afull, size_t start) {
     return 0;
 }
 
+size_t COROSSParser::shiftLeftUtf(const std::wstring& afull, size_t start) {
+
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> conv1;
+    std::string u8str = conv1.to_bytes(afull);
+
+    if (start - 3 > 0 && u8str.find("<i>", start - 3) == start - 3)
+        return 3;
+    if (start - 3 > 0 && u8str.find("<b>", start - 3) == start - 3)
+        return 3;
+    return 0;
+}
+
 #define RULE L"ï."
 std::wstring COROSSParser::prepareRest(const std::wstring& Rest)
 {
@@ -947,6 +959,15 @@ wordMap::iterator COROSSParser::findWord(const size_t& id) {
             return wit;
     }
     return wit;
+}
+
+bigrMap::iterator COROSSParser::findBigramm(const size_t& id) {
+    bigrMap::iterator bit = bigramms.begin();
+    for (bit; bit != bigramms.end(); ++bit) {
+        if (bit->second.id == id)
+            return bit;
+    }
+    return bit;
 }
 
 bool COROSSParser::IsPair(size_t ortho_id, size_t formula_id) {
