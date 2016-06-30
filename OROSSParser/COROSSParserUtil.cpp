@@ -961,13 +961,30 @@ wordMap::iterator COROSSParser::findWord(const size_t& id) {
     return wit;
 }
 
-bigrMap::iterator COROSSParser::findBigramm(const size_t& id) {
-    bigrMap::iterator bit = bigramms.begin();
+grammMap::iterator COROSSParser::findBigramm(const size_t& id) {
+    grammMap::iterator bit = bigramms.begin();
     for (bit; bit != bigramms.end(); ++bit) {
         if (bit->second.id == id)
             return bit;
     }
     return bit;
+}
+
+grammMap::iterator COROSSParser::findTrigramm(const size_t& id) {
+    grammMap::iterator tit = trigramms.begin();
+    for (tit; tit != trigramms.end(); ++tit) {
+        if (tit->second.id == id)
+            return tit;
+    }
+    return tit;
+}
+grammMap::iterator COROSSParser::findTetragramm(const size_t& id) {
+    grammMap::iterator tetrait = tetragramms.begin();
+    for (tetrait; tetrait != tetragramms.end(); ++tetrait) {
+        if (tetrait->second.id == id)
+            return tetrait;
+    }
+    return tetrait;
 }
 
 bool COROSSParser::IsPair(size_t ortho_id, size_t formula_id) {
@@ -1153,3 +1170,104 @@ void COROSSParser::replaceSup(std::wstring& str)
     }
 }
 
+void COROSSParser::checkForGramms(COROSSGrammaTree& grDic, grammMap& gramms, size_t& grId, artMap::iterator& ait, std::vector<size_t>& art_gramms, const std::vector<std::wstring>& art_words)
+{
+    for (auto wit = art_words.begin(); wit != art_words.end(); ++wit) {
+        std::vector<std::wstring> v;
+        for (size_t i = 0; i < grDic.get_depth(); i++) {
+            if (wit + i == art_words.end())
+                break;
+            v.push_back(*(wit + i));
+        }
+        if (v.size() < grDic.get_depth())
+            break;
+
+        if (grDic.find(v) == true) {
+            auto start = words.find((*wit));
+            std::map<size_t, std::vector<size_t> > numbers;
+            for (auto startit = start->second.arts.begin(); startit != start->second.arts.end(); ++startit) {
+                if (startit->id == ait->second.id) {
+                    auto nit = numbers.find(startit->group);
+                    if (nit == numbers.end()) {
+                        std::vector<size_t> n;
+                        n.push_back(startit->number);
+                        numbers.insert(std::pair<size_t, std::vector<size_t> >(startit->group, n));
+                    }
+                    else {
+                        nit->second.push_back(startit->number);
+                    }
+                }
+            }
+            for (auto groupit = numbers.begin(); groupit != numbers.end(); ++groupit) {
+                size_t group = groupit->first;
+                for (auto numberit = groupit->second.begin(); numberit != groupit->second.end(); ++numberit) {
+                    size_t number = (*numberit);
+                    size_t step = (*numberit);
+                    size_t start = 0;
+                    size_t end = 0;
+                    for (auto it = v.begin(); it != v.end(); ++it) {
+                        auto one = words.find((*it));
+                        for (auto oneit = one->second.arts.begin(); oneit != one->second.arts.end(); ++oneit) {
+                            if (oneit->id == ait->second.id && oneit->group == group && oneit->number == number) {
+                                if (start == 0)
+                                    start = oneit->start;
+                                end = oneit->start + oneit->len;
+                                number++;
+                                break;
+                            }
+                        }
+                        step++;
+                        if (number != step)
+                            break;
+                    }
+                    if (number - (*numberit) == grDic.get_depth()) {
+                        size_t shift_l = shiftLeftUtf(ait->second.text, start);
+                        place cp = { ait->second.id, start - shift_l,
+                            end - start + shift_l,
+                            group, (*numberit), articleWord };
+                        std::wstring gramma = L"";
+                        for (auto vit = v.begin(); vit != v.end(); ++vit) {
+                            gramma.append(*vit);
+                        }
+                        auto bigrit = gramms.find(gramma);
+                        if (bigrit == gramms.end()) {
+                            gramm cb = { grId++ };
+                            cb.arts.push_back(cp);
+                            gramms.insert(std::pair<std::wstring, gramm>(gramma, cb));
+                            bigrit = gramms.find(gramma);
+                        }
+                        else {
+                            bool found = false;
+                            for (auto a = bigrit->second.arts.begin(); a != bigrit->second.arts.end(); ++a) {
+                                if (a->id == cp.id && a->start == cp.start) {
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (!found) {
+                                bigrit->second.arts.push_back(cp);
+                            }
+                        }
+                        if (std::find(art_gramms.begin(), art_gramms.end(), bigrit->second.id) == art_gramms.end())
+                            art_gramms.push_back(bigrit->second.id);
+                    }
+                }
+            }
+        }
+    }
+}
+
+void COROSSParser::checkForBigramms(artMap::iterator& ait, const std::vector<std::wstring>& art_words)
+{
+    checkForGramms(bigrDic, bigramms, bigrId, ait, ait->second.bigramms, art_words);
+}
+
+void COROSSParser::checkForTrigramms(artMap::iterator& ait, const std::vector<std::wstring>& art_words)
+{
+    checkForGramms(trigrDic, trigramms, trigrId, ait, ait->second.trigramms, art_words);
+}
+
+void COROSSParser::checkForTetragramms(artMap::iterator& ait, const std::vector<std::wstring>& art_words)
+{
+    checkForGramms(tetragrDic, tetragramms, tetragrId, ait, ait->second.tetragramms, art_words);
+}

@@ -94,7 +94,11 @@ STDMETHODIMP COROSSParser::Init( modeName Mode, long* hRes )
 
     loadSearchData(LOAD_SEARCH);
     loadStopDic(L"c:\\IRYA\\OROSSParser\\Data\\stop.txt");
-    loadBigramms(L"c:\\IRYA\\OROSSParser\\Data\\bigramms.txt");
+    std::vector<std::wstring> grDics;
+    grDics.push_back(L"c:\\IRYA\\OROSSParser\\Data\\bigramms.txt");
+    grDics.push_back(L"c:\\IRYA\\OROSSParser\\Data\\trigramms.txt");
+    grDics.push_back(L"c:\\IRYA\\OROSSParser\\Data\\tetragramms.txt");
+    loadGramms(grDics);
     loadSymbolsMap(L"c:\\IRYA\\OROSSParser\\Data\\smap.txt");
     if (mode == AddROS) {
         loadROS(L"c:\\IRYA\\OROSSParser\\Data\\ROS_2012.txt");

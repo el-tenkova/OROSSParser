@@ -15,6 +15,7 @@
 
 #include "COROSSParserMorph.h"
 #include "COROSSParserDiacr.h"
+#include "COROSSParserTree.h"
 
 #define ORTHO_SUBST 1
 #define FORMULA_SUBST 2
@@ -69,6 +70,8 @@ struct article {
     dummyVct index;
     std::vector<size_t> words;
     std::vector<size_t> bigramms;
+    std::vector<size_t> trigramms;
+    std::vector<size_t> tetragramms;
     size_t state;
     size_t titleLen;
     //
@@ -121,11 +124,11 @@ struct word {
 };
 typedef std::map<std::wstring, word> wordMap; //artIdVct > wordMap;
 
-struct bigramm {
+struct gramm {
     size_t id;
     artIdVct arts;
 };
-typedef std::map<std::wstring, bigramm> bigrMap; //artIdVct > wordMap;
+typedef std::map<std::wstring, gramm> grammMap; //artIdVct > wordMap;
 
 struct mistake {
     size_t id;
@@ -261,6 +264,10 @@ class ATL_NO_VTABLE COROSSParser :
     const std::wstring str_words_tutorial;
     const std::wstring str_bigramms;
     const std::wstring str_bigramms_articles;
+    const std::wstring str_trigramms;
+    const std::wstring str_trigramms_articles;
+    const std::wstring str_tetragramms;
+    const std::wstring str_tetragramms_articles;
     const std::wstring str_articles_orthos;
     const std::wstring str_articles_rules;
     const std::wstring str_articles_paras;
@@ -283,6 +290,8 @@ public:
       artId(1),
       wordId(1), //!!!
       bigrId(1),
+      trigrId(1),
+      tetragrId(1),
       mode(Create),
       russian("Russian"),
       error(L"c:\\IRYA\\error.txt", std::wofstream::binary),
@@ -291,6 +300,10 @@ public:
       str_words_tutorial(L"INSERT INTO words_tutorial (id, id_item, start, len, type, number) "),
       str_bigramms(L"INSERT INTO bigramms (id, bigramm, art_count) "),
       str_bigramms_articles(L"INSERT INTO bigramms_articles (id, id_article, start, len, title, segment, number) "),
+      str_trigramms(L"INSERT INTO trigramms (id, trigramm, art_count) "),
+      str_trigramms_articles(L"INSERT INTO trigramms_articles (id, id_article, start, len, title, segment, number) "),
+      str_tetragramms(L"INSERT INTO tetragramms (id, tetragramm, art_count) "),
+      str_tetragramms_articles(L"INSERT INTO tetragramms_articles (id, id_article, start, len, title, segment, number) "),
       str_articles_orthos(L"INSERT INTO articles_orthos (id, id_ortho) "),
       str_articles_formulas(L"INSERT INTO articles_formulas (id, id_formula) "),
       str_articles_comments(L"INSERT INTO articles_comments (id, id_comment) "),
@@ -338,13 +351,14 @@ protected:
     ruleVct rules;
     ruleTitleVct ruleTitles;
     wordMap words;
-    bigrMap bigramms;
+    grammMap bigramms;
+    grammMap trigramms;
+    grammMap tetragramms;
     mistakeMap mistakes;
     artMap articles;
     titleMap titles;
     footMap footnotes;
     std::map<std::wstring, size_t> stopDic;
-    std::map<std::wstring, std::vector<std::wstring> > bigrDic;
     std::map<wchar_t, wchar_t > symMap;
 
   //  orthoMap orthos;
@@ -359,6 +373,8 @@ protected:
     size_t artId;
     size_t wordId;
     size_t bigrId;
+    size_t trigrId;
+    size_t tetragrId;
   
   // Russian locale
     std::locale russian;
@@ -378,6 +394,9 @@ protected:
 
     COROSSParserMorph morph;
     COROSSDiacritics diacritics;
+    COROSSGrammaTree bigrDic;
+    COROSSGrammaTree trigrDic;
+    COROSSGrammaTree tetragrDic;
 
     void processArticles();
 
@@ -389,7 +408,7 @@ protected:
     void loadSearchData(bool loadSearch = false);
     void loadDic(const std::wstring& dict);
     void loadStopDic(const std::wstring& dict);
-    void loadBigramms(const std::wstring& dict);
+    void loadGramms(std::vector<std::wstring> dics);
     void loadROS(const std::wstring& dict);
     void loadMorph();
     void loadSymbolsMap(const std::wstring& symbols);
@@ -404,6 +423,8 @@ protected:
     void makeFootNotesTable(std::wofstream& result);
     void makeWordsTable(const std::locale& loc);
     void makeBigrammsTable(const std::locale& loc);
+    void makeTrigrammsTable(const std::locale& loc);
+    void makeTetragrammsTable(const std::locale& loc);
     void makeArticlesTable(const std::locale& loc);
     void makeMistakesTable(std::wofstream& result);
     void makeTutorialUpdate();
@@ -455,6 +476,11 @@ protected:
     void correctSubst(substMap& subst);
     size_t checkToSkip(const std::wstring& interval, const size_t& start);
 
+    void checkForGramms(COROSSGrammaTree& grDic, grammMap& gramms, size_t& grId, artMap::iterator& ait, std::vector<size_t>& art_gramms, const std::vector<std::wstring>& art_words);
+    void checkForBigramms(artMap::iterator& ait, const std::vector<std::wstring>& art_words);
+    void checkForTrigramms(artMap::iterator& ait, const std::vector<std::wstring>& art_words);
+    void checkForTetragramms(artMap::iterator& ait, const std::vector<std::wstring>& art_words);
+
     std::vector<std::wstring> split(const std::wstring& str, const wchar_t delim);
     size_t shiftLeft(const std::wstring& afull, size_t start);
     size_t shiftLeftUtf(const std::wstring& afull, size_t start);
@@ -463,13 +489,14 @@ protected:
     std::vector<size_t> splitValues(const std::wstring& str);
 
     wordMap::iterator findWord(const size_t& id);
-    bigrMap::iterator findBigramm(const size_t& id);
+    grammMap::iterator findBigramm(const size_t& id);
+    grammMap::iterator findTrigramm(const size_t& id);
+    grammMap::iterator findTetragramm(const size_t& id);
     bool IsPair(size_t ortho_id, size_t formula_id);
     bool IsActiveOrtho(size_t formula_id);
     size_t getUtfLen(const std::wstring& str, const size_t&start, const size_t& len);
     void shiftWords(artMap::iterator& ait, const size_t& begin, const size_t& shift1, const size_t& end, const size_t& shift2);
     void replaceArtId(article& a, std::wstring& article, const size_t& curId, const size_t newId);
-//    wchar_t diacritics(wchar_t c);
 };
 
 #endif //__KHPARSER_H_

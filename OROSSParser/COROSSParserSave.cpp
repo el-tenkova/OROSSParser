@@ -388,6 +388,8 @@ void COROSSParser::makeSQL()
        // makeHistoricTable(result_contents);
         makeWordsTable(loc);
         makeBigrammsTable(loc);
+        makeTrigrammsTable(loc);
+        makeTetragrammsTable(loc);
         makeMistakesTable(result_mistakes);
         makeArticlesTable(loc);
         result_contents.close();
@@ -879,6 +881,150 @@ void COROSSParser::makeBigrammsTable(const std::locale& loc)
     result.close();
 }
 
+void COROSSParser::makeTrigrammsTable(const std::locale& loc)
+{
+    std::wstring filename(L"c:\\IRYA\\import_trigramms");
+    filename.append(L".sql");
+    std::wofstream result(filename, std::wofstream::binary);
+    if (result.is_open()) {
+        result.imbue(loc);
+    }
+    else {
+        return;
+    }
+    std::wstring str(L"\nCREATE TABLE IF NOT EXISTS trigramms (\n\
+    id int(11) NOT NULL,\n\
+    trigramm varchar(256) NOT NULL,\n\
+    art_count int(11), \n\
+    PRIMARY KEY (id) \n\
+    );\n\n");
+    result.write(str.c_str(), str.length());
+
+    str.clear();
+    str.append(L"\nCREATE TABLE IF NOT EXISTS trigramms_articles (\n\
+    id int(11) NOT NULL,\n\
+    id_article int(11) NOT NULL,\n\
+    start int(11) NOT NULL, \n\
+    len int(11) NOT NULL, \n\
+    title int(10) NOT NULL,\n\
+    segment int(10) NOT NULL,\n\
+    number int(10) NOT NULL,\n\
+    PRIMARY KEY (id, id_article, start) \n\
+    );\n\n");
+    result.write(str.c_str(), str.length());
+
+    for (auto tit = trigramms.begin(); tit != trigramms.end(); ++tit) {
+
+        str.clear();
+        str.append(str_trigramms);
+        str.append(L"\n\
+    VALUES (");
+        str.append(std::to_wstring(tit->second.id));
+        str.append(L",'");
+        str.append(tit->first);
+        str.append(L"',");
+        str.append(std::to_wstring(tit->second.arts.size()));
+        str.append(L");\n");
+        result.write(str.c_str(), str.length());
+
+        artIdVct::iterator avt = tit->second.arts.begin();
+        for (avt; avt != tit->second.arts.end(); ++avt) {
+            str.clear();
+            str.append(str_trigramms_articles);
+            str.append(L"\n\
+    VALUES (");
+            str.append(std::to_wstring(tit->second.id));
+            str.append(L",");
+            str.append(std::to_wstring(avt->id));
+            str.append(L",");
+            str.append(std::to_wstring(avt->start));
+            str.append(L",");
+            str.append(std::to_wstring(avt->len));
+            str.append(L",");
+            str.append(std::wstring(1, avt->isTitle));
+            str.append(L",");
+            str.append(std::to_wstring(avt->group));
+            str.append(L",");
+            str.append(std::to_wstring(avt->number));
+            str.append(L");\n");
+            result.write(str.c_str(), str.length());
+        }
+    }
+    result.close();
+}
+
+void COROSSParser::makeTetragrammsTable(const std::locale& loc)
+{
+    std::wstring filename(L"c:\\IRYA\\import_tetragramms");
+    filename.append(L".sql");
+    std::wofstream result(filename, std::wofstream::binary);
+    if (result.is_open()) {
+        result.imbue(loc);
+    }
+    else {
+        return;
+    }
+    std::wstring str(L"\nCREATE TABLE IF NOT EXISTS tetragramms (\n\
+    id int(11) NOT NULL,\n\
+    tetragramm varchar(256) NOT NULL,\n\
+    art_count int(11), \n\
+    PRIMARY KEY (id) \n\
+    );\n\n");
+    result.write(str.c_str(), str.length());
+
+    str.clear();
+    str.append(L"\nCREATE TABLE IF NOT EXISTS tetragramms_articles (\n\
+    id int(11) NOT NULL,\n\
+    id_article int(11) NOT NULL,\n\
+    start int(11) NOT NULL, \n\
+    len int(11) NOT NULL, \n\
+    title int(10) NOT NULL,\n\
+    segment int(10) NOT NULL,\n\
+    number int(10) NOT NULL,\n\
+    PRIMARY KEY (id, id_article, start) \n\
+    );\n\n");
+    result.write(str.c_str(), str.length());
+
+    for (auto tit = tetragramms.begin(); tit != tetragramms.end(); ++tit) {
+
+        str.clear();
+        str.append(str_tetragramms);
+        str.append(L"\n\
+    VALUES (");
+        str.append(std::to_wstring(tit->second.id));
+        str.append(L",'");
+        str.append(tit->first);
+        str.append(L"',");
+        str.append(std::to_wstring(tit->second.arts.size()));
+        str.append(L");\n");
+        result.write(str.c_str(), str.length());
+
+        artIdVct::iterator avt = tit->second.arts.begin();
+        for (avt; avt != tit->second.arts.end(); ++avt) {
+            str.clear();
+            str.append(str_tetragramms_articles);
+            str.append(L"\n\
+    VALUES (");
+            str.append(std::to_wstring(tit->second.id));
+            str.append(L",");
+            str.append(std::to_wstring(avt->id));
+            str.append(L",");
+            str.append(std::to_wstring(avt->start));
+            str.append(L",");
+            str.append(std::to_wstring(avt->len));
+            str.append(L",");
+            str.append(std::wstring(1, avt->isTitle));
+            str.append(L",");
+            str.append(std::to_wstring(avt->group));
+            str.append(L",");
+            str.append(std::to_wstring(avt->number));
+            str.append(L");\n");
+            result.write(str.c_str(), str.length());
+        }
+    }
+    result.close();
+}
+
 void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& result)
 {
     size_t n = 1;
@@ -1199,6 +1345,18 @@ void COROSSParser::presaveArticles(bool saveSearch) {
     for (bit; bit != bigramms.end(); ++bit) {
         bit->second.id = bigrId;
         bigrId++;
+    }
+    trigrId = 1;
+    auto tit = trigramms.begin();
+    for (tit; tit != trigramms.end(); ++tit) {
+        tit->second.id = trigrId;
+        trigrId++;
+    }
+    tetragrId = 1;
+    tit = tetragramms.begin();
+    for (tit; tit != tetragramms.end(); ++tit) {
+        tit->second.id = tetragrId;
+        tetragrId++;
     }
     processMistakes();
     printArticles();
@@ -1656,7 +1814,7 @@ void COROSSParser::addArticlesToIndex() {
 
             arts.write(L"-----------------------", wcslen(L"-----------------------"));
             arts.write(caret.c_str(), caret.length());
-            std::map<std::wstring, size_t> art_words;
+            std::vector<std::wstring> art_words;
             size_t group = 1;
             dummyVct::iterator dit = ait->second.index.begin();
             for (dit; dit != ait->second.index.end(); ++dit, group++) {
@@ -1676,8 +1834,7 @@ void COROSSParser::addArticlesToIndex() {
                             arts.write(caret.c_str(), caret.length());
                         }
                         if (vw.size() == 1) {
-                            if (art_words.find(*(vw.begin())) == art_words.end())
-                                art_words.insert(std::pair<std::wstring, size_t>(*(vw.begin()), 1));
+                            art_words.push_back(*(vw.begin()));
                         }
                     }
                     start = pos + 1;
@@ -1695,8 +1852,7 @@ void COROSSParser::addArticlesToIndex() {
                             arts.write(caret.c_str(), caret.length());
                         }
                         if (vw.size() == 1) {
-                            if (art_words.find(*(vw.begin())) == art_words.end())
-                                art_words.insert(std::pair<std::wstring, size_t>(*(vw.begin()), 1));
+                            art_words.push_back(*(vw.begin()));
                         }
                     }
                 }
@@ -1717,47 +1873,10 @@ void COROSSParser::addArticlesToIndex() {
             ait->second.words.resize(std::distance(ait->second.words.begin(), words_it));
 
             // check for bigramms
-            for (auto wit = art_words.begin(); wit != art_words.end(); ++wit) {
-                auto bit = bigrDic.find(wit->first);
-                if (bit != bigrDic.end()) {
-                    for (auto it = bit->second.begin(); it != bit->second.end(); ++it) {
-                        if (art_words.find((*it)) != art_words.end()) {
-                            auto one = words.find(wit->first);
-                            auto two = words.find((*it));
-                            for (auto oneit = one->second.arts.begin(); oneit != one->second.arts.end(); ++oneit) {
-                                if (oneit->id == ait->second.id) {
-                                    for (auto twoit = two->second.arts.begin(); twoit != two->second.arts.end(); ++twoit) {
-                                        if (twoit->id == ait->second.id) {
-                                            if (oneit->group == twoit->group && oneit->number + 1 == twoit->number) {
-                                                std::wstring bigramma(one->first);
-                                                bigramma.append(two->first);
-                                                size_t shift_l = shiftLeftUtf(ait->second.text, oneit->start);
-                                                place cp = { ait->second.id, oneit->start - shift_l,
-                                                             (twoit->start + twoit->len) - oneit->start + shift_l,
-                                                             oneit->group, oneit->number, articleWord };
-                                                auto bigrit = bigramms.find(bigramma);
-                                                if (bigrit == bigramms.end()) {
-                                                    bigramm cb = { bigrId++ };
-                                                    cb.arts.push_back(cp);
-                                                    bigramms.insert(std::pair<std::wstring, bigramm>(bigramma, cb));
-                                                    bigrit = bigramms.find(bigramma);
-                                                }
-                                                else {
-                                                    bigrit->second.arts.push_back(cp);
-                                                }
-                                                if (std::find(ait->second.bigramms.begin(), ait->second.bigramms.end(), bigrit->second.id) == ait->second.bigramms.end())
-                                                    ait->second.bigramms.push_back(bigrit->second.id);
-
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                //for (auto it = )
-            }
+            checkForBigramms(ait, art_words);
+            checkForTrigramms(ait, art_words);
+            checkForTetragramms(ait, art_words);
+            //for (auto it = )
 //            html.write(L"<p>-----------------------</p>", wcslen(L"<p>-----------------------</p>"));
 //            html.write(para_b.c_str(), para_b.length());
 //            html.write(ait->second.text.c_str(), ait->second.text.length());
@@ -1929,11 +2048,40 @@ void COROSSParser::shiftWords(artMap::iterator& ait, const size_t& begin, const 
             }
         }
     }
+    // shift bigramms
     std::vector<size_t>::iterator bait = ait->second.bigramms.begin();
     for (bait; bait != ait->second.bigramms.end(); ++bait) {
-        bigrMap::iterator bit = findBigramm((*bait));
+        grammMap::iterator bit = findBigramm((*bait));
         if (bit != bigramms.end()) {
             for (artIdVct::iterator it = bit->second.arts.begin(); it != bit->second.arts.end(); ++it) {
+                if (it->id == ait->second.id)
+                    if (it->start >= end)
+                        it->start += shift1 + shift2;
+                    else if (it->start >= begin)
+                        it->start += shift1;
+            }
+        }
+    }
+    // shift trigramms
+    std::vector<size_t>::iterator triait = ait->second.trigramms.begin();
+    for (triait; triait != ait->second.trigramms.end(); ++triait) {
+        grammMap::iterator trit = findTrigramm((*triait));
+        if (trit != trigramms.end()) {
+            for (artIdVct::iterator it = trit->second.arts.begin(); it != trit->second.arts.end(); ++it) {
+                if (it->id == ait->second.id)
+                    if (it->start >= end)
+                        it->start += shift1 + shift2;
+                    else if (it->start >= begin)
+                        it->start += shift1;
+            }
+        }
+    }
+    //shift tetragramms
+    std::vector<size_t>::iterator tetrait = ait->second.tetragramms.begin();
+    for (tetrait; tetrait != ait->second.tetragramms.end(); ++tetrait) {
+        grammMap::iterator tetrit = findTetragramm((*tetrait));
+        if (tetrit != tetragramms.end()) {
+            for (artIdVct::iterator it = tetrit->second.arts.begin(); it != tetrit->second.arts.end(); ++it) {
                 if (it->id == ait->second.id)
                     if (it->start >= end)
                         it->start += shift1 + shift2;
