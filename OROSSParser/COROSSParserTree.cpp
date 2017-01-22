@@ -1,6 +1,6 @@
 #include "COROSSParserTree.h"
 
-void COROSSGrammaTree::load(const std::wstring path)
+void COROSSGrammaTree::load(const std::wstring path, const std::map<std::wstring, size_t>& stopLabelDic)
 {
     std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
     // load data to search in articles
@@ -15,7 +15,8 @@ void COROSSGrammaTree::load(const std::wstring path)
             str = str.substr(0, str.length() - 1);
             if (str.length() == 0)
                 continue;
-
+            if (stopLabelDic.find(str) != stopLabelDic.end())
+                continue;
             std::wistringstream iss(str.c_str());
             std::vector<std::wstring> parts;
             std::copy(std::istream_iterator<std::wstring, wchar_t>(iss),
@@ -23,6 +24,16 @@ void COROSSGrammaTree::load(const std::wstring path)
                 std::back_inserter(parts));
             if (parts.size() < 2)
                 continue;
+            bool stop = false;
+            for (auto pit = parts.begin(); pit != parts.end(); ++pit) {
+                if (stopLabelDic.find(*pit) != stopLabelDic.end()) {
+                    stop = true;
+                    break;
+                }
+            }
+            if (stop)
+                continue;
+
             if (depth < parts.size())
                 depth = parts.size();
             auto bit = grMap.find(parts[0]);

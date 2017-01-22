@@ -34,7 +34,7 @@ public:
         depth(0) {};
     ~COROSSGrammaTree() {};
 public:
-    void load(const std::wstring path);
+    void load(const std::wstring path, const std::map<std::wstring, size_t>& stopLabelDic);
 
 public:
     bool find(const std::vector<std::wstring>& words);
