@@ -92,18 +92,20 @@ STDMETHODIMP COROSSParser::Init( modeName Mode, long* hRes )
 
     mode = Mode;
 
-    loadSearchData(LOAD_SEARCH);
-    loadStopDic(L"c:\\IRYA\\OROSSParser\\Data\\stop.txt");
+    if (mode != ROSOnly)
+        loadSearchData(LOAD_SEARCH);
+    stopDic = loadStopDic(L"c:\\IRYA\\OROSSParser\\Data\\stop.txt");
+//    stopLabelDic = loadStopDic(L"c:\\IRYA\\OROSSParser\\Data\\stop_l.txt");
     std::vector<std::wstring> grDics;
     grDics.push_back(L"c:\\IRYA\\OROSSParser\\Data\\bigramms.txt");
     grDics.push_back(L"c:\\IRYA\\OROSSParser\\Data\\trigramms.txt");
     grDics.push_back(L"c:\\IRYA\\OROSSParser\\Data\\tetragramms.txt");
     loadGramms(grDics);
     loadSymbolsMap(L"c:\\IRYA\\OROSSParser\\Data\\smap.txt");
-    if (mode == AddROS) {
+    if (mode == AddROS || mode == ROSOnly) {
         loadROS(L"c:\\IRYA\\OROSSParser\\Data\\ROS_2012.txt");
     }
-    if (mode != Create) {
+    if (mode != Create && mode != ROSOnly) {
         loadDic(L"c:\\IRYA\\OROSSParser\\Data\\arts.txt");
     }
     return *hRes;
@@ -112,10 +114,10 @@ STDMETHODIMP COROSSParser::Init( modeName Mode, long* hRes )
 STDMETHODIMP COROSSParser::Terminate( long* hRes )
 {
     processArticles();
-//    if (mode != Create && mode != Update) {
+    if (mode != Create && mode != Update) {
         presaveArticles(SAVE_SEARCH);
         makeSQL();
-//    }
+    }
     saveData(SAVE_SEARCH);
     error.close();
     return S_OK;
@@ -465,6 +467,8 @@ STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]
         if (tit != titles.end()) {
             for (auto it = tit->second.begin(); it != tit->second.end(); ++it) {
                 auto ait = articles.find(*it);
+                if (ait->second.title != title)
+                    continue;
                 if (ait->second.src == art) {
                     ait->second.state = ARTICLE_STATE_NEUTRAL;
                     found = true;
@@ -531,6 +535,40 @@ STDMETHODIMP COROSSParser::AddArticle( BSTR Title, BSTR Article, /*[out, retval]
     return S_OK;
 }
 
+STDMETHODIMP COROSSParser::SaveTitle(BSTR Title, /*[out, retval]*/ long *hRes)
+{
+    article ca;
+    ca.state = ARTICLE_STATE_NEUTRAL;
+    ca.dic = dicOROSS;
+    std::wstring title(Title);
+    correctText(title);
+    size_t titleLen = title.length();
+    prepareTitle(title);
+
+    std::wstring title_l(title);
+    prepareSearchTitle(title_l);
+
+    auto tit = titles.find(title_l);
+    if (tit == titles.end()) {
+        std::vector<size_t> artVct;
+        artVct.push_back(artId); //ca.id);
+        titles.insert(std::pair<std::wstring, std::vector<size_t> >(title_l, artVct));
+        error.write(L"Update article:\t", wcslen(L"Update article:\t"));
+        error.write(title.c_str(), title.length());
+        error.write(L"\t", wcslen(L"\t"));
+        error.write(title_l.c_str(), title_l.length());
+        error.write(L"\n", wcslen(L"\n"));
+
+    }
+    else {
+        tit->second.push_back(artId);//ca.id);
+    }
+    artId++;
+
+    *hRes = S_OK;
+    return S_OK;
+}
+
 void COROSSParser::processArticles() {
 
     artMap sorted;
@@ -547,6 +585,7 @@ void COROSSParser::processArticles() {
             }
             if (ca.state != ARTICLE_STATE_TO_DELETE) {
                 ca.id = artId;
+                (*it) = artId;
                 sorted.insert(std::pair<size_t, article>(artId, ca));
                 artId++;
             }
@@ -557,7 +596,7 @@ void COROSSParser::processArticles() {
 
     for (auto ait = articles.begin(); ait != articles.end(); ++ait) {
         if (ait->second.dic == dicOROSS && ait->second.state == ARTICLE_STATE_NEW) {//ARTICLE_STATE_TO_DELETE)
-            processArticle(ait->second);
+                processArticle(ait->second);
             std::wstring mess(L"New article was processed:");
             mess.append(ait->second.title);
             mess.append(L"\n");
@@ -944,7 +983,7 @@ void COROSSParser::getFormulas(const std::wstring& article, const std::wstring& 
                     size_t shift = shiftLeft(afull, pref + (*rit).prefix().length() + 1);
                     //                    subst cs = {FORMULA_SUBST, fit->second.id, fm.str().length() - 1 + shift, L"", 0};
                     subst cs = { FORMULA_SUBST, fit->second.id, (*rit).str().length() - 1 + shift, L"", 0 };
-                    cs.substitution.append(L"<a class=\"formula\" href=\"http://oross.local:8888/orthogr/formula?id=");//#formula");
+                    cs.substitution.append(L"<a class=\"formula\" href=\"http://ruslang-oross.ru/orthogr/formula?id=");//#formula");
                     cs.substitution.append(std::to_wstring(fit->second.id));
                     cs.substitution.append(L"\" >");
                     //                    cs.substitution.append(afull.substr(fm.prefix().length() + 1 - shift, fm.str().length() - 1 + shift));

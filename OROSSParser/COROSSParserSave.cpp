@@ -370,30 +370,30 @@ void COROSSParser::makeSQL()
 {
     std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
     std::wofstream result_contents(L"c:\\IRYA\\import_contents.sql", std::wofstream::binary);
-//    std::wofstream result_articles(L"c:\\IRYA\\import_articles.sql", std::wofstream::binary);
-    std::wofstream result_mistakes(L"c:\\IRYA\\import_mistakes.sql", std::wofstream::binary);
 
     std::wstring caret(L"\n");
 
-    if (result_contents.is_open() && result_mistakes.is_open()) {
-        result_contents.imbue(loc);
-        result_mistakes.imbue(loc);
-        makePartsTable(result_contents);
-        makeTileTable(result_contents);
-        makeParaTable(result_contents);
-        makeRuleTable(result_contents);
-        makeOrthogrTable(result_contents);
-        makeFormulaTable(result_contents); 
-        makeFootNotesTable(result_contents);
+    if (result_contents.is_open()) {
+        if (mode != ROSOnly) {
+            result_contents.imbue(loc);
+            makePartsTable(result_contents);
+            makeTileTable(result_contents);
+            makeParaTable(result_contents);
+            makeRuleTable(result_contents);
+            makeOrthogrTable(result_contents);
+            makeFormulaTable(result_contents);
+            makeFootNotesTable(result_contents);
+            result_contents.close();
+        }
        // makeHistoricTable(result_contents);
         makeWordsTable(loc);
         makeBigrammsTable(loc);
         makeTrigrammsTable(loc);
         makeTetragrammsTable(loc);
-        makeMistakesTable(result_mistakes);
+        makeMistakesTable(loc);
         makeArticlesTable(loc);
-        result_contents.close();
-        result_mistakes.close();
+        if (mode == ROSOnly)
+            makeABCTable(loc);
     }
 }
 
@@ -1046,6 +1046,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
     text TEXT NOT NULL,\n\
     rtf TEXT NOT NULL,\n\
     src TEXT NOT NULL,\n\
+    phantom int(2) NOT NULL,\n\
     PRIMARY KEY (id) \n\
     );\n\n");
     result.write(str.c_str(), str.length());
@@ -1186,7 +1187,9 @@ VALUES (");
         str.append(ait->second.rtf);
         str.append(L"','");
         str.append(ait->second.src);
-        str.append(L"');\n");
+        str.append(L"',");
+        str.append(L"0");
+        str.append(L");\n");
         result.write(str.c_str(), str.length());
 
         idx++;
@@ -1286,8 +1289,19 @@ VALUES (");
     }
 }
 
-void COROSSParser::makeMistakesTable(std::wofstream& result) {
+void COROSSParser::makeMistakesTable(const std::locale& loc) {
 
+    size_t n = 1;
+    std::wstring filename(L"c:\\IRYA\\import_mistakes");
+    filename.append(std::to_wstring(n));
+    filename.append(L".sql");
+    std::wofstream result(filename, std::wofstream::binary);
+    if (result.is_open()) {
+        result.imbue(loc);
+    }
+    else {
+        return;
+    }
     std::wstring str(L"\nCREATE TABLE IF NOT EXISTS mistakes (\n\
     id int(11) NOT NULL,\n\
     mistake varchar(256) NOT NULL,\n\
@@ -1303,8 +1317,25 @@ void COROSSParser::makeMistakesTable(std::wofstream& result) {
     );\n\n");
     result.write(str.c_str(), str.length());
 
+    size_t idx = 0;
     mistakeMap::iterator mit = mistakes.begin();
     for (; mit != mistakes.end(); ++mit) {
+        if (idx == 4999) {
+            idx = 0;
+            n++;
+            result.close();
+            filename.clear();
+            filename.append(L"c:\\IRYA\\import_mistakes");
+            filename.append(std::to_wstring(n));
+            filename.append(L".sql");
+            result.open(filename, std::wofstream::binary);
+            if (result.is_open()) {
+                result.imbue(loc);
+            }
+            else
+                return;
+        }
+
         str.clear();
         str.append(L"INSERT INTO mistakes (id, mistake) ");
         str.append(L"\n\
@@ -1327,13 +1358,16 @@ void COROSSParser::makeMistakesTable(std::wofstream& result) {
             str.append(L");\n");
             result.write(str.c_str(), str.length());
         }
-    } 
+        idx++;
+    }
+    result.close();
 }
 
 void COROSSParser::presaveArticles(bool saveSearch) {
 
     processIndex(saveSearch);
-    processComments();
+    if (mode != ROSOnly)
+        processComments();
     wordId = 1;
     auto wit = words.begin();
     for (wit; wit != words.end(); ++wit) {
@@ -1363,8 +1397,8 @@ void COROSSParser::presaveArticles(bool saveSearch) {
 }
 
 void COROSSParser::processComments() {
-    std::wstring sm_komment(L"(\\s*_*[Ñ|ñ]ì_*\\._*\\s*êîììåíò\\.\\s*ê\\s*)([_\\u00B9\\u00B2\\u00B3à-ÿÀ-ß¨¸\\<sup\\>123\\</sup\\>]+[-]*[…]*([\\.]{3})*\\s*)([_\\u00B9\\u00B2\\u00B3à-ÿÀ-ß¨¸\\<sup\\>123\\</sup\\>]*)");//
-    std::wstring smotri(L"(\\s*_*[Ñ|ñ]ì_*\\._*\\s*)([_\\u00B9\\u00B2\\u00B3à-ÿÀ-ß¨¸\\<sup\\>123\\</sup\\>]+[-]*[…]*([\\.]{3})*\\s*)([_\\u00B9\\u00B2\\u00B3à-ÿÀ-ß¨¸\\<sup\\>123\\</sup\\>]*)");//L"\\s[Ñ|ñ]ì\\.\\s*");
+    std::wstring sm_komment(L"(\\s*_*[Ñ|ñ]ì_*\\._*\\s*êîììåíò\\.\\s*ê\\s*)([_\\-\\u00B9\\u00B2\\u00B3à-ÿÀ-ß¨¸\\<sup\\>123\\</sup\\>]+[-]*[…]*([\\.]{3})*\\s*)([_\\u00B9\\u00B2\\u00B3à-ÿÀ-ß¨¸\\<sup\\>123\\</sup\\>]*)");//
+    std::wstring smotri(L"(\\s*_*[Ñ|ñ]ì_*\\._*\\s*)([_\\-\\u00B9\\u00B2\\u00B3à-ÿÀ-ß¨¸\\<sup\\>123\\</sup\\>]+[-]*[…]*([\\.]{3})*\\s*)([_\\u00B9\\u00B2\\u00B3à-ÿÀ-ß¨¸\\<sup\\>123\\</sup\\>]*)");//L"\\s[Ñ|ñ]ì\\.\\s*");
     artMap::iterator it = articles.begin();
     std::wstring romb(L"</p><p>\u25ca");
     std::locale loc;
@@ -1388,13 +1422,13 @@ void COROSSParser::processComments() {
 
             std::regex_iterator<std::wstring::iterator> rit(pure.begin(), pure.end(), search);
             std::regex_iterator<std::wstring::iterator> rend;
-
+            size_t pref_len = 0;
             while (rit != rend) {
               //  std::wsmatch sm = *rit;
                 //std::cout << rit->str() << std::endl;
                 std::wstring word = (*rit)[2].str();
                 if (word != L"êîììåíò") {
-                    size_t begin = (*rit).prefix().length() + (*rit)[1].str().length();
+                    size_t begin = pref_len + (*rit).prefix().length() + (*rit)[1].str().length();
                     size_t end = begin;
                     if (i == 0 && (*rit).size() > 4)
                         word = word + (*rit)[4].str();
@@ -1464,21 +1498,35 @@ void COROSSParser::processComments() {
                                 subst.append(L"_");
                                 subst.append(std::to_wstring(a.id));
                                 subst.append(L"\" data-parent=\"#accordionComments\" data-toggle=\"collapse\" style=\"text-transform:none\" >");
+                                // check for d)
+                                if (it->second.text[end - 1] == L' ') {
+                                    size_t q = end;
+                                    while (q < it->second.text.length() &&
+                                           it->second.text[q] >= L'1' &&
+                                           it->second.text[q] <= L'9') {
+                                        q++;
+                                    }
+                                    if (q < it->second.text.length() && it->second.text[q] == L')')
+                                        end = q + 1;
+                                }
                                 // shift words
                                 size_t utf_begin = getUtfLen(it->second.text, 0, begin);
                                 size_t utf_end = getUtfLen(it->second.text, 0, end);
                                 shiftWords(it, utf_begin, subst.length(), utf_end, 5);
                                 it->second.text.insert(begin, subst);
+                                pref_len += subst.length();
                                 end += subst.length();
                                 if (end < it->second.text.length())
                                     it->second.text.insert(end, L"</a >");
                                 else
                                     it->second.text.append(L"</a >");
+                                pref_len += 5; // len of </a >
                                 break;
                             }
                         }
                     }
                 }
+                pref_len += (*rit).prefix().length() + (*rit).str().length();
                 ++rit;
             }
 
@@ -1558,6 +1606,17 @@ std::vector<std::wstring> COROSSParser::addWordToIndex(artMap::iterator ait,
         len += accent.length();
 
     size_t key_utf_len = getUtfLen(key, offset, len);
+    std::wstring full_word = L"";
+    if (vw.size() > 1) {
+        full_word = getPureWord(*(vw.begin()));
+        for (auto it = vw.begin(); it != vw.end(); ++it) {
+            key = getPureWord((*it));
+            if (key.length() > full_word.length())
+                full_word = key;
+        }
+    }
+    else
+        full_word = L"";
     for (auto it = vw.begin(); it != vw.end(); ++it) {
 /*        if (it == vw.begin()) {
             key = getPureWord(key.substr(offset, len));
@@ -1565,7 +1624,10 @@ std::vector<std::wstring> COROSSParser::addWordToIndex(artMap::iterator ait,
         }
         else */
         key = getPureWord((*it));
-
+        size_t part_offset = 0;
+        if (full_word != L"")
+            part_offset = full_word.find(key);
+        
         (*it) = key;
         //                    prepareOrthoKey(key);
         if (key.length() > 0) {
@@ -1575,7 +1637,7 @@ std::vector<std::wstring> COROSSParser::addWordToIndex(artMap::iterator ait,
 
             std::transform(key.begin(), key.end(), key.begin(),
                 std::bind2nd(std::ptr_fun(&std::tolower<wchar_t>), russian));
-            if (stopDic.find(key) == stopDic.end()) {
+            if (stopDic.find(key) == stopDic.end() && !isStopLabel(key, interval, start + offset + part_offset, type)) {
                 place cp = { ait->second.id, utf_len + getUtfLen(interval, 0, start + offset), key_utf_len, group, number, type };
                 wordMap::iterator wit = words.find(key);
                 if (wit == words.end()) {
@@ -1612,13 +1674,14 @@ std::vector<std::wstring> COROSSParser::addWordToIndex(artMap::iterator ait,
     return vw; //key;
 }
 
-std::vector<std::wstring> COROSSParser::addTitleToIndex(artMap::iterator ait) {
+std::vector<std::wstring> COROSSParser::addTitleToIndex(artMap::iterator ait, const dummyVct::iterator& dit) {
 
     if (ait->second.title.length() == 0)
         return (std::vector<std::wstring>());
 
 
-    std::wstring interval(ait->second.text.substr(ait->second.index[0].start, ait->second.index[0].len));
+//    std::wstring interval(ait->second.text.substr(ait->second.index[0].start, ait->second.index[0].len));
+    std::wstring interval(ait->second.text.substr(dit->start, dit->len));
     std::wstring key(interval);
 
     size_t offset = 0;
@@ -1823,7 +1886,7 @@ void COROSSParser::addArticlesToIndex() {
                 size_t start = 0;
                 size_t utf_len = getUtfLen(ait->second.text, 0, dit->start);
                 size_t number = 1;
-//                if (dit->type == TITLE_WORD && pos != std::wstring::npos)
+//                if (dit->type == titleWord && pos != std::wstring::npos)
 //                    addTitleToIndex(ait);
                 while (pos != std::wstring::npos) {
                     std::vector<std::wstring> vw = addWordToIndex(ait, interval, pos, start, utf_len, dit->type == titleWord ? titleWord : articleWord, group, number);
@@ -1857,13 +1920,23 @@ void COROSSParser::addArticlesToIndex() {
                     }
                 }
             }
-            if (ait->second.title.find_first_of(L" /") != std::wstring::npos) {
-                // add full title (with space and /) to index
-                std::vector<std::wstring> vw = addTitleToIndex(ait);
-                if (vw.size() != 0) {
-                    for (auto w = vw.begin(); w != vw.end(); ++w) {
-                        arts.write((*w).c_str(), (*w).length());
-                        arts.write(caret.c_str(), caret.length());
+            dit = ait->second.index.begin();
+            for (dit; dit != ait->second.index.end(); ++dit, group++) {
+                if (dit->type == titleWord) {
+                    std::wstring title_l = ait->second.text.substr(dit->start, dit->len);
+                    replaceSup(title_l);
+                    prepareTitle(title_l);
+                    removeParentheses(title_l);
+//                    if (ait->second.title.find_first_of(L" /") != std::wstring::npos) {
+                    if (title_l.find_first_of(L" /") != std::wstring::npos) {
+                        // add full title (with space and /) to index
+                        std::vector<std::wstring> vw = addTitleToIndex(ait, dit);
+                        if (vw.size() != 0) {
+                            for (auto w = vw.begin(); w != vw.end(); ++w) {
+                                arts.write((*w).c_str(), (*w).length());
+                                arts.write(caret.c_str(), caret.length());
+                            }
+                        }
                     }
                 }
             }
@@ -2118,8 +2191,9 @@ void COROSSParser::printArticles() {
 void COROSSParser::processMistakes() {
     size_t mistId = 1;
     for (auto wit = words.begin(); wit != words.end(); ++wit) {
+        std::wstring mist(wit->first);
         if (wit->first.find(L' ') != std::wstring::npos || wit->first.find(L'-') != std::wstring::npos) {
-            std::wstring mist(wit->first);
+//            std::wstring mist(wit->first);
             prepareOrthoKey(mist);
             mistakeMap::iterator mit = mistakes.find(mist);
             if (mit == mistakes.end()) {
@@ -2134,6 +2208,50 @@ void COROSSParser::processMistakes() {
                 }
             }
         }
+
+        // remove ü, ú
+        size_t len = mist.length();
+        size_t pos = mist.find(L'ü');
+        while (pos != std::wstring::npos) {
+            mist.replace(pos, 1, L"");
+            pos = mist.find(L'ü', pos + 1);
+        }
+        pos = mist.find(L'ú');
+        while (pos != std::wstring::npos) {
+            mist.replace(pos, 1, L"");
+            pos = mist.find(L'ú', pos + 1);
+        }
+        if (mist.length() != len) {
+            mistakeMap::iterator mit = mistakes.find(mist);
+            if (mit == mistakes.end()) {
+                mistake cm = { mistId };
+                cm.wordIds.push_back(wit->second.id);
+                mistakes.insert(std::pair<std::wstring, mistake>(mist, cm));
+                mistId++;
+            }
+            else {
+                if (std::find(mit->second.wordIds.begin(), mit->second.wordIds.end(), wit->second.id) == mit->second.wordIds.end()) {
+                    mit->second.wordIds.push_back(wit->second.id);
+                }
+            }
+        }
+        // exclude vowels
+/*        len = mist.length();
+        mist.erase(std::remove_if(mist.begin(), mist.end(), soundex), mist.end());
+        if (mist.length() != len && mist.length() > 2) {
+            mistakeMap::iterator mit = mistakes.find(mist);
+            if (mit == mistakes.end()) {
+                mistake cm = { mistId };
+                cm.wordIds.push_back(wit->second.id);
+                mistakes.insert(std::pair<std::wstring, mistake>(mist, cm));
+                mistId++;
+            }
+            else {
+                if (std::find(mit->second.wordIds.begin(), mit->second.wordIds.end(), wit->second.id) == mit->second.wordIds.end()) {
+                    mit->second.wordIds.push_back(wit->second.id);
+                }
+            }
+        } */
     }
 }
 
@@ -2166,5 +2284,132 @@ void COROSSParser::makeTutorialUpdate()
             }
         }
         update.close();
+    }
+}
+
+void COROSSParser::makeABCTable(const std::locale& loc)
+{
+    std::map<wchar_t, std::wstring> abcMap;
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'à', L"a"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'á', L"be"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'â', L"ve"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ã', L"ghe"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ä', L"de"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'å', L"e"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'¸', L"yo"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'æ', L"zhe"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ç', L"ze"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'è', L"i"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'é', L"short_i"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ê', L"ka"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ë', L"el"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ì', L"em"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'í', L"en"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'î', L"o"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ï', L"pe"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ð', L"er"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ñ', L"es"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ò', L"te"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ó', L"u"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ô', L"ef"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'õ', L"ha"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ö', L"tse"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'÷', L"che"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ø', L"sha"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ù', L"shcha"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'û', L"ery"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ý', L"reverse_e"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'þ', L"yu"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ÿ', L"ya"));
+
+    auto tit = titles.begin();
+    for (tit; tit != titles.end(); ++tit) {
+        if (tit->first[0] == abcMap.begin()->first)
+            break;
+    }
+    for (auto abcit = abcMap.begin(); abcit != abcMap.end(); ++abcit) {
+        if (tit->first[0] != abcit->first)
+            continue;
+        std::wstring filename(L"c:\\IRYA\\import_abc_");
+        filename.append(abcit->second);
+        filename.append(L".sql");
+        std::wofstream result(filename, std::wofstream::binary);
+        if (result.is_open()) {
+            result.imbue(loc);
+        }
+        else {
+            return;
+        }
+        std::wstring str(L"\nCREATE TABLE IF NOT EXISTS abc_");
+        str.append(abcit->second);
+        str.append(L" (\n\
+                    id_first int(11) NOT NULL,\n\
+                    id_last int(11) NOT NULL,\n\
+                    a_first varchar(256) NOT NULL,\n\
+                    a_last varchar(256) NOT NULL,\n\
+                    PRIMARY KEY (id_first) \n\
+                    );\n\n");
+        result.write(str.c_str(), str.length());
+        size_t start = *(tit->second.begin());
+        size_t idx = start;
+        size_t count = 0;
+        std::wstring a_start = articles.find(start)->second.title; //tit->first;
+        std::wstring a_last = a_start; //tit->first;
+        while (tit != titles.end() && tit->first[0] == abcit->first) {
+            for (auto it = tit->second.begin(); it != tit->second.end(); ++it) {
+                idx = (*it);
+                count++;
+            }
+            a_last = articles.find(idx)->second.title;
+            if (count > 300) {
+                str.clear();
+                str.append(L"INSERT INTO abc_");
+                str.append(abcit->second);
+                str.append(L" (id_first, id_last, a_first, a_last) \n\
+                            VALUES (");
+                str.append(std::to_wstring(start));
+                str.append(L",");
+                str.append(std::to_wstring(idx));
+                str.append(L",'");
+                str.append(a_start);
+                str.append(L"','");
+                size_t pos = a_last.rfind(L';');
+                if (pos != std::wstring::npos)
+                    a_last = a_last.substr(0, pos);
+                str.append(a_last);
+                str.append(L"');\n");
+                result.write(str.c_str(), str.length());
+            }
+            tit++;
+            if (count > 300 && tit != titles.end()) {
+                start = *(tit->second.begin());
+                count = 0;
+                idx = start;
+                a_start = articles.find(start)->second.title;//tit->first;
+                size_t pos = a_start.rfind(L';');
+                if (pos != std::wstring::npos)
+                    a_start = a_start.substr(0, pos);
+                a_last = a_start;//tit->first;
+            }
+        }
+        if (tit == titles.end() || count > 0) {
+            str.clear();
+            str.append(L"INSERT INTO abc_");
+            str.append(abcit->second);
+            str.append(L" (id_first, id_last, a_first, a_last) \n\
+                        VALUES (");
+            str.append(std::to_wstring(start));
+            str.append(L",");
+            str.append(std::to_wstring(idx));
+            str.append(L",'");
+            str.append(a_start);
+            str.append(L"','");
+            str.append(a_last);
+            str.append(L"');\n");
+            result.write(str.c_str(), str.length());
+            if (tit == titles.end())
+                break;
+        }
+        result.close();
     }
 }

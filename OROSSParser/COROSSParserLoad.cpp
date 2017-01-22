@@ -17,10 +17,10 @@ void COROSSParser::loadSearchData(bool loadSearch)
         return;
     std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
     // load data to search in articles
-    std::wifstream rest(L"c:\\IRYA\\pararest.txt", std::wifstream::binary);
-    std::wifstream formulas(L"c:\\IRYA\\formulas.txt", std::wifstream::binary);
-    std::wifstream orthos(L"c:\\IRYA\\orthos.txt", std::wifstream::binary);
-    std::wifstream tutorial(L"c:\\IRYA\\tutorial.txt", std::wifstream::binary);
+    std::wifstream rest(L"c:\\IRYA\\OROSSParser\\Data\\search\\pararest.txt", std::wifstream::binary);
+    std::wifstream formulas(L"c:\\IRYA\\OROSSParser\\Data\\search\\formulas.txt", std::wifstream::binary);
+    std::wifstream orthos(L"c:\\IRYA\\OROSSParser\\Data\\search\\orthos.txt", std::wifstream::binary);
+    std::wifstream tutorial(L"c:\\IRYA\\OROSSParser\\Data\\search\\tutorial.txt", std::wifstream::binary);
 
     if (rest.is_open()) {
         rest.imbue(loc);
@@ -187,6 +187,11 @@ void COROSSParser::loadDic(const std::wstring& dict)
             }
             else if (parts[0] == L"a_title:") {
                 ca.title = parts[1];
+                size_t pos = ca.title.find(L"\u0301");
+                while (pos != std::wstring::npos) {
+                    ca.title.replace(pos, 1, L"");
+                    pos = ca.title.find(L"\u0301", pos + 1);
+                }
             }
             else if (parts[0] == L"a_text:") {
                 ca.text = parts[1];
@@ -269,23 +274,25 @@ std::vector<size_t> COROSSParser::splitValues(const std::wstring& str) {
     return vct;
 }
 
-void COROSSParser::loadStopDic(const std::wstring& dict) {
+std::map<std::wstring, size_t> COROSSParser::loadStopDic(const std::wstring& dict) {
     std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
     // load data to search in articles
     std::wifstream stop(dict, std::wifstream::binary);
-
+    std::map<std::wstring, size_t> dic;
     if (stop.is_open()) {
         stop.imbue(loc);
         stop.seekg(3);
         while (!stop.eof()) {
             std::wstring str(L"");
             std::getline(stop, str);
+            str = str.substr(0, str.length() - 1);
             if (str.length() == 0)
                 continue;
-            stopDic.insert(std::pair<std::wstring, size_t>(str, 1));
+            dic.insert(std::pair<std::wstring, size_t>(str, 1));
         }
         stop.close();
     }
+    return dic;
 }
 
 void COROSSParser::loadROS(const std::wstring& dict) {
@@ -458,11 +465,11 @@ void COROSSParser::loadROS(const std::wstring& dict) {
 
 void COROSSParser::loadGramms(std::vector<std::wstring> dics)
 {
-    bigrDic.load(dics[0]);
+    bigrDic.load(dics[0], stopLabelDic);
     if (dics.size() > 1)
-        trigrDic.load(dics[1]);
+        trigrDic.load(dics[1], stopLabelDic);
     if (dics.size() > 2)
-        tetragrDic.load(dics[2]);
+        tetragrDic.load(dics[2], stopLabelDic);
 }
 
 void COROSSParser::loadSymbolsMap(const std::wstring& symbols)

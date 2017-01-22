@@ -16,6 +16,7 @@
 #include "COROSSParserMorph.h"
 #include "COROSSParserDiacr.h"
 #include "COROSSParserTree.h"
+#include "COROSSParserSoundEx.h"
 
 #define ORTHO_SUBST 1
 #define FORMULA_SUBST 2
@@ -308,7 +309,7 @@ public:
       str_articles_formulas(L"INSERT INTO articles_formulas (id, id_formula) "),
       str_articles_comments(L"INSERT INTO articles_comments (id, id_comment) "),
  //     str_articles(L"INSERT INTO articles (id, title, text, rtf, src, comment_id) "), //!!!!
-        str_articles(L"INSERT INTO articles (id, dic, title, text, rtf, src) "), //!!!!
+        str_articles(L"INSERT INTO articles (id, dic, title, text, rtf, src, phantom) "), //!!!!
         str_values(L"    VALUES ("),
         str_sup1(L"<sup>1</sup>"),
         str_sup2(L"<sup>2</sup>"),
@@ -341,6 +342,8 @@ public:
 //    STDMETHOD(LoadDic)( BSTR Dic, /*[out, retval]*/ long *hRes );
     STDMETHOD(LoadArticles)( BSTR Dic, /*[out, retval]*/ long *hRes );
     STDMETHOD(LoadWords)( BSTR Dic, /*[out, retval]*/ long *hRes );
+    // Helpers
+    STDMETHOD(SaveTitle)(BSTR Title, /*[out, retval]*/ long *hRes);
 
 protected:
     modeName mode;
@@ -359,6 +362,7 @@ protected:
     titleMap titles;
     footMap footnotes;
     std::map<std::wstring, size_t> stopDic;
+    std::map<std::wstring, size_t> stopLabelDic;
     std::map<wchar_t, wchar_t > symMap;
 
   //  orthoMap orthos;
@@ -394,6 +398,7 @@ protected:
 
     COROSSParserMorph morph;
     COROSSDiacritics diacritics;
+    COROSSSoundEx soundex;
     COROSSGrammaTree bigrDic;
     COROSSGrammaTree trigrDic;
     COROSSGrammaTree tetragrDic;
@@ -407,7 +412,7 @@ protected:
 
     void loadSearchData(bool loadSearch = false);
     void loadDic(const std::wstring& dict);
-    void loadStopDic(const std::wstring& dict);
+    std::map<std::wstring, size_t> loadStopDic(const std::wstring& dict);
     void loadGramms(std::vector<std::wstring> dics);
     void loadROS(const std::wstring& dict);
     void loadMorph();
@@ -426,8 +431,9 @@ protected:
     void makeTrigrammsTable(const std::locale& loc);
     void makeTetragrammsTable(const std::locale& loc);
     void makeArticlesTable(const std::locale& loc);
-    void makeMistakesTable(std::wofstream& result);
+    void makeMistakesTable(const std::locale& loc);
     void makeTutorialUpdate();
+    void makeABCTable(const std::locale& loc);
 
     void processComments();
     void processIndex(bool saveSearch = false);
@@ -455,7 +461,7 @@ protected:
     std::vector<std::wstring> getFullWords(const std::wstring& word, size_t& offset, size_t &len, bool title = false);
     bool isEqualToTitle(const std::wstring& word, const std::wstring& title);
     std::vector<std::wstring> addWordToIndex(artMap::iterator ait, const std::wstring& key, const size_t& pos, const size_t& start, const size_t& utf_len, const wchar_t type, const size_t& group, const size_t& number);
-    std::vector<std::wstring> addTitleToIndex(artMap::iterator ait);
+    std::vector<std::wstring> addTitleToIndex(artMap::iterator ait, const dummyVct::iterator& dit);
     std::vector<std::wstring> addWordToTutorialIndex(const size_t& id, const std::wstring& interval, const size_t& pos, const size_t& start, const size_t& utf_len, const wchar_t type, const size_t& number);
     void removeParentheses(std::wstring& str);
     void cutTail(std::wstring& str);
@@ -497,6 +503,7 @@ protected:
     size_t getUtfLen(const std::wstring& str, const size_t&start, const size_t& len);
     void shiftWords(artMap::iterator& ait, const size_t& begin, const size_t& shift1, const size_t& end, const size_t& shift2);
     void replaceArtId(article& a, std::wstring& article, const size_t& curId, const size_t newId);
+    bool isStopLabel(const std::wstring& key, const std::wstring interval, const size_t start, const wchar_t type);
 };
 
 #endif //__KHPARSER_H_

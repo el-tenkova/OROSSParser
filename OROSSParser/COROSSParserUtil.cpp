@@ -140,6 +140,7 @@ std::wstring COROSSParser::prepareRest(const std::wstring& Rest)
 
 void COROSSParser::prepareTitle(std::wstring& title)
 {
+    prepareComment(title);
     std::vector<std::wstring> tags;
     tags.push_back(L"<i>");
     tags.push_back(L"</i>");
@@ -183,6 +184,9 @@ void COROSSParser::prepareTitle(std::wstring& title)
         }
         title = title.substr(0, idx);
     }
+    size_t pos = title.rfind(L';');
+    if (pos != std::wstring::npos)
+        title = title.substr(0, pos);
 }
 
 void COROSSParser::prepareSearchTitle(std::wstring &title) {
@@ -198,6 +202,12 @@ void COROSSParser::prepareSearchTitle(std::wstring &title) {
         title.replace(pos, 1, L"1");
         pos = title.find(L'\u00b9', pos + 1);
     }
+    pos = title.find(L'\u2026');
+    while (pos != std::wstring::npos) {
+        title.replace(pos, 1, L"1");
+        pos = title.find(L'\u2026', pos + 1);
+    }
+
     pos = title.find(L'\u00b2'); // superscript two
     while (pos != std::wstring::npos) {
         title.replace(pos, 1, L"2");
@@ -209,10 +219,46 @@ void COROSSParser::prepareSearchTitle(std::wstring &title) {
         pos = title.find(L'\u00b3', pos + 1);
     }
 
-    pos = title.find(L';'); 
+    std::vector<wchar_t> todel;
+    todel.push_back(L'\u002D');
+    todel.push_back(L'\u00AD');
+    todel.push_back(L'\u2013');
+    todel.push_back(L'\u2014');
+    todel.push_back(L';');
+    todel.push_back(L' ');
+    todel.push_back(L'»');
+    todel.push_back(L'«');
+    for (auto sym = todel.begin(); sym != todel.end(); ++sym) {
+        pos = title.find(*sym);
+        while (pos != std::wstring::npos) {
+            title.replace(pos, 1, L"");
+            pos = title.find(*sym, pos + 1);
+        }
+    }
+/*    pos = title.find(L';'); 
     while (pos != std::wstring::npos) {
         title.replace(pos, 1, L"");
         pos = title.find(L';', pos + 1);
+    }
+    pos = title.find(L' ');
+    while (pos != std::wstring::npos) {
+        title.replace(pos, 1, L"");
+        pos = title.find(L' ', pos + 1);
+    }
+    pos = title.find(L'»');
+    while (pos != std::wstring::npos) {
+        title.replace(pos, 1, L"");
+        pos = title.find(L'»', pos + 1);
+    }
+    pos = title.find(L'«');
+    while (pos != std::wstring::npos) {
+        title.replace(pos, 1, L"");
+        pos = title.find(L'«', pos + 1);
+    } */
+    pos = title.find(L'¸');
+    while (pos != std::wstring::npos) {
+        title.replace(pos, 1, L"å");
+        pos = title.find(L'¸', pos + 1);
     }
 }
 
@@ -290,6 +336,20 @@ void COROSSParser::correctText(std::wstring& text)
         pos = text.find(L"\t");
     }
 
+    pos = text.find(L"\u0301");
+    while (pos != std::wstring::npos) {
+        text.replace(pos, 1, L"");
+        pos = text.find(L"\u0301", pos + 1);
+    }
+
+    //romb
+    pos = text.find(L"</p><p>\u25ca");
+    if (pos == std::wstring::npos) {
+        pos = text.find(L"\u25ca");
+        if (pos != std::wstring::npos) {
+            text.replace(pos, 1, L"</p><p>\u25ca");
+        }
+    }
     std::vector<std::wstring>::iterator it = tagsAccents.begin();
     for (it; it != tagsAccents.end(); it += 2) {
         pos = text.find(*it);
@@ -298,7 +358,6 @@ void COROSSParser::correctText(std::wstring& text)
             pos = text.find(*it, pos + 1);
         }
     }
-
 }
 
 void COROSSParser::correctWord(std::wstring& text)
@@ -462,15 +521,21 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
     pos = tmp.find(L"\\(");
     while (pos != std::wstring::npos) {
         if (pos > 1 && tmp[pos + 1] != ' ')
-            tmp.replace(pos, 2, L"\\( ");
-        pos = tmp.find(L"\\(", pos + 3);
+            tmp.replace(pos, 2, L" \\( ");
+        pos = tmp.find(L"\\(", pos + 4);
     }
 
     pos = tmp.find(L"\\)");
     while (pos != std::wstring::npos) {
         if (pos > 1 && tmp[pos - 1] != ' ')
-            tmp.replace(pos, 2, L" \\)");
-        pos = tmp.find(L"\\)", pos + 3);
+            tmp.replace(pos, 2, L" \\) ");
+        pos = tmp.find(L"\\)", pos + 4);
+    }
+
+    pos = tmp.find(L',');
+    while (pos != std::wstring::npos) {
+        tmp.replace(pos, 1, L" ,* ");
+        pos = tmp.find(L',', pos + 2);
     }
 
     pos = tmp.find(L' ');
@@ -498,12 +563,6 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
     while (pos != std::wstring::npos) {
         tmp.replace(pos, 1, L"\\-*\\u2013*\\u2014*");
         pos = tmp.find(L' ', pos + 1);
-    }
-
-    pos = tmp.find(L',');
-    while (pos != std::wstring::npos) {
-        tmp.replace(pos, 1, L",*");
-        pos = tmp.find(L',', pos + 1);
     }
 
     pos = tmp.find(L"\\/");
@@ -1270,4 +1329,19 @@ void COROSSParser::checkForTrigramms(artMap::iterator& ait, const std::vector<st
 void COROSSParser::checkForTetragramms(artMap::iterator& ait, const std::vector<std::wstring>& art_words)
 {
     checkForGramms(tetragrDic, tetragramms, tetragrId, ait, ait->second.tetragramms, art_words);
+}
+
+bool COROSSParser::isStopLabel(const std::wstring& key, const std::wstring interval, const size_t start, const wchar_t type)
+{
+    if (type == titleWord)
+        return false;
+    if (stopLabelDic.find(key) == stopLabelDic.end())
+        return false;
+    if (start + key.length() < interval.length()){
+        if (interval.find(L".", start + key.length()) == start + key.length())
+            return true;
+        if (interval.find(L"</i>.", start + key.length()) == start + key.length())
+            return true;
+    }
+    return false;
 }
