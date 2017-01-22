@@ -13,6 +13,7 @@ import "ocidl.idl";
         Update,
         Rebuild,
         AddROS,
+        ROSOnly,
     }modeName;
 
 
@@ -41,6 +42,7 @@ import "ocidl.idl";
         //
         [id(14), helpstring("method LoadArticles")] HRESULT LoadArticles( BSTR Dic, [out, retval] long *hRes );
         [id(15), helpstring("method LoadWords")] HRESULT LoadWords(BSTR Dic, [out, retval] long *hRes);
+        [id(16), helpstring("method SaveTitle")] HRESULT SaveTitle(BSTR Title, [out, retval] long *hRes);
     };
 
 [
