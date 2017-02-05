@@ -2192,7 +2192,10 @@ void COROSSParser::processMistakes() {
     size_t mistId = 1;
     for (auto wit = words.begin(); wit != words.end(); ++wit) {
         std::wstring mist(wit->first);
-        if (wit->first.find(L' ') != std::wstring::npos || wit->first.find(L'-') != std::wstring::npos) {
+        if (wit->first.find(L' ') != std::wstring::npos ||
+            wit->first.find(L'-') != std::wstring::npos ||
+            wit->first.find(L'\u2013') != std::wstring::npos ||
+            wit->first.find(L'\u2014') != std::wstring::npos) {
 //            std::wstring mist(wit->first);
             prepareOrthoKey(mist);
             mistakeMap::iterator mit = mistakes.find(mist);

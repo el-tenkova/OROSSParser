@@ -232,7 +232,7 @@ void COROSSParser::prepareSearchTitle(std::wstring &title) {
         pos = title.find(*sym);
         while (pos != std::wstring::npos) {
             title.replace(pos, 1, L"");
-            pos = title.find(*sym, pos + 1);
+            pos = title.find(*sym, pos);// +1);
         }
     }
 /*    pos = title.find(L';'); 
@@ -295,6 +295,8 @@ void COROSSParser::prepareOrthoKey(std::wstring& key)
     tags.push_back(L" ");
     tags.push_back(L".");
     tags.push_back(L"-");
+    tags.push_back(L"\u2013");
+    tags.push_back(L"\u2014");
     tags.push_back(L"\u00B9");
     tags.push_back(L"\u00B3");
     tags.push_back(L"\u00B2");
@@ -549,20 +551,23 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
     
     pos = tmp.find(L'-');
     while (pos != std::wstring::npos) {
-        tmp.replace(pos, 1, L"\\-*\\u2013*\\u2014*");
-        pos = tmp.find(L' ', pos + 1);
+        if (tmp[pos + 1] != L'*')
+            tmp.replace(pos, 1, L"\\-*\\u2013*\\u2014*");
+        pos = tmp.find(L'-', pos + wcslen(L"\\-*\\u2013*\\u2014*"));
     }
 
     pos = tmp.find(L'\u2013');
     while (pos != std::wstring::npos) {
-        tmp.replace(pos, 1, L"\\-*\\u2013*\\u2014*");
-        pos = tmp.find(L' ', pos + 1);
+        if (tmp[pos + 1] != L'*')
+            tmp.replace(pos, 1, L"\\-*\\u2013*\\u2014*");
+        pos = tmp.find(L'\u2013', pos + wcslen(L"\\-*\\u2013*\\u2014*"));
     }
 
     pos = tmp.find(L'\u2014');
     while (pos != std::wstring::npos) {
-        tmp.replace(pos, 1, L"\\-*\\u2013*\\u2014*");
-        pos = tmp.find(L' ', pos + 1);
+        if (tmp[pos + 1] != L'*')
+            tmp.replace(pos, 1, L"\\-*\\u2013*\\u2014*");
+        pos = tmp.find(L'\u2014', wcslen(L"\\-*\\u2013*\\u2014*"));
     }
 
     pos = tmp.find(L"\\/");
