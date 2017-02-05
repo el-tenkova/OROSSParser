@@ -325,7 +325,13 @@ void COROSSParser::loadROS(const std::wstring& dict) {
                 std::wstring suffix(L"");
                 while (rit != rend) {
                     tmp.append((*rit).prefix());
-                    tmp.append(L"-");
+                    std::wstring match((*rit)[0]);
+                    if (match.find(L'\u2013') != std::wstring::npos)
+                        tmp.append(L"\u2013");
+                    else if (match.find(L'\u2014') != std::wstring::npos)
+                        tmp.append(L"\u2014");
+                    else
+                        tmp.append(L"-");
                     suffix.clear();
                     suffix.append((*rit).suffix());
                     ++rit;
@@ -366,7 +372,14 @@ void COROSSParser::loadROS(const std::wstring& dict) {
                 while (rit != rend) {
                     tmp.append((*rit).prefix());
                     if (rit->size() > 1 && (*rit)[1].matched == true) {
-                        tmp.append(L" - ");
+                        std::wstring match((*rit)[1]);
+                        if (match.find(L'\u2013') != std::wstring::npos)
+                            tmp.append(L" \u2013 ");
+                        else if (match.find(L'\u2014') != std::wstring::npos)
+                            tmp.append(L" \u2014 ");
+                        else
+                            tmp.append(L" - ");
+//                        tmp.append(L" - ");
                     }
                     else {
                         tmp.append(L" ");
