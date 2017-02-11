@@ -1,6 +1,6 @@
 #include "COROSSParserTree.h"
 
-void COROSSGrammaTree::load(const std::wstring path, const std::map<std::wstring, size_t>& stopLabelDic)
+void COROSSGrammaTree::load(const std::string path, const std::map<std::wstring, size_t>& stopLabelDic)
 {
     std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
     // load data to search in articles

@@ -1,11 +1,12 @@
 #ifndef _GRAMMA_TREE_H_
 #define _GRAMMA_TREE_H_
 
-#include "stdafx.h"
-#include <assert.h>
-#include <direct.h>
-
-#include <locale.h>
+#ifdef _WINDOWS
+    #include "stdafx.h"
+    #include <assert.h>
+    #include <direct.h>
+#endif
+#include <locale>
 #include <string>
 
 #include <map>
@@ -34,7 +35,7 @@ public:
         depth(0) {};
     ~COROSSGrammaTree() {};
 public:
-    void load(const std::wstring path, const std::map<std::wstring, size_t>& stopLabelDic);
+    void load(const std::string path, const std::map<std::wstring, size_t>& stopLabelDic);
 
 public:
     bool find(const std::vector<std::wstring>& words);
