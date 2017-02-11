@@ -1,7 +1,9 @@
 #ifndef __OROSSPARSERMORPH_H_
 #define __OROSSPARSERMORPH_H_
 
-#include "resource.h"       // main symbols
+#ifdef _WINDOWS
+    #include "resource.h"       // main symbols
+#endif
 
 #include <vector>
 #include <map>
@@ -16,7 +18,7 @@ public:
     COROSSParserMorph();
     ~COROSSParserMorph();
 public:
-    void Load();
+    void Load(const std::string& foreign, const std::string& lemmata);
     void Terminate();
     bool Check(const std::wstring& word);
     bool Search(const std::wstring& word);

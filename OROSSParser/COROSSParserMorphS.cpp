@@ -1,8 +1,10 @@
-#include "stdafx.h"
-#include <assert.h>
-#include <direct.h>
+#ifdef _WINDOWS
+    #include "stdafx.h"
+    #include <assert.h>
+    #include <direct.h>
+#endif
 
-#include <locale.h>
+#include <locale>
 #include <fstream>
 #include <codecvt>
 #include <regex>
@@ -10,12 +12,12 @@
 
 #include "COROSSParserMorphS.h"
 
-#define FOREIGN_LIST "c:\\IRYA\\OROSSParser\\Data\\foreign.txt"
-#define LEMMATA_LIST "c:\\IRYA\\OROSSParser\\Data\\lemmata.txt"
+//#define FOREIGN_LIST "c:\\IRYA\\OROSSParser\\Data\\foreign.txt"
+//#define LEMMATA_LIST "c:\\IRYA\\OROSSParser\\Data\\lemmata.txt"
 
 COROSSParserMorph::COROSSParserMorph()
 {
-    Load();
+//    Load(foreign, lemmata);
 }
 
 COROSSParserMorph::~COROSSParserMorph()
@@ -23,11 +25,11 @@ COROSSParserMorph::~COROSSParserMorph()
     Terminate();
 }
 
-void COROSSParserMorph::Load()
+void COROSSParserMorph::Load(const std::string& foreignFile, const std::string& lemmataFile)
 {
     // load foreign.txt
     std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
-    std::wifstream foreign(FOREIGN_LIST, std::wifstream::binary);
+    std::wifstream foreign(foreignFile, std::wifstream::binary);
 
     if (foreign.is_open()) {
         foreign.imbue(loc);
@@ -45,7 +47,7 @@ void COROSSParserMorph::Load()
         foreign.close();
     }
     // load lemmata.txt
-    std::wifstream lemmata(LEMMATA_LIST, std::wifstream::binary);
+    std::wifstream lemmata(lemmataFile, std::wifstream::binary);
 
     if (lemmata.is_open()) {
         lemmata.imbue(loc);
