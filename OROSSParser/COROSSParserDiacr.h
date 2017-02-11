@@ -14,7 +14,7 @@ public:
         auto sit = symMap.find(c);
         return (sit != symMap.end() ? sit->second : c);
     }
-    void load(const std::wstring& symbols);
+    void load(const std::string& symbols);
 private:
     std::vector<std::wstring> split(const std::wstring& str, const wchar_t delim);
 };

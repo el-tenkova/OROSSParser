@@ -1,8 +1,10 @@
-#include "stdafx.h"
-#include <assert.h>
-#include <direct.h>
+#ifdef _WINDOWS
+    #include "stdafx.h"
+    #include <assert.h>
+    #include <direct.h>
+#endif
 
-#include <locale.h>
+#include <locale>
 #include <fstream>
 #include <codecvt>
 #include <regex>
@@ -10,7 +12,7 @@
 
 #include "COROSSParserDiacr.h"
 
-void COROSSDiacritics::load(const std::wstring& symbols)
+void COROSSDiacritics::load(const std::string& symbols)
 {
     std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
     std::wifstream sym(symbols, std::wifstream::binary);
