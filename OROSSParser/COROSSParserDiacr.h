@@ -2,6 +2,7 @@
 #define _DIACRITICS_MAP_H
 
 #include <map>
+#include <vector>
 
 class COROSSDiacritics
 {
