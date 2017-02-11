@@ -1,4 +1,6 @@
-#include "stdafx.h"
+#ifdef _WINDOWS
+    #include "stdafx.h"
+#endif
 
 #include <fstream>
 #include <codecvt>
@@ -7,7 +9,6 @@
 #include <cwctype>
 #include <functional>
 
-#include "OROSSParser_i.h"
 #include "COROSSParser.h"
 
 void COROSSParser::saveData(bool saveSearch)

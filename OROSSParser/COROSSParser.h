@@ -1,19 +1,19 @@
-#ifndef __OROSSPARSER_H_
-#define __OROSSPARSER_H_
+#ifndef __OROSSPARSERPURE_H_
+#define __OROSSPARSERPURE_H_
 
-#include <atlcom.h>
-
-#include "resource.h"       // main symbols
+#ifdef _WINDOWS
+    #include "stdafx.h"
+#endif
 
 #include <vector>
 #include <map>
 #include <string>
 
-#include <locale.h>
+#include <locale>
 #include <fstream>
 #include <codecvt>
 
-#include "COROSSParserMorph.h"
+#include "COROSSParserMorphS.h"
 #include "COROSSParserDiacr.h"
 #include "COROSSParserTree.h"
 #include "COROSSParserSoundEx.h"
@@ -117,11 +117,11 @@ typedef std::vector<tutorial_place> ruleIdVct;
 
 struct word {
     size_t id;
-//    wchar_t isTitle;
+    //    wchar_t isTitle;
     artIdVct arts;
     ruleIdVct rules;
-//    size_t from;
-//    size_t to;
+    //    size_t from;
+    //    size_t to;
 };
 typedef std::map<std::wstring, word> wordMap; //artIdVct > wordMap;
 
@@ -135,7 +135,7 @@ struct mistake {
     size_t id;
     std::vector<size_t> wordIds;
 };
-typedef std::map<std::wstring, mistake> mistakeMap; 
+typedef std::map<std::wstring, mistake> mistakeMap;
 
 struct hist {
     size_t id;
@@ -167,8 +167,8 @@ struct formula {
     size_t para;
     size_t rule;
     size_t art_count;
-//    size_t exc;
-//    size_t exc_rule;
+    //    size_t exc;
+    //    size_t exc_rule;
 };
 typedef std::map<std::wstring, formula> formMap;
 
@@ -190,8 +190,8 @@ struct rule {
     size_t id;
     size_t para;
     size_t parent;
-//    size_t tile;
-//    size_t part;
+    //    size_t tile;
+    //    size_t part;
     std::wstring num;
     std::wstring title;
     std::wstring text;
@@ -246,11 +246,10 @@ struct part {
 };
 typedef std::map<std::wstring, part> partMap;
 
-class ATL_NO_VTABLE COROSSParser : 
-    public ATL::CComObjectRootEx<ATL::CComSingleThreadModel>,
-    public ATL::CComCoClass<COROSSParser, &CLSID_OROSSParser>,
-    public ATL::IDispatchImpl<IOROSSParser, &IID_IOROSSParser, &LIBID_OROSSParserLib>
+class COROSSParser
 {
+
+private:
     enum objType {
         None = 0,
         Words,
@@ -260,6 +259,7 @@ class ATL_NO_VTABLE COROSSParser :
         Articles_Comments,
         Articles
     };
+
     const std::wstring str_words;
     const std::wstring str_words_articles;
     const std::wstring str_words_tutorial;
@@ -281,69 +281,69 @@ class ATL_NO_VTABLE COROSSParser :
     const std::wstring str_sup3;
 
 public:
-    COROSSParser():
-      partId(1),
-      tileId(1),
-      paraId(1),
-      ruleId(1),
-      orthoId(1),
-      formulaId(1),
-      artId(1),
-      wordId(1), //!!!
-      bigrId(1),
-      trigrId(1),
-      tetragrId(1),
-      mode(Create),
-      russian("Russian"),
-      error(L"c:\\IRYA\\error.txt", std::wofstream::binary),
-      str_words(L"INSERT INTO words (id, word, art_count) "),
-      str_words_articles(L"INSERT INTO words_articles (id, id_article, start, len, title, segment, number) "),
-      str_words_tutorial(L"INSERT INTO words_tutorial (id, id_item, start, len, type, number) "),
-      str_bigramms(L"INSERT INTO bigramms (id, bigramm, art_count) "),
-      str_bigramms_articles(L"INSERT INTO bigramms_articles (id, id_article, start, len, title, segment, number) "),
-      str_trigramms(L"INSERT INTO trigramms (id, trigramm, art_count) "),
-      str_trigramms_articles(L"INSERT INTO trigramms_articles (id, id_article, start, len, title, segment, number) "),
-      str_tetragramms(L"INSERT INTO tetragramms (id, tetragramm, art_count) "),
-      str_tetragramms_articles(L"INSERT INTO tetragramms_articles (id, id_article, start, len, title, segment, number) "),
-      str_articles_orthos(L"INSERT INTO articles_orthos (id, id_ortho) "),
-      str_articles_formulas(L"INSERT INTO articles_formulas (id, id_formula) "),
-      str_articles_comments(L"INSERT INTO articles_comments (id, id_comment) "),
- //     str_articles(L"INSERT INTO articles (id, title, text, rtf, src, comment_id) "), //!!!!
+    enum modeName
+    {
+        Create = 0,
+        Update,
+        Rebuild,
+        AddROS,
+        ROSOnly,
+    };
+
+    COROSSParser() :
+        partId(1),
+        tileId(1),
+        paraId(1),
+        ruleId(1),
+        orthoId(1),
+        formulaId(1),
+        artId(1),
+        wordId(1), //!!!
+        bigrId(1),
+        trigrId(1),
+        tetragrId(1),
+        mode(Create),
+        russian("Russian"),
+        error(L"c:\\IRYA\\error.txt", std::wofstream::binary),
+        str_words(L"INSERT INTO words (id, word, art_count) "),
+        str_words_articles(L"INSERT INTO words_articles (id, id_article, start, len, title, segment, number) "),
+        str_words_tutorial(L"INSERT INTO words_tutorial (id, id_item, start, len, type, number) "),
+        str_bigramms(L"INSERT INTO bigramms (id, bigramm, art_count) "),
+        str_bigramms_articles(L"INSERT INTO bigramms_articles (id, id_article, start, len, title, segment, number) "),
+        str_trigramms(L"INSERT INTO trigramms (id, trigramm, art_count) "),
+        str_trigramms_articles(L"INSERT INTO trigramms_articles (id, id_article, start, len, title, segment, number) "),
+        str_tetragramms(L"INSERT INTO tetragramms (id, tetragramm, art_count) "),
+        str_tetragramms_articles(L"INSERT INTO tetragramms_articles (id, id_article, start, len, title, segment, number) "),
+        str_articles_orthos(L"INSERT INTO articles_orthos (id, id_ortho) "),
+        str_articles_formulas(L"INSERT INTO articles_formulas (id, id_formula) "),
+        str_articles_comments(L"INSERT INTO articles_comments (id, id_comment) "),
+        //     str_articles(L"INSERT INTO articles (id, title, text, rtf, src, comment_id) "), //!!!!
         str_articles(L"INSERT INTO articles (id, dic, title, text, rtf, src, phantom) "), //!!!!
         str_values(L"    VALUES ("),
         str_sup1(L"<sup>1</sup>"),
         str_sup2(L"<sup>2</sup>"),
         str_sup3(L"<sup>3</sup>")
-        {};
+    {};
 
-    DECLARE_REGISTRY_RESOURCEID(IDR_OROSSPARSER)
-
-    DECLARE_PROTECT_FINAL_CONSTRUCT()
-
-    BEGIN_COM_MAP(COROSSParser)
-        COM_INTERFACE_ENTRY(IOROSSParser)
-        COM_INTERFACE_ENTRY(IDispatch)
-    END_COM_MAP()
 public:
-    STDMETHOD(Init)(modeName mode, /*[out, retval]*/ long* hRes);
-    STDMETHOD(Terminate)(/*[out, retval]*/ long* hRes);
-    STDMETHOD(AddPart)( BSTR Name, /*[out, retval]*/ long *hRes );
-    STDMETHOD(AddTile)( BSTR Name, /* [out, retval]*/ long *hRes );
-    STDMETHOD(AppendTile)( BSTR Str, /*[out, retval]*/ long *hRes );
-    STDMETHOD(AddPara)( long Num, BSTR Para, /*[out, retval]*/ long *hRes );
-    STDMETHOD(AddExamplesToPara)( BSTR Examples, /*[out, retval]*/ long *hRes );
-    STDMETHOD(AddRule)( BSTR Num, BSTR Rule, /*[out, retval]*/ long *hRes );
-    STDMETHOD(AddRuleTitle)(BSTR Num, BSTR Title, /*[out, retval]*/ long *hRes);
-    STDMETHOD(AddOrthogr)( BSTR Orthogr, BSTR Formula, BSTR Example, BSTR Rest, long IsActive, long IsPrefix, /*[out, retval]*/ long *hRes );
-    STDMETHOD(AddArticle)( BSTR Title, BSTR Article, /*[out, retval]*/ long *hRes );
-    STDMETHOD(AddInfoToRule)( BSTR Info, /*[out, retval]*/ long *hRes );
-    STDMETHOD(AddFootNote)( long ID, BSTR Text, /*[out, retval]*/ long *hRes );
+    long Init(modeName mode);
+    long Terminate();
+    long AddPart(const std::wstring& Name);
+    long AddTile(const std::wstring& Name);
+    long AppendTile(const std::wstring& Str);
+    long AddPara(const long& Num, const std::wstring& Para);
+    long AddExamplesToPara(const std::wstring& Examples);
+    long AddRule(const std::wstring& Num, const std::wstring& Rule);
+    long AddRuleTitle(const std::wstring& Num, const std::wstring& Title);
+    long AddOrthogr(const std::wstring& Orthogr, const std::wstring& Formula, const std::wstring& Example, const std::wstring& Rest, const long& IsActive, const long& IsPrefix);
+    long AddArticle(const std::wstring& Title, const std::wstring& Article);
+    long AddInfoToRule(const std::wstring& Info);
+    long AddFootNote(const long& ID, const std::wstring& Text);
     //
-//    STDMETHOD(LoadDic)( BSTR Dic, /*[out, retval]*/ long *hRes );
-    STDMETHOD(LoadArticles)( BSTR Dic, /*[out, retval]*/ long *hRes );
-    STDMETHOD(LoadWords)( BSTR Dic, /*[out, retval]*/ long *hRes );
+    long LoadArticles(const std::string& Dic);
+    long LoadWords(const std::string& Dic);
     // Helpers
-    STDMETHOD(SaveTitle)(BSTR Title, /*[out, retval]*/ long *hRes);
+    long SaveTitle(const std::wstring& Title);
 
 protected:
     modeName mode;
@@ -365,7 +365,7 @@ protected:
     std::map<std::wstring, size_t> stopLabelDic;
     std::map<wchar_t, wchar_t > symMap;
 
-  //  orthoMap orthos;
+    //  orthoMap orthos;
     std::wofstream error;
 
     size_t partId;
@@ -379,8 +379,8 @@ protected:
     size_t bigrId;
     size_t trigrId;
     size_t tetragrId;
-  
-  // Russian locale
+
+    // Russian locale
     std::locale russian;
 
     partMap::iterator curPart;
@@ -411,12 +411,13 @@ protected:
     void saveArticles();
 
     void loadSearchData(bool loadSearch = false);
-    void loadDic(const std::wstring& dict);
-    std::map<std::wstring, size_t> loadStopDic(const std::wstring& dict);
-    void loadGramms(std::vector<std::wstring> dics);
-    void loadROS(const std::wstring& dict);
+    void loadDic(const std::string& dict);
+    std::map<std::wstring, size_t> loadStopDic(const std::string& dict);
+    void loadGramms(std::vector<std::string> dics);
+    void loadROS(const std::string& dict);
     void loadMorph();
-    void loadSymbolsMap(const std::wstring& symbols);
+    void loadSymbolsMap(const std::string& symbols);
+    void loadMorph(const std::string& foreign, const std::string& lemmata);
 
     void makeSQL();
     void makePartsTable(std::wofstream& result);
@@ -506,4 +507,4 @@ protected:
     bool isStopLabel(const std::wstring& key, const std::wstring interval, const size_t start, const wchar_t type);
 };
 
-#endif //__KHPARSER_H_
+#endif //__OROSSPARSERPURE_H_

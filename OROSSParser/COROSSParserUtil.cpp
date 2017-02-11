@@ -1,13 +1,14 @@
-#include "stdafx.h"
+#ifdef _WINDOWS
+    #include "stdafx.h"
+#endif
 
-#include <locale.h>
+#include <locale>
 #include <fstream>
 #include <codecvt>
 #include <regex>
 #include <sstream>
 #include <functional>
 
-#include "OROSSParser_i.h"
 #include "COROSSParser.h"
 
 std::vector<std::wstring> COROSSParser::split(const std::wstring& str, const wchar_t delim)

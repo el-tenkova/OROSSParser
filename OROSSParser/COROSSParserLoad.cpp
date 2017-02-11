@@ -1,6 +1,8 @@
-#include "stdafx.h"
+#ifdef _WINDOWS
+    #include "stdafx.h"
+#endif
 
-#include <locale.h>
+#include <locale>
 #include <fstream>
 #include <codecvt>
 #include <regex>
@@ -8,7 +10,6 @@
 
 #include <functional>
 
-#include "OROSSParser_i.h"
 #include "COROSSParser.h"
 
 void COROSSParser::loadSearchData(bool loadSearch)
@@ -141,7 +142,7 @@ void COROSSParser::loadSearchData(bool loadSearch)
     }
 }
 
-void COROSSParser::loadDic(const std::wstring& dict)
+void COROSSParser::loadDic(const std::string& dict)
 {
     std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
     // load data to search in articles
@@ -274,7 +275,7 @@ std::vector<size_t> COROSSParser::splitValues(const std::wstring& str) {
     return vct;
 }
 
-std::map<std::wstring, size_t> COROSSParser::loadStopDic(const std::wstring& dict) {
+std::map<std::wstring, size_t> COROSSParser::loadStopDic(const std::string& dict) {
     std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
     // load data to search in articles
     std::wifstream stop(dict, std::wifstream::binary);
@@ -295,7 +296,7 @@ std::map<std::wstring, size_t> COROSSParser::loadStopDic(const std::wstring& dic
     return dic;
 }
 
-void COROSSParser::loadROS(const std::wstring& dict) {
+void COROSSParser::loadROS(const std::string& dict) {
 
     std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
     // load data to search in articles
@@ -476,7 +477,7 @@ void COROSSParser::loadROS(const std::wstring& dict) {
     }
 }
 
-void COROSSParser::loadGramms(std::vector<std::wstring> dics)
+void COROSSParser::loadGramms(std::vector<std::string> dics)
 {
     bigrDic.load(dics[0], stopLabelDic);
     if (dics.size() > 1)
@@ -485,7 +486,13 @@ void COROSSParser::loadGramms(std::vector<std::wstring> dics)
         tetragrDic.load(dics[2], stopLabelDic);
 }
 
-void COROSSParser::loadSymbolsMap(const std::wstring& symbols)
+void COROSSParser::loadSymbolsMap(const std::string& symbols)
 {
     diacritics.load(symbols);
 }
+
+void COROSSParser::loadMorph(const std::string& foreign, const std::string& lemmata)
+{
+    morph.Load(foreign, lemmata);
+}
+
