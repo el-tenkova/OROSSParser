@@ -3,9 +3,11 @@
 #include "OROSSParser_i.h"
 #include "COROSSParserCOM.h"
 
-STDMETHODIMP COROSSParserCOM::Init( modeName Mode, long* hRes )
+STDMETHODIMP COROSSParserCOM::Init( modeName Mode, BSTR Config, long* hRes )
 {
-    *hRes = pureParser.Init((COROSSParser::modeName)Mode);
+    std::wstring tmp(Config);
+    std::string path(tmp.begin(), tmp.end());
+    *hRes = pureParser.Init((COROSSParser::modeName)Mode, path);
     return *hRes;
 }
 

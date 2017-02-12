@@ -17,6 +17,7 @@
 #include "COROSSParserDiacr.h"
 #include "COROSSParserTree.h"
 #include "COROSSParserSoundEx.h"
+#include "COROSSParserCfg.h"
 
 #define ORTHO_SUBST 1
 #define FORMULA_SUBST 2
@@ -304,7 +305,6 @@ public:
         tetragrId(1),
         mode(Create),
         russian("Russian"),
-        error(L"c:\\IRYA\\error.txt", std::wofstream::binary),
         str_words(L"INSERT INTO words (id, word, art_count) "),
         str_words_articles(L"INSERT INTO words_articles (id, id_article, start, len, title, segment, number) "),
         str_words_tutorial(L"INSERT INTO words_tutorial (id, id_item, start, len, type, number) "),
@@ -327,6 +327,7 @@ public:
 
 public:
     long Init(modeName mode);
+    long Init(modeName mode, const std::string& cfg);
     long Terminate();
     long AddPart(const std::wstring& Name);
     long AddTile(const std::wstring& Name);
@@ -396,6 +397,7 @@ protected:
     //// tmp
     std::map<size_t, size_t> wordIds;
 
+    COROSSParserCfg config;
     COROSSParserMorph morph;
     COROSSDiacritics diacritics;
     COROSSSoundEx soundex;

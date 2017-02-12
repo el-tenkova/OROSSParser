@@ -26,7 +26,7 @@ import "ocidl.idl";
     ]
     interface IOROSSParser : IDispatch
     {
-        [id(1), helpstring("method Init")] HRESULT Init(modeName name, [out, retval] long *hRes );
+        [id(1), helpstring("method Init")] HRESULT Init(modeName name, BSTR config, [out, retval] long *hRes );
         [id(2), helpstring("method Terminate")] HRESULT Terminate([out, retval] long *hRes );
         [id(3), helpstring("method AddPart")] HRESULT AddPart( BSTR Name, [out, retval] long *hRes );
         [id(4), helpstring("method AddTile")] HRESULT AddTile( BSTR Name, [out, retval] long *hRes );

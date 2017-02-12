@@ -1,4 +1,4 @@
-#ifdef _WINDOWS
+﻿#ifdef _WINDOWS
     #include "stdafx.h"
 #endif
 
@@ -14,9 +14,9 @@
 void COROSSParser::saveData(bool saveSearch)
 {
     std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
-    std::wofstream result(L"c:\\IRYA\\result.txt", std::wofstream::binary);
-    std::wofstream examples(L"c:\\IRYA\\examples.txt", std::wofstream::binary);
-    std::wofstream rest(L"c:\\IRYA\\form_rest.txt", std::wofstream::binary);
+    std::wofstream result(config["output"] + "result.txt", std::wofstream::binary);
+    std::wofstream examples(config["output"] + "examples.txt", std::wofstream::binary);
+    std::wofstream rest(config["output"] + "form_rest.txt", std::wofstream::binary);
 
     std::wstring caret(L"\n");
     std::wstring tab(L"\t");
@@ -146,10 +146,10 @@ void COROSSParser::saveForSearch()
 {
     std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
     // save data for search in articles
-    std::wofstream pararest(L"c:\\IRYA\\pararest.txt", std::wofstream::binary|std::wofstream::trunc);
-    std::wofstream formulas(L"c:\\IRYA\\formulas.txt", std::wofstream::binary|std::wofstream::trunc);
-    std::wofstream orthos(L"c:\\IRYA\\orthos.txt", std::wofstream::binary|std::wofstream::trunc);
-    std::wofstream tut_words(L"c:\\IRYA\\tutorial.txt", std::wofstream::binary | std::wofstream::trunc);
+    std::wofstream pararest(config["output"] + "pararest.txt", std::wofstream::binary|std::wofstream::trunc);
+    std::wofstream formulas(config["output"] + "formulas.txt", std::wofstream::binary|std::wofstream::trunc);
+    std::wofstream orthos(config["output"] + "orthos.txt", std::wofstream::binary|std::wofstream::trunc);
+    std::wofstream tut_words(config["output"] + "tutorial.txt", std::wofstream::binary | std::wofstream::trunc);
 
     if (pararest.is_open()) {
         pararest.imbue(loc);
@@ -285,7 +285,7 @@ void COROSSParser::saveArticles()
 {
     std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
     // save data for search in articles
-    std::wofstream arts(L"c:\\IRYA\\arts.txt", std::wofstream::binary | std::wofstream::trunc);
+    std::wofstream arts(config["output"] + "arts.txt", std::wofstream::binary | std::wofstream::trunc);
 
     if (arts.is_open()) {
         arts.imbue(loc);
@@ -370,7 +370,7 @@ void COROSSParser::saveArticles()
 void COROSSParser::makeSQL()
 {
     std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
-    std::wofstream result_contents(L"c:\\IRYA\\import_contents.sql", std::wofstream::binary);
+    std::wofstream result_contents(config["output"] + "import_contents.sql", std::wofstream::binary);
 
     std::wstring caret(L"\n");
 
@@ -687,9 +687,9 @@ void COROSSParser::makeFormulaTable(std::wofstream& result)
 void COROSSParser::makeWordsTable(const std::locale& loc)
 {
     size_t n = 1;
-    std::wstring filename(L"c:\\IRYA\\import_words");
-    filename.append(std::to_wstring(n));
-    filename.append(L".sql");
+    std::string filename(config["output_words"] + "import_words");
+    filename.append(std::to_string(n));
+    filename.append(".sql");
     std::wofstream result(filename, std::wofstream::binary);
     if (result.is_open()) {
         result.imbue(loc);
@@ -737,9 +737,9 @@ void COROSSParser::makeWordsTable(const std::locale& loc)
             n++;
             result.close();
             filename.clear();
-            filename.append(L"c:\\IRYA\\import_words");
-            filename.append(std::to_wstring(n));
-            filename.append(L".sql");
+            filename.append(config["output_words"] + "import_words");
+            filename.append(std::to_string(n));
+            filename.append(".sql");
             result.open(filename, std::wofstream::binary);
             if (result.is_open()) {
                 result.imbue(loc);
@@ -812,8 +812,8 @@ void COROSSParser::makeWordsTable(const std::locale& loc)
 
 void COROSSParser::makeBigrammsTable(const std::locale& loc)
 {
-    std::wstring filename(L"c:\\IRYA\\import_bigramms");
-    filename.append(L".sql");
+    std::string filename(config["output"] + "import_bigramms");
+    filename.append(".sql");
     std::wofstream result(filename, std::wofstream::binary);
     if (result.is_open()) {
         result.imbue(loc);
@@ -884,8 +884,8 @@ void COROSSParser::makeBigrammsTable(const std::locale& loc)
 
 void COROSSParser::makeTrigrammsTable(const std::locale& loc)
 {
-    std::wstring filename(L"c:\\IRYA\\import_trigramms");
-    filename.append(L".sql");
+    std::string filename(config["output"] + "import_trigramms");
+    filename.append(".sql");
     std::wofstream result(filename, std::wofstream::binary);
     if (result.is_open()) {
         result.imbue(loc);
@@ -956,8 +956,8 @@ void COROSSParser::makeTrigrammsTable(const std::locale& loc)
 
 void COROSSParser::makeTetragrammsTable(const std::locale& loc)
 {
-    std::wstring filename(L"c:\\IRYA\\import_tetragramms");
-    filename.append(L".sql");
+    std::string filename(config["output"] + "import_tetragramms");
+    filename.append(".sql");
     std::wofstream result(filename, std::wofstream::binary);
     if (result.is_open()) {
         result.imbue(loc);
@@ -1029,9 +1029,9 @@ void COROSSParser::makeTetragrammsTable(const std::locale& loc)
 void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& result)
 {
     size_t n = 1;
-    std::wstring filename(L"c:\\IRYA\\import_articles");
-    filename.append(std::to_wstring(n));
-    filename.append(L".sql");
+    std::string filename(config["output_articles"] + "import_articles");
+    filename.append(std::to_string(n));
+    filename.append(".sql");
     std::wofstream result(filename, std::wofstream::binary);
     if (result.is_open()) {
         result.imbue(loc);
@@ -1102,9 +1102,9 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
             n++;
             result.close();
             filename.clear();
-            filename.append(L"c:\\IRYA\\import_articles");
-            filename.append(std::to_wstring(n));
-            filename.append(L".sql");
+            filename.append(config["output_articles"] + "import_articles");
+            filename.append(std::to_string(n));
+            filename.append(".sql");
             result.open(filename, std::wofstream::binary);
             if (result.is_open()) {
                 result.imbue(loc);
@@ -1293,9 +1293,9 @@ VALUES (");
 void COROSSParser::makeMistakesTable(const std::locale& loc) {
 
     size_t n = 1;
-    std::wstring filename(L"c:\\IRYA\\import_mistakes");
-    filename.append(std::to_wstring(n));
-    filename.append(L".sql");
+    std::string filename(config["output_mistakes"] + "import_mistakes");
+    filename.append(std::to_string(n));
+    filename.append(".sql");
     std::wofstream result(filename, std::wofstream::binary);
     if (result.is_open()) {
         result.imbue(loc);
@@ -1326,9 +1326,9 @@ void COROSSParser::makeMistakesTable(const std::locale& loc) {
             n++;
             result.close();
             filename.clear();
-            filename.append(L"c:\\IRYA\\import_mistakes");
-            filename.append(std::to_wstring(n));
-            filename.append(L".sql");
+            filename.append(config["output_mistakes"] + "import_mistakes");
+            filename.append(std::to_string(n));
+            filename.append(".sql");
             result.open(filename, std::wofstream::binary);
             if (result.is_open()) {
                 result.imbue(loc);
@@ -1868,7 +1868,7 @@ void COROSSParser::addArticlesToIndex() {
     std::wstring caret(L"\n");
     std::wstring tab(L"\t");
     
-    std::wofstream arts(L"c:\\IRYA\\articles.txt", std::wofstream::binary);
+    std::wofstream arts(config["output"] + "articles.txt", std::wofstream::binary);
     if (arts.is_open()) {
         arts.imbue(loc);
         artMap::iterator ait = articles.begin();
@@ -2172,7 +2172,7 @@ void COROSSParser::printArticles() {
     std::wstring para_b(L"<p>");
     std::wstring para_e(L"</p>");
 
-    std::wofstream html(L"c:\\IRYA\\articles.html", std::wofstream::binary);
+    std::wofstream html(config["output"] + "articles.html", std::wofstream::binary);
     if (html.is_open()) {
         html.imbue(loc);
         artMap::iterator ait = articles.begin();
@@ -2262,7 +2262,7 @@ void COROSSParser::processMistakes() {
 void COROSSParser::makeTutorialUpdate()
 {
     std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
-    std::wofstream update(L"c:\\IRYA\\update_contents.sql", std::wofstream::binary);
+    std::wofstream update(config["output"] + "update_contents.sql", std::wofstream::binary);
 
     std::wstring str(L"");
     if (update.is_open()) {
@@ -2334,9 +2334,9 @@ void COROSSParser::makeABCTable(const std::locale& loc)
     for (auto abcit = abcMap.begin(); abcit != abcMap.end(); ++abcit) {
         if (tit->first[0] != abcit->first)
             continue;
-        std::wstring filename(L"c:\\IRYA\\import_abc_");
-        filename.append(abcit->second);
-        filename.append(L".sql");
+        std::string filename(config["output_abc"] + "import_abc_");
+        filename.append(std::string(abcit->second.begin(), abcit->second.end()));
+        filename.append(".sql");
         std::wofstream result(filename, std::wofstream::binary);
         if (result.is_open()) {
             result.imbue(loc);

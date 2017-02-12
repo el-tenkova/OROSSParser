@@ -25,7 +25,7 @@ public:
         COM_INTERFACE_ENTRY(IDispatch)
     END_COM_MAP()
 public:
-    STDMETHOD(Init)(modeName mode, /*[out, retval]*/ long* hRes);
+    STDMETHOD(Init)(modeName mode, BSTR Config, /*[out, retval]*/ long* hRes);
     STDMETHOD(Terminate)(/*[out, retval]*/ long* hRes);
     STDMETHOD(AddPart)( BSTR Name, /*[out, retval]*/ long *hRes );
     STDMETHOD(AddTile)( BSTR Name, /* [out, retval]*/ long *hRes );

@@ -18,10 +18,10 @@ void COROSSParser::loadSearchData(bool loadSearch)
         return;
     std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
     // load data to search in articles
-    std::wifstream rest(L"c:\\IRYA\\OROSSParser\\Data\\search\\pararest.txt", std::wifstream::binary);
-    std::wifstream formulas(L"c:\\IRYA\\OROSSParser\\Data\\search\\formulas.txt", std::wifstream::binary);
-    std::wifstream orthos(L"c:\\IRYA\\OROSSParser\\Data\\search\\orthos.txt", std::wifstream::binary);
-    std::wifstream tutorial(L"c:\\IRYA\\OROSSParser\\Data\\search\\tutorial.txt", std::wifstream::binary);
+    std::wifstream rest(config["pararest"], std::wifstream::binary);
+    std::wifstream formulas(config["formulas"], std::wifstream::binary);
+    std::wifstream orthos(config["orthos"], std::wifstream::binary);
+    std::wifstream tutorial(config["tutorial"], std::wifstream::binary);
 
     if (rest.is_open()) {
         rest.imbue(loc);

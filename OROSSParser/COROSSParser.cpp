@@ -113,6 +113,100 @@ long COROSSParser::Init(modeName Mode)
     return res;
 }
 
+long COROSSParser::Init(modeName Mode, const std::string& cfg)
+{
+    long res = 0;
+    std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
+    config.load(cfg);
+    error.open(config["errors"], std::wofstream::binary);
+    if (error.is_open()) {
+        error.imbue(loc);
+    }
+    tagsBI.push_back(L"<b>");
+    tagsBI.push_back(L"</b>");
+    tagsBI.push_back(L"<i>");
+    tagsBI.push_back(L"</i>");
+    tagsBI.push_back(L"<u>");
+    tagsBI.push_back(L"</u>");
+
+    tagsSpecial.push_back(L"[");
+    tagsSpecial.push_back(L"]");
+    tagsSpecial.push_back(L"(");
+    tagsSpecial.push_back(L")");
+    tagsSpecial.push_back(L".");
+    tagsSpecial.push_back(L"/");
+    tagsSpecial.push_back(L"#");
+    tagsSpecial.push_back(L":");
+    tagsSpecial.push_back(L"+");
+    tagsSpecial.push_back(L"&");
+
+    tagsAccents.push_back(L"\u00E1");//?
+    tagsAccents.push_back(L"\u0430&#x301");
+    tagsAccents.push_back(L"\u00F3"); //?
+    tagsAccents.push_back(L"\u043E&#x301");
+    tagsAccents.push_back(L"\u044D\u0301");//э?
+    tagsAccents.push_back(L"\u044D&#x301");
+    tagsAccents.push_back(L"\u00FD");//?
+    tagsAccents.push_back(L"\u0443&#x301");
+    tagsAccents.push_back(L"\u044B\u0301");//ы?
+    tagsAccents.push_back(L"\u044B&#x301");
+    tagsAccents.push_back(L"\u0438\u0301");//и?
+    tagsAccents.push_back(L"\u0438&#x301");
+
+    rtfReplacements.push_back(L"<b>");
+    rtfReplacements.push_back(L"\\\\b");
+    rtfReplacements.push_back(L"</b>");
+    rtfReplacements.push_back(L"\\\\b0");
+    rtfReplacements.push_back(L"<i>");
+    rtfReplacements.push_back(L"\\\\i");
+    rtfReplacements.push_back(L"</i>");
+    rtfReplacements.push_back(L"\\\\i0");
+    rtfReplacements.push_back(L"<u>");
+    rtfReplacements.push_back(L"\\\\ul");
+    rtfReplacements.push_back(L"</u>");
+    rtfReplacements.push_back(L"\\\\ulnone");
+    rtfReplacements.push_back(L"<p>");
+    rtfReplacements.push_back(L"\\\\par");
+    rtfReplacements.push_back(L"</p>");
+    rtfReplacements.push_back(L"");
+    rtfReplacements.push_back(L"<f0>");
+    rtfReplacements.push_back(L"\\\\f0");
+    rtfReplacements.push_back(L"<f1>");
+    rtfReplacements.push_back(L"\\\\f1");
+
+    tagsTitle.push_back(L"<span class=\"title\" >");
+    tagsTitle.push_back(L"</span>");
+
+    tagsRuleParts.push_back(L"И с к л ю ч е н и е - п о д п р а в и л о");
+    tagsRuleParts.push_back(L"И с к л ю ч е н и е");
+    tagsRuleParts.push_back(L"И с к л ю ч е н и я");
+    tagsRuleParts.push_back(L"П о д п р а в и л о");
+    tagsRuleParts.push_back(L"П р а в и л о");
+    tagsRuleParts.push_back(L"П р и м е ч а н и е");
+    tagsRuleParts.push_back(L"П р и м е р ы");
+
+    mode = Mode;
+
+    if (mode != ROSOnly)
+        loadSearchData(LOAD_SEARCH);
+    stopDic = loadStopDic(config["stop"]);
+    stopLabelDic = loadStopDic(config["stop_l"]);
+    std::vector<std::string> grDics;
+    grDics.push_back(config["bigramms"]);
+    grDics.push_back(config["trigramms"]);
+    grDics.push_back(config["tetragramms"]);
+    loadGramms(grDics);
+    loadSymbolsMap(config["smap"]);
+    loadMorph(config["foreign"], config["lemmata"]);
+    if (mode == AddROS || mode == ROSOnly) {
+        loadROS(config["ROS_2012"]);
+    }
+    if (mode != Create && mode != ROSOnly) {
+        loadDic(config["arts"]);
+    }
+    return res;
+}
+
 long COROSSParser::Terminate()
 {
     processArticles();
