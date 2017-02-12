@@ -47,12 +47,12 @@ size_t COROSSParser::shiftLeftUtf(const std::wstring& afull, size_t start) {
     return 0;
 }
 
-#define RULE L"п."
+#define RULE L"Рї."
 std::wstring COROSSParser::prepareRest(const std::wstring& Rest)
 {
     std::wstring result;
     std::wstring a(Rest);
-    size_t pos = a.find(L'§');
+    size_t pos = a.find(L'В§');
     while (pos != std::wstring::npos) {
         result.append(a, 0, pos + 1);
         a = a.substr(pos + 1);
@@ -93,7 +93,7 @@ std::wstring COROSSParser::prepareRest(const std::wstring& Rest)
                 }
                 case 1:
                 case 2:
-                    // искл.|искл.-подпр.|п.|прим.|
+                    // РёСЃРєР».|РёСЃРєР».-РїРѕРґРїСЂ.|Рї.|РїСЂРёРј.|
                     if (a.compare(0, wcslen(RULE), RULE) == 0) { // rule
                         result.append(a, 0, wcslen(RULE));
                         a = a.substr(wcslen(RULE));
@@ -133,7 +133,7 @@ std::wstring COROSSParser::prepareRest(const std::wstring& Rest)
                     }
             }
         }
-        pos = a.find(L'§');
+        pos = a.find(L'В§');
     }
     result.append(a);
     return result;
@@ -193,10 +193,10 @@ void COROSSParser::prepareTitle(std::wstring& title)
 void COROSSParser::prepareSearchTitle(std::wstring &title) {
     std::transform(title.begin(), title.end(), title.begin(),
         std::bind2nd(std::ptr_fun(&std::tolower<wchar_t>), russian));
-    size_t pos = title.find(L'…');
+    size_t pos = title.find(L'вЂ¦');
     while (pos != std::wstring::npos) {
         title.replace(pos, 1, L"...");
-        pos = title.find(L'…', pos + 1);
+        pos = title.find(L'вЂ¦', pos + 1);
     }
     pos = title.find(L'\u00b9'); // superscript one
     while (pos != std::wstring::npos) {
@@ -227,8 +227,8 @@ void COROSSParser::prepareSearchTitle(std::wstring &title) {
     todel.push_back(L'\u2014');
     todel.push_back(L';');
     todel.push_back(L' ');
-    todel.push_back(L'»');
-    todel.push_back(L'«');
+    todel.push_back(L'В»');
+    todel.push_back(L'В«');
     for (auto sym = todel.begin(); sym != todel.end(); ++sym) {
         pos = title.find(*sym);
         while (pos != std::wstring::npos) {
@@ -246,20 +246,20 @@ void COROSSParser::prepareSearchTitle(std::wstring &title) {
         title.replace(pos, 1, L"");
         pos = title.find(L' ', pos + 1);
     }
-    pos = title.find(L'»');
+    pos = title.find(L'В»');
     while (pos != std::wstring::npos) {
         title.replace(pos, 1, L"");
-        pos = title.find(L'»', pos + 1);
+        pos = title.find(L'В»', pos + 1);
     }
-    pos = title.find(L'«');
+    pos = title.find(L'В«');
     while (pos != std::wstring::npos) {
         title.replace(pos, 1, L"");
-        pos = title.find(L'«', pos + 1);
+        pos = title.find(L'В«', pos + 1);
     } */
-    pos = title.find(L'ё');
+    pos = title.find(L'С‘');
     while (pos != std::wstring::npos) {
-        title.replace(pos, 1, L"е");
-        pos = title.find(L'ё', pos + 1);
+        title.replace(pos, 1, L"Рµ");
+        pos = title.find(L'С‘', pos + 1);
     }
 }
 
@@ -419,18 +419,18 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
         }
     }
 
-    std::wregex e(L"\\(\\s*слово[^\\(\\)]*\\)");
+    std::wregex e(L"\\(\\s*СЃР»РѕРІРѕ[^\\(\\)]*\\)");
     std::wsmatch cm;
     tmp.clear();
-    // \s*[^\\(\\)]*\s* == слово
+    // \s*[^\\(\\)]*\s* == СЃР»РѕРІРѕ
     while (std::regex_search(search.cbegin(), search.cend(), cm, e)) {
         tmp.append(cm.prefix(), 0, cm.prefix().length() - 1);
         tmp.append(L"(\\");
         std::wstring intro = cm[0].str().substr(0, cm[0].str().length() - 2);
-        size_t pos = intro.find(L"слово");
+        size_t pos = intro.find(L"СЃР»РѕРІРѕ");
         while (pos != std::wstring::npos) {
             intro.replace(pos, 5, L" [^\\A\\B]* ");
-            pos = intro.find(L"слово", pos + 5);
+            pos = intro.find(L"СЃР»РѕРІРѕ", pos + 5);
         }
         tmp.append(intro);
         tmp.append(L"\\))* ");
@@ -442,7 +442,7 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
     search.clear();
     cm.empty();
     search.append(tmp);
-    std::wregex e4(L"\\(\\s*приставка[^\\(\\)]*\\)");
+    std::wregex e4(L"\\(\\s*РїСЂРёСЃС‚Р°РІРєР°[^\\(\\)]*\\)");
     tmp.clear();
     while (std::regex_search(search.cbegin(), search.cend(), cm, e4)) {
         tmp.append(cm.prefix(), 0, cm.prefix().length() - 1);
@@ -454,7 +454,7 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
     search.clear();
     cm.empty();
     search.append(tmp);
-    std::wregex e1(L"\\(\\s*буква[^\\(\\)]*\\)");
+    std::wregex e1(L"\\(\\s*Р±СѓРєРІР°[^\\(\\)]*\\)");
     tmp.clear();
     while (std::regex_search(search.cbegin(), search.cend(), cm, e1)) {
         tmp.append(cm.prefix().str());
@@ -466,15 +466,15 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
     search.clear();
     cm.empty();
     search.append(tmp);
-    std::wregex e2(L"проверка\\s*\\\\*\\:*");
+    std::wregex e2(L"РїСЂРѕРІРµСЂРєР°\\s*\\\\*\\:*");
     tmp.clear();
     while (std::regex_search(search.cbegin(), search.cend(), cm, e2)) {
         if (cm.prefix().length() > 0) {
             tmp.append(cm.prefix().str());
-            tmp.append(L"(проверка\\s*\\:*)* ");
+            tmp.append(L"(РїСЂРѕРІРµСЂРєР°\\s*\\:*)* ");
         }
         else {
-            tmp.append(L"проверка\\s*\\:* ");
+            tmp.append(L"РїСЂРѕРІРµСЂРєР°\\s*\\:* ");
         }
         search = cm.suffix().str();
     }
@@ -498,7 +498,7 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
     // trim right
     tmp = tmp.substr(0, sp + 1);
 
-    // суфф. => суфф\s*\.*\s*
+    // СЃСѓС„С„. => СЃСѓС„С„\s*\.*\s*
     pos = tmp.find(L"\\.");
     while (pos != std::wstring::npos) {
         if (pos > 1 && tmp[pos - 1] != ' ')
@@ -506,7 +506,7 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
         pos = tmp.find(L"\\.", pos + 4);
     }
 
-    // передача звука [й] - й может быть написана курсивом, сделаем [\s*й\s*]
+    // РїРµСЂРµРґР°С‡Р° Р·РІСѓРєР° [Р№] - Р№ РјРѕР¶РµС‚ Р±С‹С‚СЊ РЅР°РїРёСЃР°РЅР° РєСѓСЂСЃРёРІРѕРј, СЃРґРµР»Р°РµРј [\s*Р№\s*]
     pos = tmp.find(L"\\[");
     while (pos != std::wstring::npos) {
         if (pos > 1 && tmp[pos + 1] != ' ')
@@ -520,7 +520,7 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
             tmp.replace(pos, 2, L" \\]");
         pos = tmp.find(L"\\]", pos + 3);
     }
-    // возможный пробел перед ), после (
+    // РІРѕР·РјРѕР¶РЅС‹Р№ РїСЂРѕР±РµР» РїРµСЂРµРґ ), РїРѕСЃР»Рµ (
     pos = tmp.find(L"\\(");
     while (pos != std::wstring::npos) {
         if (pos > 1 && tmp[pos + 1] != ' ')
@@ -594,7 +594,7 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
 
 size_t COROSSParser::getParaNum(const std::wstring& rest)
 {
-    size_t pos = rest.find(L"§");
+    size_t pos = rest.find(L"В§");
     if (pos != std::wstring::npos) {
         pos = pos + 1;
         while (rest[pos] == L'\x20' || rest[pos] == L'\xA0')
@@ -607,7 +607,7 @@ size_t COROSSParser::getParaNum(const std::wstring& rest)
 std::wstring COROSSParser::getRuleNum(const std::wstring& rest)
 {
     std::locale loc;
-    std::wstring ru(L"п.");
+    std::wstring ru(L"Рї.");
     size_t pos = rest.find(ru);
     if (pos != std::wstring::npos) {
         pos = pos + ru.length();
@@ -634,18 +634,18 @@ std::wstring COROSSParser::getRuleNum(const std::wstring& rest)
             return (rest.substr(pos, idx));
         }
 /*        while ((pos + len) < rest.length() && 
-               (rest[pos + len] != L' ' && rest[pos + len] != L'\xA0' && rest[pos + len] != L'§'))
+               (rest[pos + len] != L' ' && rest[pos + len] != L'\xA0' && rest[pos + len] != L'В§'))
             len++;
         return std::wstring(rest.c_str(), pos, len); */
     }
     return std::wstring(L"0");
 }
 
-// for cases like this: § 13 и § 14 п. 1.7)
-//                    : § 20 п. 1 и § 20 п. 2
+// for cases like this: В§ 13 Рё В§ 14 Рї. 1.7)
+//                    : В§ 20 Рї. 1 Рё В§ 20 Рї. 2
 std::wstring COROSSParser::getRestForPara(const std::wstring& Rest, const size_t& id_para) {
     std::wstring rest(L"");
-    size_t pos = Rest.find(L'§');
+    size_t pos = Rest.find(L'В§');
     size_t start = 0;
     while (pos != std::wstring::npos && pos < Rest.length()) {
         start = pos;
@@ -655,10 +655,10 @@ std::wstring COROSSParser::getRestForPara(const std::wstring& Rest, const size_t
         }
         if (pos != Rest.length()) {
             if (std::stol(Rest.c_str() + pos) != id_para) {
-                pos = Rest.find(L'§', pos + 1);
+                pos = Rest.find(L'В§', pos + 1);
             }
             else { // id_para
-                pos = Rest.find(L'§', pos + 1);
+                pos = Rest.find(L'В§', pos + 1);
                 if (pos != std::wstring::npos) {
                     rest.append(Rest, start, pos - start);
                 }
@@ -1096,11 +1096,11 @@ bool COROSSParser::isEqualToTitle(const std::wstring& word, const std::wstring& 
     size_t pos = word.find(L"...");
     if (pos != std::wstring::npos) {
         std::wstring tmp(word);
-        tmp.replace(pos, 3, L"…");
+        tmp.replace(pos, 3, L"вЂ¦");
         if (tmp == title)
             return true;
     }
-    pos = word.find(L"…");
+    pos = word.find(L"вЂ¦");
     if (pos != std::wstring::npos) {
         std::wstring tmp(word);
         tmp.replace(pos, 1, L"...");
@@ -1134,7 +1134,7 @@ void COROSSParser::cutTail(std::wstring& str) {
     std::locale loc;
     size_t idx = str.length();
     for (auto i = str.end() - 1; i != str.end(); --i, idx--) {
-        if ((*i) != L'-' &&  (*i) !=  L'…' && (*i) != L'.') {
+        if ((*i) != L'-' &&  (*i) !=  L'вЂ¦' && (*i) != L'.') {
             str = str.substr(0, idx);
             break;
         }

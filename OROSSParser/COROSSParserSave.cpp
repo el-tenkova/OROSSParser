@@ -1398,8 +1398,8 @@ void COROSSParser::presaveArticles(bool saveSearch) {
 }
 
 void COROSSParser::processComments() {
-    std::wstring sm_komment(L"(\\s*_*[Ñ|ñ]ì_*\\._*\\s*êîììåíò\\.\\s*ê\\s*)([_\\-\\u00B9\\u00B2\\u00B3à-ÿÀ-ß¨¸\\<sup\\>123\\</sup\\>]+[-]*[…]*([\\.]{3})*\\s*)([_\\u00B9\\u00B2\\u00B3à-ÿÀ-ß¨¸\\<sup\\>123\\</sup\\>]*)");//
-    std::wstring smotri(L"(\\s*_*[Ñ|ñ]ì_*\\._*\\s*)([_\\-\\u00B9\\u00B2\\u00B3à-ÿÀ-ß¨¸\\<sup\\>123\\</sup\\>]+[-]*[…]*([\\.]{3})*\\s*)([_\\u00B9\\u00B2\\u00B3à-ÿÀ-ß¨¸\\<sup\\>123\\</sup\\>]*)");//L"\\s[Ñ|ñ]ì\\.\\s*");
+    std::wstring sm_komment(L"(\\s*_*[Ğ¡|Ñ]Ğ¼_*\\._*\\s*ĞºĞ¾Ğ¼Ğ¼ĞµĞ½Ñ‚\\.\\s*Ğº\\s*)([_\\-\\u00B9\\u00B2\\u00B3Ğ°-ÑĞ-Ğ¯ĞÑ‘\\<sup\\>123\\</sup\\>]+[-]*[â€¦]*([\\.]{3})*\\s*)([_\\u00B9\\u00B2\\u00B3Ğ°-ÑĞ-Ğ¯ĞÑ‘\\<sup\\>123\\</sup\\>]*)");//
+    std::wstring smotri(L"(\\s*_*[Ğ¡|Ñ]Ğ¼_*\\._*\\s*)([_\\-\\u00B9\\u00B2\\u00B3Ğ°-ÑĞ-Ğ¯ĞÑ‘\\<sup\\>123\\</sup\\>]+[-]*[â€¦]*([\\.]{3})*\\s*)([_\\u00B9\\u00B2\\u00B3Ğ°-ÑĞ-Ğ¯ĞÑ‘\\<sup\\>123\\</sup\\>]*)");//L"\\s[Ğ¡|Ñ]Ğ¼\\.\\s*");
     artMap::iterator it = articles.begin();
     std::wstring romb(L"</p><p>\u25ca");
     std::locale loc;
@@ -1409,10 +1409,10 @@ void COROSSParser::processComments() {
     for (it; it != articles.end(); ++it) {
         if (it->second.state == ARTICLE_STATE_TO_DELETE)
             continue;
-        if (it->second.text.find(L"Ñì.") == std::wstring::npos &&
-            it->second.text.find(L"ñì.") == std::wstring::npos &&
-            it->second.text.find(L"Ñì</i>.") == std::wstring::npos &&
-            it->second.text.find(L"ñì</i>.") == std::wstring::npos)
+        if (it->second.text.find(L"Ğ¡Ğ¼.") == std::wstring::npos &&
+            it->second.text.find(L"ÑĞ¼.") == std::wstring::npos &&
+            it->second.text.find(L"Ğ¡Ğ¼</i>.") == std::wstring::npos &&
+            it->second.text.find(L"ÑĞ¼</i>.") == std::wstring::npos)
             continue;
         std::wstring pure;
         pure = getSpecMarkedArticle(it->second.text); // full = true
@@ -1428,7 +1428,7 @@ void COROSSParser::processComments() {
               //  std::wsmatch sm = *rit;
                 //std::cout << rit->str() << std::endl;
                 std::wstring word = (*rit)[2].str();
-                if (word != L"êîììåíò") {
+                if (word != L"ĞºĞ¾Ğ¼Ğ¼ĞµĞ½Ñ‚") {
                     size_t begin = pref_len + (*rit).prefix().length() + (*rit)[1].str().length();
                     size_t end = begin;
                     if (i == 0 && (*rit).size() > 4)
@@ -2213,17 +2213,17 @@ void COROSSParser::processMistakes() {
             }
         }
 
-        // remove ü, ú
+        // remove ÑŒ, ÑŠ
         size_t len = mist.length();
-        size_t pos = mist.find(L'ü');
+        size_t pos = mist.find(L'ÑŒ');
         while (pos != std::wstring::npos) {
             mist.replace(pos, 1, L"");
-            pos = mist.find(L'ü', pos + 1);
+            pos = mist.find(L'ÑŒ', pos + 1);
         }
-        pos = mist.find(L'ú');
+        pos = mist.find(L'ÑŠ');
         while (pos != std::wstring::npos) {
             mist.replace(pos, 1, L"");
-            pos = mist.find(L'ú', pos + 1);
+            pos = mist.find(L'ÑŠ', pos + 1);
         }
         if (mist.length() != len) {
             mistakeMap::iterator mit = mistakes.find(mist);
@@ -2294,37 +2294,37 @@ void COROSSParser::makeTutorialUpdate()
 void COROSSParser::makeABCTable(const std::locale& loc)
 {
     std::map<wchar_t, std::wstring> abcMap;
-    abcMap.insert(std::pair<wchar_t, std::wstring>(L'à', L"a"));
-    abcMap.insert(std::pair<wchar_t, std::wstring>(L'á', L"be"));
-    abcMap.insert(std::pair<wchar_t, std::wstring>(L'â', L"ve"));
-    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ã', L"ghe"));
-    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ä', L"de"));
-    abcMap.insert(std::pair<wchar_t, std::wstring>(L'å', L"e"));
-    abcMap.insert(std::pair<wchar_t, std::wstring>(L'¸', L"yo"));
-    abcMap.insert(std::pair<wchar_t, std::wstring>(L'æ', L"zhe"));
-    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ç', L"ze"));
-    abcMap.insert(std::pair<wchar_t, std::wstring>(L'è', L"i"));
-    abcMap.insert(std::pair<wchar_t, std::wstring>(L'é', L"short_i"));
-    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ê', L"ka"));
-    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ë', L"el"));
-    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ì', L"em"));
-    abcMap.insert(std::pair<wchar_t, std::wstring>(L'í', L"en"));
-    abcMap.insert(std::pair<wchar_t, std::wstring>(L'î', L"o"));
-    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ï', L"pe"));
-    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ğ', L"er"));
-    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ñ', L"es"));
-    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ò', L"te"));
-    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ó', L"u"));
-    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ô', L"ef"));
-    abcMap.insert(std::pair<wchar_t, std::wstring>(L'õ', L"ha"));
-    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ö', L"tse"));
-    abcMap.insert(std::pair<wchar_t, std::wstring>(L'÷', L"che"));
-    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ø', L"sha"));
-    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ù', L"shcha"));
-    abcMap.insert(std::pair<wchar_t, std::wstring>(L'û', L"ery"));
-    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ı', L"reverse_e"));
-    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ş', L"yu"));
-    abcMap.insert(std::pair<wchar_t, std::wstring>(L'ÿ', L"ya"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'Ğ°', L"a"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'Ğ±', L"be"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'Ğ²', L"ve"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'Ğ³', L"ghe"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'Ğ´', L"de"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'Ğµ', L"e"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'Ñ‘', L"yo"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'Ğ¶', L"zhe"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'Ğ·', L"ze"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'Ğ¸', L"i"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'Ğ¹', L"short_i"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'Ğº', L"ka"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'Ğ»', L"el"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'Ğ¼', L"em"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'Ğ½', L"en"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'Ğ¾', L"o"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'Ğ¿', L"pe"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'Ñ€', L"er"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'Ñ', L"es"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'Ñ‚', L"te"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'Ñƒ', L"u"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'Ñ„', L"ef"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'Ñ…', L"ha"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'Ñ†', L"tse"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'Ñ‡', L"che"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'Ñˆ', L"sha"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'Ñ‰', L"shcha"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'Ñ‹', L"ery"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'Ñ', L"reverse_e"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'Ñ', L"yu"));
+    abcMap.insert(std::pair<wchar_t, std::wstring>(L'Ñ', L"ya"));
 
     auto tit = titles.begin();
     for (tit; tit != titles.end(); ++tit) {

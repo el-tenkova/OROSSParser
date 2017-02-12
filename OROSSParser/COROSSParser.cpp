@@ -13,8 +13,8 @@
 
 #define PART_END    3
 #define PART_LAST   2
-#define SL_D_RAZD   L"<i>слитно/дефисно/раздельно</i>"
-#define PROVER_GLASN L"<i>проверяемая гласная</i>"
+#define SL_D_RAZD   L"<i>СЃР»РёС‚РЅРѕ/РґРµС„РёСЃРЅРѕ/СЂР°Р·РґРµР»СЊРЅРѕ</i>"
+#define PROVER_GLASN L"<i>РїСЂРѕРІРµСЂСЏРµРјР°СЏ РіР»Р°СЃРЅР°СЏ</i>"
 #define PARA21  21
 #define SAVE_SEARCH false
 #define LOAD_SEARCH true
@@ -50,13 +50,13 @@ long COROSSParser::Init(modeName Mode)
     tagsAccents.push_back(L"\u0430&#x301");
     tagsAccents.push_back(L"\u00F3"); //?
     tagsAccents.push_back(L"\u043E&#x301");
-    tagsAccents.push_back(L"\u044D\u0301");//э?
+    tagsAccents.push_back(L"\u044D\u0301");//СЌ?
     tagsAccents.push_back(L"\u044D&#x301");
     tagsAccents.push_back(L"\u00FD");//?
     tagsAccents.push_back(L"\u0443&#x301");
-    tagsAccents.push_back(L"\u044B\u0301");//ы?
+    tagsAccents.push_back(L"\u044B\u0301");//С‹?
     tagsAccents.push_back(L"\u044B&#x301");
-    tagsAccents.push_back(L"\u0438\u0301");//и?
+    tagsAccents.push_back(L"\u0438\u0301");//Рё?
     tagsAccents.push_back(L"\u0438&#x301");
 
     rtfReplacements.push_back(L"<b>");
@@ -83,13 +83,13 @@ long COROSSParser::Init(modeName Mode)
     tagsTitle.push_back(L"<span class=\"title\" >");
     tagsTitle.push_back(L"</span>");
 
-    tagsRuleParts.push_back(L"И с к л ю ч е н и е - п о д п р а в и л о");
-    tagsRuleParts.push_back(L"И с к л ю ч е н и е");
-    tagsRuleParts.push_back(L"И с к л ю ч е н и я");
-    tagsRuleParts.push_back(L"П о д п р а в и л о");
-    tagsRuleParts.push_back(L"П р а в и л о");
-    tagsRuleParts.push_back(L"П р и м е ч а н и е");
-    tagsRuleParts.push_back(L"П р и м е р ы");
+    tagsRuleParts.push_back(L"Р СЃ Рє Р» СЋ С‡ Рµ РЅ Рё Рµ - Рї Рѕ Рґ Рї СЂ Р° РІ Рё Р» Рѕ");
+    tagsRuleParts.push_back(L"Р СЃ Рє Р» СЋ С‡ Рµ РЅ Рё Рµ");
+    tagsRuleParts.push_back(L"Р СЃ Рє Р» СЋ С‡ Рµ РЅ Рё СЏ");
+    tagsRuleParts.push_back(L"Рџ Рѕ Рґ Рї СЂ Р° РІ Рё Р» Рѕ");
+    tagsRuleParts.push_back(L"Рџ СЂ Р° РІ Рё Р» Рѕ");
+    tagsRuleParts.push_back(L"Рџ СЂ Рё Рј Рµ С‡ Р° РЅ Рё Рµ");
+    tagsRuleParts.push_back(L"Рџ СЂ Рё Рј Рµ СЂ С‹");
 
     mode = Mode;
 
@@ -214,7 +214,7 @@ long COROSSParser::AddPara(const long& Num, const std::wstring& Name)
             curPara->second.orthos.insert(std::pair<std::wstring, orthogr>(key, co));
             orthoId++;
         }
-        std::wstring rest(L"§ ");
+        std::wstring rest(L"В§ ");
         rest.append(std::to_wstring((size_t)Num));
         std::wstring link = prepareRest(rest);
         pararest pr = { prepareRest(rest), prepareForSearch(rest), getSearchMinLen(pr.search) };
@@ -630,7 +630,7 @@ void COROSSParser::processArticle(article& ca) {
         html.clear();
         //        html.append(title);
         size_t len = 0;
-        std::wstring proverka(L"проверка");
+        std::wstring proverka(L"РїСЂРѕРІРµСЂРєР°");
         for (substMap::iterator sit = substs.begin(); sit != substs.end(); ++sit) {
             std::vector<subst>::iterator svit = sit->second.begin();
             for (svit; svit != sit->second.end(); ++svit) {
@@ -746,7 +746,7 @@ void COROSSParser::getPara(const size_t& id_art, const std::wstring& article, co
 {
     std::wstring html(L"");
     std::wstring a(pure);//article);
-    std::wregex e(L"§[\\xA0|\\x20]+(\\d+)");//\\xA0*\\x043F*\\.*(\\d+)*");
+    std::wregex e(L"В§[\\xA0|\\x20]+(\\d+)");//\\xA0*\\x043F*\\.*(\\d+)*");
                                             //    std::wsmatch cm;    // same as std::match_results<const char*> cm;
 
     std::regex_iterator<std::wstring::iterator> rit(a.begin(), a.end(), e);
@@ -1126,7 +1126,7 @@ afull = afull.substr(afull.length() - cm.suffix().length());//cm.prefix().length
 orthos.push_back(oit->second.id);
 // to do : check formula for ortho, use regex_match
 formMap::iterator fit = oit->second.formulas.begin();
-//        std::wstring formula(L"(\\s*\\:\\s*<b>нтс <\\/b>на стыке основы на <b>нт)(.*)");
+//        std::wstring formula(L"(\\s*\\:\\s*<b>РЅС‚СЃ <\\/b>РЅР° СЃС‚С‹РєРµ РѕСЃРЅРѕРІС‹ РЅР° <b>РЅС‚)(.*)");
 size_t len_match = 0;
 std::wsmatch fmatch;
 formMap::iterator fmatchit;
