@@ -104,6 +104,9 @@ long COROSSParser::Init(modeName Mode)
     loadGramms(grDics);
     loadSymbolsMap("c:\\IRYA\\OROSSParser\\Data\\smap.txt");
     loadMorph("c:\\IRYA\\OROSSParser\\Data\\foreign.txt", "c:\\IRYA\\OROSSParser\\Data\\lemmata.txt");
+
+    loadWords();
+
     if (mode == AddROS || mode == ROSOnly) {
         loadROS("c:\\IRYA\\OROSSParser\\Data\\ROS_2012_1.txt");
     }
@@ -198,6 +201,9 @@ long COROSSParser::Init(modeName Mode, const std::string& cfg)
     loadGramms(grDics);
     loadSymbolsMap(config["smap"]);
     loadMorph(config["foreign"], config["lemmata"]);
+
+    //loadWords();
+
     if (mode == AddROS || mode == ROSOnly) {
         loadROS(config["ROS_2012"]);
     }
@@ -215,6 +221,7 @@ long COROSSParser::Terminate()
         makeSQL();
     }
     saveData(SAVE_SEARCH);
+    saveWords();
     error.close();
     morph.Terminate();
     return 0;

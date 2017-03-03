@@ -142,6 +142,62 @@ void COROSSParser::loadSearchData(bool loadSearch)
     }
 }
 
+void COROSSParser::loadWords()
+{
+    std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::consume_header>());
+    // load data to search in articles
+    std::wifstream words_dic(config["words"], std::wifstream::binary);
+
+    if (words_dic.is_open()) {
+        words_dic.imbue(loc);
+        //words_dic.seekg(3);
+        std::wstring key;
+        while (!words_dic.eof()) {
+            std::wstring str(L"");
+            std::getline(words_dic, str);
+            if (str.length() == 0)
+                continue;
+            std::vector<std::wstring> parts = split(str, L'\t');
+            if (parts[0] == L"w:") {
+                key = parts[1];
+                wordId = std::stol(parts[parts.size() - 1]);
+                word cw = { wordId };
+                words.insert(std::pair<std::wstring, word>(key, cw));
+//                if (wordId == 2997) {
+//                    wordId++;
+//                }
+//                error.write(L"Load tutorial index:", wcslen(L"Load tutorial index:"));
+//                error.write(key.c_str(), key.length());
+//                error.write(L"\n", wcslen(L"\n"));
+            }
+            else if (parts[0] == L"w_t:") {
+                auto wit = words.find(key);
+                if (wit != words.end()) {
+                    tutorial_place cp = { (size_t)std::stol(parts[2]),
+                        (size_t)std::stol(parts[3]),
+                        (size_t)std::stol(parts[4]),
+                        (size_t)std::stol(parts[5]),
+                        parts[6][0] };
+                    wit->second.rules.push_back(cp);
+                }
+            }
+            else if (parts[0] == L"w_a:") {
+                auto wit = words.find(key);
+                if (wit != words.end()) {
+                    place cp = { (size_t)std::stol(parts[2]),
+                        (size_t)std::stol(parts[3]),
+                        (size_t)std::stol(parts[4]),
+                        (size_t)std::stol(parts[5]),
+                        (size_t)std::stol(parts[6]),
+                        parts[7][0] };
+                    wit->second.arts.push_back(cp);
+                }
+            }
+        }
+        words_dic.close();
+    }
+}
+
 void COROSSParser::loadDic(const std::string& dict)
 {
     std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());

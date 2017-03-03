@@ -411,8 +411,11 @@ protected:
     void saveForSearch();
     void presaveArticles(bool saveSearch = false);
     void saveArticles();
+    void saveWords();
+    void saveGrammas();
 
     void loadSearchData(bool loadSearch = false);
+    void loadWords();
     void loadDic(const std::string& dict);
     std::map<std::wstring, size_t> loadStopDic(const std::string& dict);
     void loadGramms(std::vector<std::string> dics);

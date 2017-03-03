@@ -281,6 +281,79 @@ void COROSSParser::saveForSearch()
 
 }
 
+void COROSSParser::saveWords()
+{
+    std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
+    // save data for search in articles
+    std::wofstream words_dic(config["words"], std::wofstream::binary | std::wofstream::trunc);
+
+    if (words_dic.is_open()) {
+        words_dic.imbue(loc);
+        for (auto wit = words.begin(); wit != words.end(); ++wit) {
+            std::wstring str(L"w:\t");
+            str.append(wit->first);
+            str.append(L"\t");
+            str.append(std::to_wstring(wit->second.id));
+            str.append(L"\n");
+            words_dic.write(str.c_str(), str.length());
+            // words_articles
+            if (wit->second.arts.size() > 0) {
+                for (auto p = wit->second.arts.begin(); p != wit->second.arts.end(); ++p) {
+                    str.clear();
+                    str.append(L"w_a:\t");
+                    // word id
+                    str.append(std::to_wstring(wit->second.id));
+                    str.append(L"\t");
+                    // rule or formula id
+                    str.append(std::to_wstring(p->id));
+                    str.append(L"\t");
+                    // position of word in rule or formula's example
+                    str.append(std::to_wstring(p->start));
+                    str.append(L"\t");
+                    // can be more than word's length due to in article word can contain dashes
+                    str.append(std::to_wstring(p->len));
+                    str.append(L"\t");
+                    // group
+                    str.append(std::to_wstring(p->group));
+                    str.append(L"\t");
+                    // number in group
+                    str.append(std::to_wstring(p->number));
+                    str.append(L"\t");
+                    str.append(std::wstring(1, p->isTitle));
+                    str.append(L"\n");
+                    words_dic.write(str.c_str(), str.length());
+                }
+            }
+            // words_rules
+            if (wit->second.rules.size() > 0) {
+                for (auto p = wit->second.rules.begin(); p != wit->second.rules.end(); ++p) {
+                    str.clear();
+                    str.append(L"w_t:\t");
+                    // word id
+                    str.append(std::to_wstring(wit->second.id));
+                    str.append(L"\t");
+                    // rule or formula id
+                    str.append(std::to_wstring(p->id));
+                    str.append(L"\t");
+                    // position of word in rule or formula's example
+                    str.append(std::to_wstring(p->start));
+                    str.append(L"\t");
+                    // can be more than word's length due to in article word can contain dashes
+                    str.append(std::to_wstring(p->len));
+                    str.append(L"\t");
+                    // number in group
+                    str.append(std::to_wstring(p->number));
+                    str.append(L"\t");
+                    str.append(std::wstring(1, p->isRule));
+                    str.append(L"\n");
+                    words_dic.write(str.c_str(), str.length());
+                }
+            }
+        }
+        words_dic.close();
+    }
+}
+
 void COROSSParser::saveArticles()
 {
     std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
