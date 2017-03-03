@@ -3,11 +3,11 @@
 /* this ALWAYS GENERATED file contains the definitions for the interfaces */
 
 
- /* File created by MIDL compiler version 7.00.0555 */
-/* at Sun Sep 27 01:10:39 2015
+ /* File created by MIDL compiler version 8.00.0603 */
+/* at Sun Feb 12 11:22:46 2017
  */
 /* Compiler settings for OROSSParser.idl:
-    Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 7.00.0555 
+    Oicf, W1, Zp8, env=Win64 (32b run), target_arch=AMD64 8.00.0603 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
     VC __declspec() decoration level: 
@@ -48,6 +48,7 @@
 #ifndef __IOROSSParser_FWD_DEFINED__
 #define __IOROSSParser_FWD_DEFINED__
 typedef interface IOROSSParser IOROSSParser;
+
 #endif 	/* __IOROSSParser_FWD_DEFINED__ */
 
 
@@ -72,6 +73,24 @@ extern "C"{
 #endif 
 
 
+/* interface __MIDL_itf_OROSSParser_0000_0000 */
+/* [local] */ 
+
+typedef /* [public][public][v1_enum] */ 
+enum __MIDL___MIDL_itf_OROSSParser_0000_0000_0001
+    {
+        Create	= 0,
+        Update	= ( Create + 1 ) ,
+        Rebuild	= ( Update + 1 ) ,
+        AddROS	= ( Rebuild + 1 ) ,
+        ROSOnly	= ( AddROS + 1 ) 
+    } 	modeName;
+
+
+
+extern RPC_IF_HANDLE __MIDL_itf_OROSSParser_0000_0000_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_OROSSParser_0000_0000_v0_0_s_ifspec;
+
 #ifndef __IOROSSParser_INTERFACE_DEFINED__
 #define __IOROSSParser_INTERFACE_DEFINED__
 
@@ -88,6 +107,8 @@ EXTERN_C const IID IID_IOROSSParser;
     {
     public:
         virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE Init( 
+            modeName name,
+            BSTR config,
             /* [retval][out] */ long *hRes) = 0;
         
         virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE Terminate( 
@@ -133,7 +154,34 @@ EXTERN_C const IID IID_IOROSSParser;
             BSTR Article,
             /* [retval][out] */ long *hRes) = 0;
         
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE AddInfoToRule( 
+            BSTR Info,
+            /* [retval][out] */ long *hRes) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE AddRuleTitle( 
+            BSTR Num,
+            BSTR Title,
+            /* [retval][out] */ long *hRes) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE AddFootNote( 
+            long ID,
+            BSTR Text,
+            /* [retval][out] */ long *hRes) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE LoadArticles( 
+            BSTR Dic,
+            /* [retval][out] */ long *hRes) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE LoadWords( 
+            BSTR Dic,
+            /* [retval][out] */ long *hRes) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE SaveTitle( 
+            BSTR Title,
+            /* [retval][out] */ long *hRes) = 0;
+        
     };
+    
     
 #else 	/* C style interface */
 
@@ -145,7 +193,7 @@ EXTERN_C const IID IID_IOROSSParser;
             IOROSSParser * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             IOROSSParser * This);
@@ -173,17 +221,27 @@ EXTERN_C const IID IID_IOROSSParser;
         
         /* [local] */ HRESULT ( STDMETHODCALLTYPE *Invoke )( 
             IOROSSParser * This,
-            /* [in] */ DISPID dispIdMember,
-            /* [in] */ REFIID riid,
-            /* [in] */ LCID lcid,
-            /* [in] */ WORD wFlags,
-            /* [out][in] */ DISPPARAMS *pDispParams,
-            /* [out] */ VARIANT *pVarResult,
-            /* [out] */ EXCEPINFO *pExcepInfo,
-            /* [out] */ UINT *puArgErr);
+            /* [annotation][in] */ 
+            _In_  DISPID dispIdMember,
+            /* [annotation][in] */ 
+            _In_  REFIID riid,
+            /* [annotation][in] */ 
+            _In_  LCID lcid,
+            /* [annotation][in] */ 
+            _In_  WORD wFlags,
+            /* [annotation][out][in] */ 
+            _In_  DISPPARAMS *pDispParams,
+            /* [annotation][out] */ 
+            _Out_opt_  VARIANT *pVarResult,
+            /* [annotation][out] */ 
+            _Out_opt_  EXCEPINFO *pExcepInfo,
+            /* [annotation][out] */ 
+            _Out_opt_  UINT *puArgErr);
         
         /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *Init )( 
             IOROSSParser * This,
+            modeName name,
+            BSTR config,
             /* [retval][out] */ long *hRes);
         
         /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *Terminate )( 
@@ -238,6 +296,38 @@ EXTERN_C const IID IID_IOROSSParser;
             BSTR Article,
             /* [retval][out] */ long *hRes);
         
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *AddInfoToRule )( 
+            IOROSSParser * This,
+            BSTR Info,
+            /* [retval][out] */ long *hRes);
+        
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *AddRuleTitle )( 
+            IOROSSParser * This,
+            BSTR Num,
+            BSTR Title,
+            /* [retval][out] */ long *hRes);
+        
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *AddFootNote )( 
+            IOROSSParser * This,
+            long ID,
+            BSTR Text,
+            /* [retval][out] */ long *hRes);
+        
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *LoadArticles )( 
+            IOROSSParser * This,
+            BSTR Dic,
+            /* [retval][out] */ long *hRes);
+        
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *LoadWords )( 
+            IOROSSParser * This,
+            BSTR Dic,
+            /* [retval][out] */ long *hRes);
+        
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *SaveTitle )( 
+            IOROSSParser * This,
+            BSTR Title,
+            /* [retval][out] */ long *hRes);
+        
         END_INTERFACE
     } IOROSSParserVtbl;
 
@@ -274,8 +364,8 @@ EXTERN_C const IID IID_IOROSSParser;
     ( (This)->lpVtbl -> Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr) ) 
 
 
-#define IOROSSParser_Init(This,hRes)	\
-    ( (This)->lpVtbl -> Init(This,hRes) ) 
+#define IOROSSParser_Init(This,name,config,hRes)	\
+    ( (This)->lpVtbl -> Init(This,name,config,hRes) ) 
 
 #define IOROSSParser_Terminate(This,hRes)	\
     ( (This)->lpVtbl -> Terminate(This,hRes) ) 
@@ -303,6 +393,24 @@ EXTERN_C const IID IID_IOROSSParser;
 
 #define IOROSSParser_AddArticle(This,Title,Article,hRes)	\
     ( (This)->lpVtbl -> AddArticle(This,Title,Article,hRes) ) 
+
+#define IOROSSParser_AddInfoToRule(This,Info,hRes)	\
+    ( (This)->lpVtbl -> AddInfoToRule(This,Info,hRes) ) 
+
+#define IOROSSParser_AddRuleTitle(This,Num,Title,hRes)	\
+    ( (This)->lpVtbl -> AddRuleTitle(This,Num,Title,hRes) ) 
+
+#define IOROSSParser_AddFootNote(This,ID,Text,hRes)	\
+    ( (This)->lpVtbl -> AddFootNote(This,ID,Text,hRes) ) 
+
+#define IOROSSParser_LoadArticles(This,Dic,hRes)	\
+    ( (This)->lpVtbl -> LoadArticles(This,Dic,hRes) ) 
+
+#define IOROSSParser_LoadWords(This,Dic,hRes)	\
+    ( (This)->lpVtbl -> LoadWords(This,Dic,hRes) ) 
+
+#define IOROSSParser_SaveTitle(This,Title,hRes)	\
+    ( (This)->lpVtbl -> SaveTitle(This,Title,hRes) ) 
 
 #endif /* COBJMACROS */
 

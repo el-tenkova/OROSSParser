@@ -24,9 +24,9 @@
 long COROSSParser::Init(modeName Mode)
 {
     long res = 0;
-    std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
     if (error.is_open()) {
-        error.imbue(loc);
+        writeBOM(error);
+        error.imbue(russian);
     }
     tagsBI.push_back(L"<b>");
     tagsBI.push_back(L"</b>");
@@ -119,11 +119,11 @@ long COROSSParser::Init(modeName Mode)
 long COROSSParser::Init(modeName Mode, const std::string& cfg)
 {
     long res = 0;
-    std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
     config.load(cfg);
     error.open(config["errors"], std::wofstream::binary);
     if (error.is_open()) {
-        error.imbue(loc);
+        writeBOM(error);
+        error.imbue(russian);
     }
     tagsBI.push_back(L"<b>");
     tagsBI.push_back(L"</b>");

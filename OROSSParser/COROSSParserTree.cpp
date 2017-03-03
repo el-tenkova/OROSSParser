@@ -1,13 +1,12 @@
 #include "COROSSParserTree.h"
 
-void COROSSGrammaTree::load(const std::string path, const std::map<std::wstring, size_t>& stopLabelDic)
+void COROSSGrammaTree::load(const std::string path, const std::map<std::wstring, size_t>& stopLabelDic, const std::locale& russian)
 {
-    std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
     // load data to search in articles
     std::wifstream bigr(path, std::wifstream::binary);
 
     if (bigr.is_open()) {
-        bigr.imbue(loc);
+        bigr.imbue(russian);
         bigr.seekg(3);
         while (!bigr.eof()) {
             std::wstring str(L"");

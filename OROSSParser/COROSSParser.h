@@ -3,6 +3,9 @@
 
 #ifdef _WINDOWS
     #include "stdafx.h"
+    #define RUS_LOCALE "Russian"
+#else
+    #define RUS_LOCALE "ru_RU.UTF-8"
 #endif
 
 #include <vector>
@@ -304,7 +307,7 @@ public:
         trigrId(1),
         tetragrId(1),
         mode(Create),
-        russian("Russian"),
+        russian(std::locale(RUS_LOCALE), new std::codecvt_utf8<wchar_t, 0x10ffff, std::consume_header>()),
         str_words(L"INSERT INTO words (id, word, art_count) "),
         str_words_articles(L"INSERT INTO words_articles (id, id_article, start, len, title, segment, number) "),
         str_words_tutorial(L"INSERT INTO words_tutorial (id, id_item, start, len, type, number) "),
@@ -510,6 +513,7 @@ protected:
     void shiftWords(artMap::iterator& ait, const size_t& begin, const size_t& shift1, const size_t& end, const size_t& shift2);
     void replaceArtId(article& a, std::wstring& article, const size_t& curId, const size_t newId);
     bool isStopLabel(const std::wstring& key, const std::wstring interval, const size_t start, const wchar_t type);
+    void writeBOM(std::wofstream& stream);
 };
 
 #endif //__OROSSPARSERPURE_H_

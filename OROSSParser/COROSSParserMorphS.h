@@ -8,6 +8,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <locale>
 
 class COROSSParserMorph {
 
@@ -18,7 +19,7 @@ public:
     COROSSParserMorph();
     ~COROSSParserMorph();
 public:
-    void Load(const std::string& foreign, const std::string& lemmata);
+    void Load(const std::string& foreign, const std::string& lemmata, const std::locale& russian);
     void Terminate();
     bool Check(const std::wstring& word);
     bool Search(const std::wstring& word);

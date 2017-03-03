@@ -4,7 +4,6 @@
     #include <direct.h>
 #endif
 
-#include <locale>
 #include <fstream>
 #include <codecvt>
 #include <regex>
@@ -25,14 +24,13 @@ COROSSParserMorph::~COROSSParserMorph()
     Terminate();
 }
 
-void COROSSParserMorph::Load(const std::string& foreignFile, const std::string& lemmataFile)
+void COROSSParserMorph::Load(const std::string& foreignFile, const std::string& lemmataFile, const std::locale& russian)
 {
     // load foreign.txt
-    std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
     std::wifstream foreign(foreignFile, std::wifstream::binary);
 
     if (foreign.is_open()) {
-        foreign.imbue(loc);
+        foreign.imbue(russian);
         foreign.seekg(3);
         while (!foreign.eof()) {
             std::wstring str(L"");
@@ -50,7 +48,7 @@ void COROSSParserMorph::Load(const std::string& foreignFile, const std::string& 
     std::wifstream lemmata(lemmataFile, std::wifstream::binary);
 
     if (lemmata.is_open()) {
-        lemmata.imbue(loc);
+        lemmata.imbue(russian);
         lemmata.seekg(3);
         while (!lemmata.eof()) {
             std::wstring str(L"");

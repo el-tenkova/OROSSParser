@@ -1351,3 +1351,13 @@ bool COROSSParser::isStopLabel(const std::wstring& key, const std::wstring inter
     }
     return false;
 }
+
+void COROSSParser::writeBOM(std::wofstream& stream)
+{
+ //   std::string bom(u8"\uEFBBBF");
+    stream.put(0xEF);
+    stream.put(0xBB);
+    stream.put(0xBF);
+    stream.flush();
+}
+

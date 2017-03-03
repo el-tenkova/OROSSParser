@@ -13,7 +13,6 @@
 
 void COROSSParser::saveData(bool saveSearch)
 {
-    std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
     std::wofstream result(config["output"] + "result.txt", std::wofstream::binary);
     std::wofstream examples(config["output"] + "examples.txt", std::wofstream::binary);
     std::wofstream rest(config["output"] + "form_rest.txt", std::wofstream::binary);
@@ -24,9 +23,12 @@ void COROSSParser::saveData(bool saveSearch)
     std::wstring para_e(L"</p>");
 
     if (result.is_open()) {
-        result.imbue(loc);
-        examples.imbue(loc);
-        rest.imbue(loc);
+        writeBOM(result);
+        result.imbue(russian);
+        writeBOM(examples);
+        examples.imbue(russian);
+        writeBOM(rest);
+        rest.imbue(russian);
         partMap::iterator pit = parts.begin();
         for (; pit != parts.end(); ++pit)
         {
@@ -144,7 +146,6 @@ void COROSSParser::saveData(bool saveSearch)
 
 void COROSSParser::saveForSearch()
 {
-    std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
     // save data for search in articles
     std::wofstream pararest(config["output"] + "pararest.txt", std::wofstream::binary|std::wofstream::trunc);
     std::wofstream formulas(config["output"] + "formulas.txt", std::wofstream::binary|std::wofstream::trunc);
@@ -152,7 +153,8 @@ void COROSSParser::saveForSearch()
     std::wofstream tut_words(config["output"] + "tutorial.txt", std::wofstream::binary | std::wofstream::trunc);
 
     if (pararest.is_open()) {
-        pararest.imbue(loc);
+        writeBOM(pararest);
+        pararest.imbue(russian);
         paraMap::iterator parait = paras.begin();
         std::wstring str(L"");
         for (; parait != paras.end(); ++parait) {
@@ -178,7 +180,8 @@ void COROSSParser::saveForSearch()
     }
 
     if (orthos.is_open()) {
-        orthos.imbue(loc);
+        writeBOM(orthos);
+        orthos.imbue(russian);
         paraMap::iterator parait = paras.begin();
         std::wstring str(L"");
         for (; parait != paras.end(); ++parait) {
@@ -209,7 +212,8 @@ void COROSSParser::saveForSearch()
         orthos.close();
     }
     if (formulas.is_open()) {
-        formulas.imbue(loc);
+        writeBOM(formulas);
+        formulas.imbue(russian);
         paraMap::iterator parait = paras.begin();
         std::wstring str(L"");
         for (; parait != paras.end(); ++parait) {
@@ -243,7 +247,8 @@ void COROSSParser::saveForSearch()
         formulas.close();
     }
     if (tut_words.is_open()) {
-        tut_words.imbue(loc);
+        writeBOM(tut_words);
+        tut_words.imbue(russian);
         for (auto wit = words.begin(); wit != words.end(); ++wit) {
             if (wit->second.rules.size() > 0) {
                 std::wstring str(L"w:\t");
@@ -283,12 +288,12 @@ void COROSSParser::saveForSearch()
 
 void COROSSParser::saveWords()
 {
-    std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
     // save data for search in articles
     std::wofstream words_dic(config["words"], std::wofstream::binary | std::wofstream::trunc);
 
     if (words_dic.is_open()) {
-        words_dic.imbue(loc);
+        writeBOM(words_dic);
+        words_dic.imbue(russian);
         for (auto wit = words.begin(); wit != words.end(); ++wit) {
             std::wstring str(L"w:\t");
             str.append(wit->first);
@@ -356,12 +361,12 @@ void COROSSParser::saveWords()
 
 void COROSSParser::saveArticles()
 {
-    std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
     // save data for search in articles
     std::wofstream arts(config["output"] + "arts.txt", std::wofstream::binary | std::wofstream::trunc);
 
     if (arts.is_open()) {
-        arts.imbue(loc);
+        writeBOM(arts);
+        arts.imbue(russian);
         for (auto ait = articles.begin(); ait != articles.end(); ++ait) {
             if (ait->second.dic != dicOROSS || ait->second.state == ARTICLE_STATE_TO_DELETE)
                 continue;
@@ -442,14 +447,14 @@ void COROSSParser::saveArticles()
 
 void COROSSParser::makeSQL()
 {
-    std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
     std::wofstream result_contents(config["output"] + "import_contents.sql", std::wofstream::binary);
 
     std::wstring caret(L"\n");
 
     if (result_contents.is_open()) {
         if (mode != ROSOnly) {
-            result_contents.imbue(loc);
+            writeBOM(result_contents);
+            result_contents.imbue(russian);
             makePartsTable(result_contents);
             makeTileTable(result_contents);
             makeParaTable(result_contents);
@@ -460,14 +465,14 @@ void COROSSParser::makeSQL()
             result_contents.close();
         }
        // makeHistoricTable(result_contents);
-        makeWordsTable(loc);
-        makeBigrammsTable(loc);
-        makeTrigrammsTable(loc);
-        makeTetragrammsTable(loc);
-        makeMistakesTable(loc);
-        makeArticlesTable(loc);
+        makeWordsTable(russian);
+        makeBigrammsTable(russian);
+        makeTrigrammsTable(russian);
+        makeTetragrammsTable(russian);
+        makeMistakesTable(russian);
+        makeArticlesTable(russian);
         if (mode == ROSOnly)
-            makeABCTable(loc);
+            makeABCTable(russian);
     }
 }
 
@@ -765,6 +770,7 @@ void COROSSParser::makeWordsTable(const std::locale& loc)
     filename.append(".sql");
     std::wofstream result(filename, std::wofstream::binary);
     if (result.is_open()) {
+        writeBOM(result);
         result.imbue(loc);
     }
     else {
@@ -815,6 +821,8 @@ void COROSSParser::makeWordsTable(const std::locale& loc)
             filename.append(".sql");
             result.open(filename, std::wofstream::binary);
             if (result.is_open()) {
+                result.imbue(std::locale());
+                writeBOM(result);
                 result.imbue(loc);
             }
             else
@@ -889,6 +897,7 @@ void COROSSParser::makeBigrammsTable(const std::locale& loc)
     filename.append(".sql");
     std::wofstream result(filename, std::wofstream::binary);
     if (result.is_open()) {
+        writeBOM(result);
         result.imbue(loc);
     }
     else {
@@ -961,6 +970,7 @@ void COROSSParser::makeTrigrammsTable(const std::locale& loc)
     filename.append(".sql");
     std::wofstream result(filename, std::wofstream::binary);
     if (result.is_open()) {
+        writeBOM(result);
         result.imbue(loc);
     }
     else {
@@ -1033,6 +1043,7 @@ void COROSSParser::makeTetragrammsTable(const std::locale& loc)
     filename.append(".sql");
     std::wofstream result(filename, std::wofstream::binary);
     if (result.is_open()) {
+        writeBOM(result);
         result.imbue(loc);
     }
     else {
@@ -1107,6 +1118,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
     filename.append(".sql");
     std::wofstream result(filename, std::wofstream::binary);
     if (result.is_open()) {
+        writeBOM(result);
         result.imbue(loc);
     }
     else {
@@ -1180,6 +1192,8 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
             filename.append(".sql");
             result.open(filename, std::wofstream::binary);
             if (result.is_open()) {
+                result.imbue(std::locale());
+                writeBOM(result);
                 result.imbue(loc);
             }
             else
@@ -1371,6 +1385,7 @@ void COROSSParser::makeMistakesTable(const std::locale& loc) {
     filename.append(".sql");
     std::wofstream result(filename, std::wofstream::binary);
     if (result.is_open()) {
+        writeBOM(result);
         result.imbue(loc);
     }
     else {
@@ -1404,6 +1419,8 @@ void COROSSParser::makeMistakesTable(const std::locale& loc) {
             filename.append(".sql");
             result.open(filename, std::wofstream::binary);
             if (result.is_open()) {
+                result.imbue(std::locale());
+                writeBOM(result);
                 result.imbue(loc);
             }
             else
@@ -1936,14 +1953,14 @@ void COROSSParser::processIndex(bool saveSearch) {
 
 void COROSSParser::addArticlesToIndex() {
 
-    std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
 
     std::wstring caret(L"\n");
     std::wstring tab(L"\t");
     
     std::wofstream arts(config["output"] + "articles.txt", std::wofstream::binary);
     if (arts.is_open()) {
-        arts.imbue(loc);
+        writeBOM(arts);
+        arts.imbue(russian);
         artMap::iterator ait = articles.begin();
         for (; ait != articles.end(); ++ait) {
             if (ait->second.state == ARTICLE_STATE_TO_DELETE)
@@ -2240,14 +2257,14 @@ void COROSSParser::shiftWords(artMap::iterator& ait, const size_t& begin, const 
 }
 
 void COROSSParser::printArticles() {
-    std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
     std::wstring caret(L"\n");
     std::wstring para_b(L"<p>");
     std::wstring para_e(L"</p>");
 
     std::wofstream html(config["output"] + "articles.html", std::wofstream::binary);
     if (html.is_open()) {
-        html.imbue(loc);
+        writeBOM(html);
+        html.imbue(russian);
         artMap::iterator ait = articles.begin();
         for (; ait != articles.end(); ++ait) {
             if (ait->second.state == ARTICLE_STATE_TO_DELETE)
@@ -2334,12 +2351,12 @@ void COROSSParser::processMistakes() {
 
 void COROSSParser::makeTutorialUpdate()
 {
-    std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
     std::wofstream update(config["output"] + "update_contents.sql", std::wofstream::binary);
 
     std::wstring str(L"");
     if (update.is_open()) {
-        update.imbue(loc);
+        writeBOM(update);
+        update.imbue(russian);
         for (auto parait = paras.begin(); parait != paras.end(); ++parait) {
             for (auto oit = parait->second.orthos.begin(); oit != parait->second.orthos.end(); ++oit) {
                 str.clear();
@@ -2412,6 +2429,7 @@ void COROSSParser::makeABCTable(const std::locale& loc)
         filename.append(".sql");
         std::wofstream result(filename, std::wofstream::binary);
         if (result.is_open()) {
+            writeBOM(result);
             result.imbue(loc);
         }
         else {

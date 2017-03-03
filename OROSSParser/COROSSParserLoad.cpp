@@ -16,7 +16,6 @@ void COROSSParser::loadSearchData(bool loadSearch)
 {
     if (loadSearch == false)
         return;
-    std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
     // load data to search in articles
     std::wifstream rest(config["pararest"], std::wifstream::binary);
     std::wifstream formulas(config["formulas"], std::wifstream::binary);
@@ -24,7 +23,7 @@ void COROSSParser::loadSearchData(bool loadSearch)
     std::wifstream tutorial(config["tutorial"], std::wifstream::binary);
 
     if (rest.is_open()) {
-        rest.imbue(loc);
+        rest.imbue(russian);
         rest.seekg(3);
         while (!rest.eof()) {
             std::wstring str(L"");
@@ -50,7 +49,7 @@ void COROSSParser::loadSearchData(bool loadSearch)
         rest.close();
     }
     if (orthos.is_open()) {
-        orthos.imbue(loc);
+        orthos.imbue(russian);
         orthos.seekg(3);
         while (!orthos.eof()) {
             std::wstring str(L"");
@@ -74,7 +73,7 @@ void COROSSParser::loadSearchData(bool loadSearch)
         orthos.close();
     }
     if (formulas.is_open()) {
-        formulas.imbue(loc);
+        formulas.imbue(russian);
         formulas.seekg(3);
         while (!formulas.eof()) {
             std::wstring str(L"");
@@ -104,7 +103,7 @@ void COROSSParser::loadSearchData(bool loadSearch)
         formulas.close();
     }
     if (tutorial.is_open()) {
-        tutorial.imbue(loc);
+        tutorial.imbue(russian);
         tutorial.seekg(3);
         std::wstring key;
         while (!tutorial.eof()) {
@@ -144,12 +143,11 @@ void COROSSParser::loadSearchData(bool loadSearch)
 
 void COROSSParser::loadWords()
 {
-    std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::consume_header>());
     // load data to search in articles
     std::wifstream words_dic(config["words"], std::wifstream::binary);
 
     if (words_dic.is_open()) {
-        words_dic.imbue(loc);
+        words_dic.imbue(russian);
         //words_dic.seekg(3);
         std::wstring key;
         while (!words_dic.eof()) {
@@ -200,12 +198,11 @@ void COROSSParser::loadWords()
 
 void COROSSParser::loadDic(const std::string& dict)
 {
-    std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
     // load data to search in articles
     std::wifstream arts(dict, std::wifstream::binary);
 
     if (arts.is_open()) {
-        arts.imbue(loc);
+        arts.imbue(russian);
         arts.seekg(3);
         std::wstring key;
         article ca;
@@ -332,12 +329,11 @@ std::vector<size_t> COROSSParser::splitValues(const std::wstring& str) {
 }
 
 std::map<std::wstring, size_t> COROSSParser::loadStopDic(const std::string& dict) {
-    std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
     // load data to search in articles
     std::wifstream stop(dict, std::wifstream::binary);
     std::map<std::wstring, size_t> dic;
     if (stop.is_open()) {
-        stop.imbue(loc);
+        stop.imbue(russian);
         stop.seekg(3);
         while (!stop.eof()) {
             std::wstring str(L"");
@@ -354,12 +350,11 @@ std::map<std::wstring, size_t> COROSSParser::loadStopDic(const std::string& dict
 
 void COROSSParser::loadROS(const std::string& dict) {
 
-    std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
     // load data to search in articles
     std::wifstream arts(dict, std::wifstream::binary);
     size_t idx = 0;
     if (arts.is_open()) {
-        arts.imbue(loc);
+        arts.imbue(russian);
         arts.seekg(3);
         std::wstring key;
         while (!arts.eof()) {
@@ -535,20 +530,20 @@ void COROSSParser::loadROS(const std::string& dict) {
 
 void COROSSParser::loadGramms(std::vector<std::string> dics)
 {
-    bigrDic.load(dics[0], stopLabelDic);
+    bigrDic.load(dics[0], stopLabelDic, russian);
     if (dics.size() > 1)
-        trigrDic.load(dics[1], stopLabelDic);
+        trigrDic.load(dics[1], stopLabelDic, russian);
     if (dics.size() > 2)
-        tetragrDic.load(dics[2], stopLabelDic);
+        tetragrDic.load(dics[2], stopLabelDic, russian);
 }
 
 void COROSSParser::loadSymbolsMap(const std::string& symbols)
 {
-    diacritics.load(symbols);
+    diacritics.load(symbols, russian);
 }
 
 void COROSSParser::loadMorph(const std::string& foreign, const std::string& lemmata)
 {
-    morph.Load(foreign, lemmata);
+    morph.Load(foreign, lemmata, russian);
 }
 

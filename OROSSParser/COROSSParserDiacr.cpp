@@ -4,7 +4,6 @@
     #include <direct.h>
 #endif
 
-#include <locale>
 #include <fstream>
 #include <codecvt>
 #include <regex>
@@ -12,13 +11,12 @@
 
 #include "COROSSParserDiacr.h"
 
-void COROSSDiacritics::load(const std::string& symbols)
+void COROSSDiacritics::load(const std::string& symbols, const std::locale& russian)
 {
-    std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
     std::wifstream sym(symbols, std::wifstream::binary);
 
     if (sym.is_open()) {
-        sym.imbue(loc);
+        sym.imbue(russian);
         sym.seekg(3);
         while (!sym.eof()) {
             std::wstring str(L"");

@@ -3,6 +3,7 @@
 
 #include <map>
 #include <vector>
+#include <locale>
 
 class COROSSDiacritics
 {
@@ -15,7 +16,7 @@ public:
         auto sit = symMap.find(c);
         return (sit != symMap.end() ? sit->second : c);
     }
-    void load(const std::string& symbols);
+    void load(const std::string& symbols, const std::locale& russian);
 private:
     std::vector<std::wstring> split(const std::wstring& str, const wchar_t delim);
 };
