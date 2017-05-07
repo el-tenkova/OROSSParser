@@ -1,4 +1,4 @@
-#ifdef _WINDOWS
+﻿#ifdef _WINDOWS
 #include "stdafx.h"
 #endif
 
@@ -33,6 +33,7 @@ void COROSSParserCfg::load(const std::string& cfgFile)
     configMap["output_mistakes"] = "";
     configMap["output_abc"] = "";
     configMap["words"] = "";
+    configMap["oross"] = "";
 
     if (config.is_open()) {
         while (!config.eof()) {

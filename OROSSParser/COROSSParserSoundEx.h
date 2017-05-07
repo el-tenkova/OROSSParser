@@ -1,4 +1,4 @@
-#ifndef __SOUND_EX_MAP__
+﻿#ifndef __SOUND_EX_MAP__
 #define __SOUND_EX_MAP__
 
 #include <map>

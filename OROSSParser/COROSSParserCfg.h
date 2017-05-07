@@ -1,4 +1,4 @@
-#ifndef __COROSSPARSER_CFG__
+﻿#ifndef __COROSSPARSER_CFG__
 #define __COROSSPARSER_CFG__
 
 #include <map>

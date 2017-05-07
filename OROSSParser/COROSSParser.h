@@ -1,4 +1,4 @@
-#ifndef __OROSSPARSERPURE_H_
+﻿#ifndef __OROSSPARSERPURE_H_
 #define __OROSSPARSERPURE_H_
 
 #ifdef _WINDOWS
@@ -292,6 +292,7 @@ public:
         Rebuild,
         AddROS,
         ROSOnly,
+        OROSSConvert,
     };
 
     COROSSParser() :
@@ -346,8 +347,10 @@ public:
     //
     long LoadArticles(const std::string& Dic);
     long LoadWords(const std::string& Dic);
+    long ReadOROSS(const std::string& Dic);
     // Helpers
     long SaveTitle(const std::wstring& Title);
+    long SaveArticle(const std::wstring& Title, const std::wstring& Article);
 
 protected:
     modeName mode;
@@ -371,6 +374,7 @@ protected:
 
     //  orthoMap orthos;
     std::wofstream error;
+    std::wofstream oross;
 
     size_t partId;
     size_t tileId;
@@ -423,6 +427,7 @@ protected:
     std::map<std::wstring, size_t> loadStopDic(const std::string& dict);
     void loadGramms(std::vector<std::string> dics);
     void loadROS(const std::string& dict);
+    void loadOROSS(const std::string& dict);
     void loadMorph();
     void loadSymbolsMap(const std::string& symbols);
     void loadMorph(const std::string& foreign, const std::string& lemmata);

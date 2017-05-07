@@ -1,4 +1,4 @@
-#ifndef _GRAMMA_TREE_H_
+﻿#ifndef _GRAMMA_TREE_H_
 #define _GRAMMA_TREE_H_
 
 #ifdef _WINDOWS

@@ -1,4 +1,4 @@
-#ifdef _WINDOWS
+﻿#ifdef _WINDOWS
     #include "stdafx.h"
 #endif
 
@@ -125,6 +125,7 @@ long COROSSParser::Init(modeName Mode, const std::string& cfg)
         writeBOM(error);
         error.imbue(russian);
     }
+
     tagsBI.push_back(L"<b>");
     tagsBI.push_back(L"</b>");
     tagsBI.push_back(L"<i>");
@@ -190,6 +191,15 @@ long COROSSParser::Init(modeName Mode, const std::string& cfg)
 
     mode = Mode;
 
+    if (mode == OROSSConvert) {
+        oross.open(config["oross"], std::wofstream::binary);
+        if (oross.is_open()) {
+            writeBOM(oross);
+            oross.imbue(russian);
+        }
+        return 0;
+    }
+
     if (mode != ROSOnly)
         loadSearchData(LOAD_SEARCH);
     stopDic = loadStopDic(config["stop"]);
@@ -252,6 +262,14 @@ long COROSSParser::AddPart(const std::wstring& Name)
         curPart = parts.find(Name);
         partId++;
     }
+    return 0;
+}
+
+long COROSSParser::ReadOROSS(const std::string& Dic)
+{
+    if (paras.size() == 0)
+        loadSearchData(true);
+    loadOROSS(Dic);
     return 0;
 }
 
@@ -561,7 +579,7 @@ long COROSSParser::AddArticle(const std::wstring& Title, const std::wstring& Art
                 auto ait = articles.find(*it);
                 if (ait->second.title != title)
                     continue;
-                if (ait->second.src == art) {
+                if (ait->second.src == art && ait->second.state == ARTICLE_STATE_NEUTRAL) {
                     ait->second.state = ARTICLE_STATE_NEUTRAL;
                     found = true;
                 }
@@ -656,6 +674,16 @@ long COROSSParser::SaveTitle(const std::wstring& Title)
     }
     artId++;
 
+    return 0;
+}
+
+long COROSSParser::SaveArticle(const std::wstring& Title, const std::wstring& Article)
+{
+    std::wstring art(Article);
+    std::wstring title(Title);
+
+    oross << "a_title:\t" << title << std::endl;
+    oross << "a_text:\t" << art << std::endl;
     return 0;
 }
 
@@ -1055,7 +1083,7 @@ void COROSSParser::getFormulas(const std::wstring& article, const std::wstring& 
             size_t len_match = 0;
             std::wsmatch fmatch;
             for (fit; fit != oit->second.formulas.end(); ++fit) {
-                if (fit->second.search.length() == 0 || fit->second.min_len > src_len)
+                if (fit->second.search.length() == 0 || fit->second.min_len > src_len + 15) // ячий, охотничий
                     continue;
                 std::wstring formula(fit->second.search);
                 //formula.append(L"\\s*");

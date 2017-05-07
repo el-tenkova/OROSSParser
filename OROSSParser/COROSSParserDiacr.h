@@ -1,4 +1,4 @@
-#ifndef _DIACRITICS_MAP_H
+﻿#ifndef _DIACRITICS_MAP_H
 #define _DIACRITICS_MAP_H
 
 #include <map>

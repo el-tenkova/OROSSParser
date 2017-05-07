@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 
 #include "OROSSParser_i.h"
 #include "COROSSParserCOM.h"
@@ -30,6 +30,14 @@ STDMETHODIMP COROSSParserCOM::LoadWords(BSTR Dic, /*[out, retval]*/ long *hRes)
     std::wstring tmp(Dic);
     std::string path(tmp.begin(), tmp.end());
     *hRes = pureParser.LoadWords(path);
+    return *hRes;
+}
+
+STDMETHODIMP COROSSParserCOM::ReadOROSS(BSTR Dic, /*[out, retval]*/ long *hRes)
+{
+    std::wstring tmp(Dic);
+    std::string path(tmp.begin(), tmp.end());
+    *hRes = pureParser.ReadOROSS(path);
     return *hRes;
 }
 
@@ -109,6 +117,12 @@ STDMETHODIMP COROSSParserCOM::AddArticle( BSTR Title, BSTR Article, /*[out, retv
 STDMETHODIMP COROSSParserCOM::SaveTitle(BSTR Title, /*[out, retval]*/ long *hRes)
 {
     *hRes = pureParser.SaveTitle(Title);
+    return *hRes;
+}
+
+STDMETHODIMP COROSSParserCOM::SaveArticle(BSTR Title, BSTR Article, /*[out, retval]*/ long *hRes)
+{
+    *hRes = pureParser.SaveArticle(Title, Article);
     return *hRes;
 }
 

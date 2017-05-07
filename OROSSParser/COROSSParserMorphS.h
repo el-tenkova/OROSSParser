@@ -1,4 +1,4 @@
-#ifndef __OROSSPARSERMORPH_H_
+﻿#ifndef __OROSSPARSERMORPH_H_
 #define __OROSSPARSERMORPH_H_
 
 #ifdef _WINDOWS

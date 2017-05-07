@@ -1,4 +1,4 @@
-#ifdef _WINDOWS
+﻿#ifdef _WINDOWS
     #include "stdafx.h"
     #include <assert.h>
     #include <direct.h>

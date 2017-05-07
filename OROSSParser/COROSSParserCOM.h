@@ -1,4 +1,4 @@
-#ifndef __OROSSPARSER_H_
+﻿#ifndef __OROSSPARSER_H_
 #define __OROSSPARSER_H_
 
 #include <atlcom.h>
@@ -42,8 +42,10 @@ public:
 //    STDMETHOD(LoadDic)( BSTR Dic, /*[out, retval]*/ long *hRes );
     STDMETHOD(LoadArticles)( BSTR Dic, /*[out, retval]*/ long *hRes );
     STDMETHOD(LoadWords)( BSTR Dic, /*[out, retval]*/ long *hRes );
+    STDMETHOD(ReadOROSS)(BSTR Dic, /*[out, retval]*/ long *hRes);
     // Helpers
     STDMETHOD(SaveTitle)(BSTR Title, /*[out, retval]*/ long *hRes);
+    STDMETHOD(SaveArticle)(BSTR Title, BSTR Article, /*[out, retval]*/ long *hRes);
 
 protected:
 
