@@ -232,6 +232,7 @@ long COROSSParser::Terminate()
     }
     saveData(SAVE_SEARCH);
     saveWords();
+    saveDic();
     error.close();
     morph.Terminate();
     return 0;

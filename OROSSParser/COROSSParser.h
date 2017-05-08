@@ -418,6 +418,7 @@ protected:
     void saveForSearch();
     void presaveArticles(bool saveSearch = false);
     void saveArticles();
+    void saveDic();
     void saveWords();
     void saveGrammas();
 

@@ -445,6 +445,43 @@ void COROSSParser::saveArticles()
     }
 }
 
+void COROSSParser::saveDic()
+{
+    // save data for search in articles
+    std::wofstream dic(config["output"] + "dic.txt", std::wofstream::binary | std::wofstream::trunc);
+
+    if (dic.is_open()) {
+        writeBOM(dic);
+        dic.imbue(russian);
+        for (auto ait = articles.begin(); ait != articles.end(); ++ait) {
+            if (ait->second.state == ARTICLE_STATE_TO_DELETE)
+                continue;
+            //id, dic, title, text, rtf, src
+            std::wstring str(L"a_id:\t");
+            str.append(std::to_wstring(ait->second.id)); // id
+            str.append(L"\n");
+            str.append(L"a_dic:\t");
+            str.append(std::to_wstring(ait->second.dic)); // dic
+            str.append(L"\n");
+            str.append(L"a_title:\t"); // title
+            str.append(ait->second.title);
+            str.append(L"\n");
+            str.append(L"a_text:\t"); // text
+            str.append(ait->second.text);
+            str.append(L"\n");
+            str.append(L"a_src:\t"); // src
+            str.append(ait->second.src);
+            str.append(L"\n");
+            str.append(L"a_rtf:\t"); // rtf
+            str.append(ait->second.rtf);
+            str.append(L"\n");
+            dic.write(str.c_str(), str.length());
+            str.clear();
+        }
+        dic.close();
+    }
+}
+
 void COROSSParser::makeSQL()
 {
     std::wofstream result_contents(config["output"] + "import_contents.sql", std::wofstream::binary);
