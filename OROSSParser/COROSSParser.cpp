@@ -613,7 +613,7 @@ long COROSSParser::AddArticle(const std::wstring& Title, const std::wstring& Art
         }
     }
     if (mode == Create || found == false) {
-        article ca = { artId, dicOROSS, title, art, art, toRTF(art) };
+        article ca = { artId, dicOROSS, title, art, art, L"" }; //toRTF(art) };
 
         ca.state = ARTICLE_STATE_NEW;
 

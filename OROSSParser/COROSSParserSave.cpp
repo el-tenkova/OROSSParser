@@ -382,9 +382,12 @@ void COROSSParser::saveArticles()
             str.append(L"a_src:\t"); // src
             str.append(ait->second.src);
             str.append(L"\n");
-            str.append(L"a_rtf:\t"); // rtf
-            str.append(ait->second.rtf);
-            str.append(L"\n");
+/*            str.append(L"a_rtf:\t"); // rtf
+            if (ait->second.rtf.length() == 0)
+                str.append(toRTF(ait->second.src));
+            else
+                str.append(ait->second.rtf);
+            str.append(L"\n"); */
             str.append(L"a_tl:\t");
             str.append(std::to_wstring(ait->second.titleLen)); // id
             str.append(L"\n");
@@ -472,9 +475,12 @@ void COROSSParser::saveDic()
             str.append(L"a_src:\t"); // src
             str.append(ait->second.src);
             str.append(L"\n");
-            str.append(L"a_rtf:\t"); // rtf
-            str.append(ait->second.rtf);
-            str.append(L"\n");
+/*            str.append(L"a_rtf:\t"); // rtf
+            if (ait->second.rtf.length() == 0)
+                str.append(toRTF(ait->second.src));
+            else
+                str.append(ait->second.rtf);
+            str.append(L"\n");*/
             dic.write(str.c_str(), str.length());
             str.clear();
         }

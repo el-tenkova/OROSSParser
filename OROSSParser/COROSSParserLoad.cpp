@@ -254,7 +254,7 @@ void COROSSParser::loadDic(const std::string& dict)
                 ca.src = parts[1];
             }
             else if (parts[0] == L"a_rtf:") {
-                ca.rtf = parts[1];
+                ca.rtf = L""; //parts[1];
             }
             else if (parts[0] == L"a_tl:") {
                 ca.titleLen = std::stol(parts[1]);
@@ -461,7 +461,7 @@ void COROSSParser::loadROS(const std::string& dict) {
 
 //            std::map<std::wstring, size_t> art_titles;
             // make article and add it to articles
-            article ca = { artId, dicROS, L"", str, src, toRTF(src) };
+            article ca = { artId, dicROS, L"", str, src, L"" }; //toRTF(src) };
             ca.state = ARTICLE_STATE_NEW;
             pos = str.find(L"<b>");
             std::wstring title;
