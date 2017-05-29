@@ -15,6 +15,8 @@ import "ocidl.idl";
         AddROS,
         ROSOnly,
         OROSSConvert,
+        PreView,
+        WebUpdate,
     }modeName;
 
 
@@ -46,6 +48,7 @@ import "ocidl.idl";
         [id(16), helpstring("method LoadWords")] HRESULT LoadWords(BSTR Dic, [out, retval] long *hRes);
         [id(17), helpstring("method SaveTitle")] HRESULT SaveTitle(BSTR Title, [out, retval] long *hRes);
         [id(18), helpstring("method SaveArticle")] HRESULT SaveArticle(BSTR Title, BSTR Article, [out, retval] long *hRes);
+        [id(19), helpstring("method PreViewArticle")] HRESULT PreViewArticle([out, retval] long *hRes);
     };
 
 [

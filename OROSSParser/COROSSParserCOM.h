@@ -46,6 +46,8 @@ public:
     // Helpers
     STDMETHOD(SaveTitle)(BSTR Title, /*[out, retval]*/ long *hRes);
     STDMETHOD(SaveArticle)(BSTR Title, BSTR Article, /*[out, retval]*/ long *hRes);
+    // web routine
+    STDMETHOD(PreViewArticle)(/*[out, retval]*/ long *hRes);
 
 protected:
 

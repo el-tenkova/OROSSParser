@@ -293,6 +293,8 @@ public:
         AddROS,
         ROSOnly,
         OROSSConvert,
+        PreView,
+        WebUpdate,
     };
 
     COROSSParser() :
@@ -351,6 +353,9 @@ public:
     // Helpers
     long SaveTitle(const std::wstring& Title);
     long SaveArticle(const std::wstring& Title, const std::wstring& Article);
+    // web routine
+    long PreViewArticle();
+
 
 protected:
     modeName mode;
@@ -496,6 +501,7 @@ protected:
     size_t getPureLen(const std::wstring& pure);
     void correctSubst(substMap& subst);
     size_t checkToSkip(const std::wstring& interval, const size_t& start);
+    size_t artTitle(const std::wstring& article);
 
     void checkForGramms(COROSSGrammaTree& grDic, grammMap& gramms, size_t& grId, artMap::iterator& ait, std::vector<size_t>& art_gramms, const std::vector<std::wstring>& art_words);
     void checkForBigramms(artMap::iterator& ait, const std::vector<std::wstring>& art_words);

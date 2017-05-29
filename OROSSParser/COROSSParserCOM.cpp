@@ -126,3 +126,8 @@ STDMETHODIMP COROSSParserCOM::SaveArticle(BSTR Title, BSTR Article, /*[out, retv
     return *hRes;
 }
 
+STDMETHODIMP COROSSParserCOM::PreViewArticle(/*[out, retval]*/ long *hRes)
+{
+    *hRes = pureParser.PreViewArticle();
+    return *hRes;
+}

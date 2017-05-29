@@ -95,6 +95,10 @@ long COROSSParser::Init(modeName Mode)
 
     if (mode != ROSOnly)
         loadSearchData(LOAD_SEARCH);
+
+    if (mode == PreView)
+        return res;
+
     stopDic = loadStopDic("c:\\IRYA\\OROSSParser\\Data\\stop.txt");
     stopLabelDic = loadStopDic("c:\\IRYA\\OROSSParser\\Data\\stop_l.txt");
     std::vector<std::string> grDics;
@@ -202,6 +206,8 @@ long COROSSParser::Init(modeName Mode, const std::string& cfg)
 
     if (mode != ROSOnly)
         loadSearchData(LOAD_SEARCH);
+    if (mode == PreView)
+        return res;
     stopDic = loadStopDic(config["stop"]);
     stopLabelDic = loadStopDic(config["stop_l"]);
     std::vector<std::string> grDics;
@@ -271,6 +277,41 @@ long COROSSParser::ReadOROSS(const std::string& Dic)
     if (paras.size() == 0)
         loadSearchData(true);
     loadOROSS(Dic);
+    return 0;
+}
+
+long COROSSParser::PreViewArticle()
+{
+    std::wifstream pre_in(config["pre_in"], std::wifstream::binary);
+    size_t idx = 0;
+    if (pre_in.is_open()) {
+        pre_in.imbue(russian);
+        pre_in.seekg(3);
+        std::wstring key;
+        while (!pre_in.eof()) {
+            std::wstring str(L"");
+            std::getline(pre_in, str);
+            str = str.substr(0, str.length() - 1);
+            if (str.length() == 0)
+                continue;
+
+            size_t titleLen = artTitle(str);
+            std::wstring title = str.substr(0, titleLen);
+            AddArticle(title, str);
+            auto ait = articles.begin();
+            processArticle(ait->second);
+            std::wofstream pre_out(config["pre_out"], std::wofstream::binary | std::wofstream::trunc);
+            if (pre_out.is_open()) {
+                writeBOM(pre_out);
+                pre_out.imbue(russian);
+                pre_out.write(ait->second.text.c_str(), ait->second.text.length());
+                pre_out.close();
+            }
+            break;
+        }
+        pre_in.close();
+
+    }
     return 0;
 }
 

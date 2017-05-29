@@ -1367,3 +1367,38 @@ void COROSSParser::writeBOM(std::wofstream& stream)
     stream.flush();
 }
 
+size_t COROSSParser::artTitle(const std::wstring& article)
+{
+    std::wstring str(article);
+    std::wregex search(L"\\<b\\>(.*?)\\</b\\>");
+    std::regex_iterator<std::wstring::iterator> rit(str.begin(), str.end(), search);
+    std::regex_iterator<std::wstring::iterator> rend;
+    size_t len = 0;
+    bool done = false;
+    while (rit != rend) {
+        if (len == 0) {
+            len += (*rit)[0].length();
+            ++rit;
+            continue;
+        }
+        else {
+            std::wstring match((*rit)[0]);
+            std::wstring prefix((*rit).prefix());
+            for (auto cit = prefix.begin(); cit != prefix.end(); ++cit) {
+                if ((*cit) != L' ' && (*cit) != L',' && (*cit) != L'-' &&
+                    (*cit) != L'…' && (*cit) != L'\u2013' && (*cit) != '\u2014' &&
+                    (*cit) != L'\u0438'){
+                    done = true;
+                    break;
+                }
+            }
+        }
+        if (done == true)
+            break;
+        len += (*rit).prefix().length();
+        len += (*rit)[0].length();
+        ++rit;
+    }
+    return len;
+}
+
