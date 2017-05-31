@@ -1361,10 +1361,12 @@ bool COROSSParser::isStopLabel(const std::wstring& key, const std::wstring inter
 void COROSSParser::writeBOM(std::wofstream& stream)
 {
  //   std::string bom(u8"\uEFBBBF");
+#ifdef _WINDOWS    
     stream.put(0xEF);
     stream.put(0xBB);
     stream.put(0xBF);
     stream.flush();
+#endif    
 }
 
 size_t COROSSParser::artTitle(const std::wstring& article)
@@ -1386,7 +1388,7 @@ size_t COROSSParser::artTitle(const std::wstring& article)
             std::wstring prefix((*rit).prefix());
             for (auto cit = prefix.begin(); cit != prefix.end(); ++cit) {
                 if ((*cit) != L' ' && (*cit) != L',' && (*cit) != L'-' &&
-                    (*cit) != L'…' && (*cit) != L'\u2013' && (*cit) != '\u2014' &&
+                    (*cit) != L'…' && (*cit) != L'\u2013' && (*cit) != L'\u2014' &&
                     (*cit) != L'\u0438'){
                     done = true;
                     break;
