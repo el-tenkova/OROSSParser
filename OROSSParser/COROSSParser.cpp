@@ -283,31 +283,32 @@ long COROSSParser::ReadOROSS(const std::string& Dic)
 long COROSSParser::PreViewArticle()
 {
     std::wifstream pre_in(config["pre_in"], std::wifstream::binary);
+    std::cout << config["pre_in"] << std::endl;
     size_t idx = 0;
     if (pre_in.is_open()) {
         pre_in.imbue(russian);
-        pre_in.seekg(3);
-        std::wstring key;
+        //pre_in.seekg(3);
+        std::wstring article(L"");
         while (!pre_in.eof()) {
             std::wstring str(L"");
             std::getline(pre_in, str);
-            str = str.substr(0, str.length() - 1);
+//            str = str.substr(0, str.length() - 1);
             if (str.length() == 0)
                 continue;
-
-            size_t titleLen = artTitle(str);
-            std::wstring title = str.substr(0, titleLen);
-            AddArticle(title, str);
-            auto ait = articles.begin();
-            processArticle(ait->second);
-            std::wofstream pre_out(config["pre_out"], std::wofstream::binary | std::wofstream::trunc);
-            if (pre_out.is_open()) {
-                writeBOM(pre_out);
-                pre_out.imbue(russian);
-                pre_out.write(ait->second.text.c_str(), ait->second.text.length());
-                pre_out.close();
-            }
-            break;
+            article.append(str);
+        }
+        size_t titleLen = artTitle(article);
+        std::wstring title = article.substr(0, titleLen);
+        AddArticle(title, article);
+        auto ait = articles.begin();
+        processArticle(ait->second);
+        std::cout << config["pre_out"] << std::endl;
+        std::wofstream pre_out(config["pre_out"], std::wofstream::binary | std::wofstream::trunc);
+        if (pre_out.is_open()) {
+            writeBOM(pre_out);
+            pre_out.imbue(russian);
+            pre_out.write(ait->second.text.c_str(), ait->second.text.length());
+            pre_out.close();
         }
         pre_in.close();
 
