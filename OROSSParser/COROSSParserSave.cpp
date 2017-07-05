@@ -359,6 +359,89 @@ void COROSSParser::saveWords()
     }
 }
 
+void COROSSParser::saveROSArticle(std::wofstream& arts, const artMap::iterator& ait)
+{
+    std::wstring str(L"a:\t");
+    str.append(std::to_wstring(ait->second.id)); // id
+    str.append(L"\n");
+    str.append(std::to_wstring(ait->second.dic)); //dic
+    str.append(L"\n");
+    str.append(L"a_src:\t"); // src
+    str.append(ait->second.src);
+    str.append(L"\n");
+    arts.write(str.c_str(), str.length());
+}
+
+void COROSSParser::saveOROSSArticle(std::wofstream& arts, const artMap::iterator& ait, const bool& dic)
+{
+    std::wstring str(L"a:\t");
+    str.append(std::to_wstring(ait->second.id)); // id
+    if (dic) {
+        str.append(L"\n");
+        str.append(std::to_wstring(ait->second.dic)); //dic
+    }
+    str.append(L"\n");
+    str.append(L"a_title:\t"); // title
+    str.append(ait->second.title);
+    str.append(L"\n");
+    str.append(L"a_text:\t"); // text
+    str.append(ait->second.text);
+    str.append(L"\n");
+    str.append(L"a_src:\t"); // src
+    str.append(ait->second.src);
+    str.append(L"\n");
+    /*            str.append(L"a_rtf:\t"); // rtf
+    if (ait->second.rtf.length() == 0)
+    str.append(toRTF(ait->second.src));
+    else
+    str.append(ait->second.rtf);
+    str.append(L"\n"); */
+    str.append(L"a_tl:\t");
+    str.append(std::to_wstring(ait->second.titleLen)); // id
+    str.append(L"\n");
+    arts.write(str.c_str(), str.length());
+    // formulas
+    if (ait->second.formulas.size() != 0) {
+        str.clear();
+        str.append(L"a_f:\t");
+        for (auto fit = ait->second.formulas.begin(); fit != ait->second.formulas.end(); ++fit) {
+            str.append(std::to_wstring((*fit)));
+            str.append(L",");
+        }
+        str[str.length() - 1] = L'\n';
+        arts.write(str.c_str(), str.length());
+    }
+    // orthos
+    if (ait->second.orthos.size() != 0) {
+        str.clear();
+        str.append(L"a_o:\t");
+        for (auto oit = ait->second.orthos.begin(); oit != ait->second.orthos.end(); ++oit) {
+            str.append(std::to_wstring((*oit)));
+            str.append(L",");
+        }
+        str[str.length() - 1] = L'\n';
+        arts.write(str.c_str(), str.length());
+    }
+    // dummy
+    if (ait->second.index.size() != 0) {
+        // one line for each dummy
+        for (auto cit = ait->second.index.begin(); cit != ait->second.index.end(); ++cit) {
+            str.clear();
+            str.append(L"a_d:\t");
+            str.append(std::to_wstring(cit->start));
+            str.append(L",");
+            if (cit->len == std::wstring::npos)
+                str.append(L"-1");
+            else
+                str.append(std::to_wstring(cit->len));
+            str.append(L",");
+            str.append(std::wstring(1, cit->type));
+            str.append(L"\n");
+            arts.write(str.c_str(), str.length());
+        }
+    }
+}
+
 void COROSSParser::saveArticles()
 {
     // save data for search in articles
@@ -370,79 +453,7 @@ void COROSSParser::saveArticles()
         for (auto ait = articles.begin(); ait != articles.end(); ++ait) {
             if (ait->second.dic != dicOROSS || ait->second.state == ARTICLE_STATE_TO_DELETE)
                 continue;
-            std::wstring str(L"a:\t");
-            str.append(std::to_wstring(ait->second.id)); // id
-            str.append(L"\n");
-            str.append(L"a_title:\t"); // title
-            str.append(ait->second.title);
-            str.append(L"\n");
-            str.append(L"a_text:\t"); // text
-            str.append(ait->second.text);
-            str.append(L"\n");
-            str.append(L"a_src:\t"); // src
-            str.append(ait->second.src);
-            str.append(L"\n");
-/*            str.append(L"a_rtf:\t"); // rtf
-            if (ait->second.rtf.length() == 0)
-                str.append(toRTF(ait->second.src));
-            else
-                str.append(ait->second.rtf);
-            str.append(L"\n"); */
-            str.append(L"a_tl:\t");
-            str.append(std::to_wstring(ait->second.titleLen)); // id
-            str.append(L"\n");
-            arts.write(str.c_str(), str.length());
-            // formulas
-            if (ait->second.formulas.size() != 0) {
-                str.clear();
-                str.append(L"a_f:\t");
-                for (auto fit = ait->second.formulas.begin(); fit != ait->second.formulas.end(); ++fit) {
-                    str.append(std::to_wstring((*fit)));
-                    str.append(L",");
-                }
-                str[str.length() - 1] = L'\n';
-                arts.write(str.c_str(), str.length());
-            }
-            // orthos
-            if (ait->second.orthos.size() != 0) {
-                str.clear();
-                str.append(L"a_o:\t");
-                for (auto oit = ait->second.orthos.begin(); oit != ait->second.orthos.end(); ++oit) {
-                    str.append(std::to_wstring((*oit)));
-                    str.append(L",");
-                }
-                str[str.length() - 1] = L'\n';
-                arts.write(str.c_str(), str.length());
-            }
-            // comments
-/*            if (ait->second.comments.size() != 0) {
-                str.clear();
-                str.append(L"a_c:\t");
-                for (auto cit = ait->second.comments.begin(); cit != ait->second.comments.end(); ++cit) {
-                    str.append(std::to_wstring((*cit)));
-                    str.append(L",");
-                }
-                str[str.length() - 1] = L'\n';
-                arts.write(str.c_str(), str.length());
-            } */
-            // dummy
-            if (ait->second.index.size() != 0) {
-                // one line for each dummy
-                for (auto cit = ait->second.index.begin(); cit != ait->second.index.end(); ++cit) {
-                    str.clear();
-                    str.append(L"a_d:\t");
-                    str.append(std::to_wstring(cit->start));
-                    str.append(L",");
-                    if (cit->len == std::wstring::npos)
-                        str.append(L"-1");
-                    else
-                        str.append(std::to_wstring(cit->len));
-                    str.append(L",");
-                    str.append(std::wstring(1, cit->type));
-                    str.append(L"\n");
-                    arts.write(str.c_str(), str.length());
-                }
-            }
+            saveOROSSArticle(arts, ait);
         }
         arts.close();
     }
@@ -459,30 +470,10 @@ void COROSSParser::saveDic()
         for (auto ait = articles.begin(); ait != articles.end(); ++ait) {
             if (ait->second.state == ARTICLE_STATE_TO_DELETE)
                 continue;
-            //id, dic, title, text, rtf, src
-            std::wstring str(L"a_id:\t");
-            str.append(std::to_wstring(ait->second.id)); // id
-            str.append(L"\n");
-            str.append(L"a_dic:\t");
-            str.append(std::to_wstring(ait->second.dic)); // dic
-            str.append(L"\n");
-            str.append(L"a_title:\t"); // title
-            str.append(ait->second.title);
-            str.append(L"\n");
-            str.append(L"a_text:\t"); // text
-            str.append(ait->second.text);
-            str.append(L"\n");
-            str.append(L"a_src:\t"); // src
-            str.append(ait->second.src);
-            str.append(L"\n");
-/*            str.append(L"a_rtf:\t"); // rtf
-            if (ait->second.rtf.length() == 0)
-                str.append(toRTF(ait->second.src));
+            if (ait->second.dic == dicOROSS)
+                saveOROSSArticle(dic, ait, true);
             else
-                str.append(ait->second.rtf);
-            str.append(L"\n");*/
-            dic.write(str.c_str(), str.length());
-            str.clear();
+                saveROSArticle(dic, ait);
         }
         dic.close();
     }
