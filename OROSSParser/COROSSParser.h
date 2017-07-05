@@ -526,6 +526,8 @@ protected:
     void replaceArtId(article& a, std::wstring& article, const size_t& curId, const size_t newId);
     bool isStopLabel(const std::wstring& key, const std::wstring interval, const size_t start, const wchar_t type);
     void writeBOM(std::wofstream& stream);
+    void saveOROSSArticle(std::wofstream& arts, const artMap::iterator& ait, const bool& dic = false);
+    void saveROSArticle(std::wofstream& arts, const artMap::iterator& ait);
 };
 
 #endif //__OROSSPARSERPURE_H_
