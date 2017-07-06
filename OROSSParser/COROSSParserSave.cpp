@@ -364,6 +364,7 @@ void COROSSParser::saveROSArticle(std::wofstream& arts, const artMap::iterator& 
     std::wstring str(L"a:\t");
     str.append(std::to_wstring(ait->second.id)); // id
     str.append(L"\n");
+    str.append(L"a_dic:\t"); // dic    
     str.append(std::to_wstring(ait->second.dic)); //dic
     str.append(L"\n");
     str.append(L"a_src:\t"); // src
@@ -378,6 +379,7 @@ void COROSSParser::saveOROSSArticle(std::wofstream& arts, const artMap::iterator
     str.append(std::to_wstring(ait->second.id)); // id
     if (dic) {
         str.append(L"\n");
+        str.append(L"a_dic:\t"); // dic
         str.append(std::to_wstring(ait->second.dic)); //dic
     }
     str.append(L"\n");
