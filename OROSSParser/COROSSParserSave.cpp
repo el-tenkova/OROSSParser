@@ -361,11 +361,11 @@ void COROSSParser::saveWords()
 
 void COROSSParser::saveROSArticle(std::wofstream& arts, const artMap::iterator& ait)
 {
-    std::wstring str(L"a:\t");
-    str.append(std::to_wstring(ait->second.id)); // id
-    str.append(L"\n");
-    str.append(L"a_dic:\t"); // dic    
+    std::wstring str(L"a_dic:\t");
     str.append(std::to_wstring(ait->second.dic)); //dic
+    str.append(L"\n");
+    str.append(L"a:\t");
+    str.append(std::to_wstring(ait->second.id)); // id
     str.append(L"\n");
     str.append(L"a_src:\t"); // src
     str.append(ait->second.src);
@@ -375,13 +375,14 @@ void COROSSParser::saveROSArticle(std::wofstream& arts, const artMap::iterator& 
 
 void COROSSParser::saveOROSSArticle(std::wofstream& arts, const artMap::iterator& ait, const bool& dic)
 {
-    std::wstring str(L"a:\t");
-    str.append(std::to_wstring(ait->second.id)); // id
+    std::wstring str;
     if (dic) {
-        str.append(L"\n");
         str.append(L"a_dic:\t"); // dic
         str.append(std::to_wstring(ait->second.dic)); //dic
+        str.append(L"\n");
     }
+    str.append(L"a:\t");
+    str.append(std::to_wstring(ait->second.id)); // id
     str.append(L"\n");
     str.append(L"a_title:\t"); // title
     str.append(ait->second.title);
