@@ -219,13 +219,18 @@ long COROSSParser::Init(modeName Mode, const std::string& cfg)
     loadMorph(config["foreign"], config["lemmata"]);
 
     //loadWords();
-
     if (mode == AddROS || mode == ROSOnly) {
         loadROS(config["ROS_2012"]);
     }
-    if (mode != Create && mode != ROSOnly) {
+    else if (mode == WebUpdate) {
+        loadAll();
+    }
+    else if (mode != Create && mode != ROSOnly) {
         loadDic(config["arts"]);
     }
+
+
+
     return res;
 }
 

@@ -348,6 +348,162 @@ std::map<std::wstring, size_t> COROSSParser::loadStopDic(const std::string& dict
     return dic;
 }
 
+wchar_t COROSSParser::loadROSArticle(std::wifstream& ros)
+{
+    article ca;
+    ca.clear();
+    ca.state = ARTICLE_STATE_NEUTRAL;
+    ca.id = 0;
+    while (!ros.eof()) {
+        std::wstring str(L"");
+        std::getline(ros, str);
+        if (str.length() == 0)
+            continue;
+        std::vector<std::wstring> parts = split(str, L'\t');
+        if (parts[0] == L"a_dic:") {
+            // add article
+            if (parts[1] == L"49")
+                return dicROS;
+            return dicOROSS;
+        }
+        if (parts[0] == L"a:") {
+            ca.id = std::stol(parts[1]);
+        }
+        else if (parts[0] == L"a_src:") {
+            {
+                std::wregex search(L"\\<b\\>(\\<i\\>)*\\-*\\u2013*\\u2014*(\\</i\\>)*\\</b\\>");
+
+                std::regex_iterator<std::wstring::iterator> rit(str.begin(), str.end(), search);
+                std::regex_iterator<std::wstring::iterator> rend;
+                std::wstring tmp(L"");
+                std::wstring suffix(L"");
+                while (rit != rend) {
+                    tmp.append((*rit).prefix());
+                    std::wstring match((*rit)[0]);
+                    if (match.find(L'\u2013') != std::wstring::npos)
+                        tmp.append(L"\u2013");
+                    else if (match.find(L'\u2014') != std::wstring::npos)
+                        tmp.append(L"\u2014");
+                    else
+                        tmp.append(L"-");
+                    suffix.clear();
+                    suffix.append((*rit).suffix());
+                    ++rit;
+                }
+                if (tmp.length() != 0) {
+                    str.clear();
+                    str.append(tmp);
+                    str.append(suffix);
+                }
+            }
+            size_t pos = str.find(L"<b></b>");
+            while (pos != std::wstring::npos) {
+                str.replace(pos, 7, L"");
+                pos = str.find(L"<b></b>", pos + 1);
+            }
+            pos = str.find(L"<b>)</b>");
+            while (pos != std::wstring::npos) {
+                str.replace(pos, 8, L"");
+                pos = str.find(L"<b>)</b>", pos + 1);
+            }
+            {
+                std::wregex search(L"\\</b\\>\\s+([\\-|\\u2013|\\u2014]\\s)*\\<b\\>");
+
+                std::regex_iterator<std::wstring::iterator> rit(str.begin(), str.end(), search);
+                std::regex_iterator<std::wstring::iterator> rend;
+                std::wstring tmp(L"");
+                std::wstring suffix(L"");
+                while (rit != rend) {
+                    tmp.append((*rit).prefix());
+                    if (rit->size() > 1 && (*rit)[1].matched == true) {
+                        std::wstring match((*rit)[1]);
+                        if (match.find(L'\u2013') != std::wstring::npos)
+                            tmp.append(L" \u2013 ");
+                        else if (match.find(L'\u2014') != std::wstring::npos)
+                            tmp.append(L" \u2014 ");
+                        else
+                            tmp.append(L" - ");
+                    }
+                    else {
+                        tmp.append(L" ");
+                    }
+                    suffix.clear();
+                    suffix.append((*rit).suffix());
+                    ++rit;
+                }
+                if (tmp.length() != 0) {
+                    str.clear();
+                    str.append(tmp);
+                    str.append(suffix);
+                }
+            }
+            // span class=title
+            std::wstring src(str);
+            pos = str.find(L"<b>");
+            while (pos != std::wstring::npos) {
+                str.replace(pos, 0, tagsTitle[0]);
+                pos = str.find(L"<b>", pos + tagsTitle[0].length() + 1);
+            }
+            pos = str.find(L"</b>");
+            while (pos != std::wstring::npos) {
+                str.replace(pos + 4, 0, tagsTitle[1]);
+                pos = str.find(L"</b>", pos + tagsTitle[1].length() + 1);
+            }
+            pos = str.find(L"<b>");
+            std::wstring title;
+            while (pos != std::wstring::npos) {
+                size_t pos1 = str.find(L"</b>", pos + 1);
+                if (pos1 != std::wstring::npos) {
+                    std::wstring title_l = str.substr(pos, pos1 - pos);
+                    replaceSup(title_l);
+                    prepareTitle(title_l);
+                    if (ca.title.length() == 0)
+                        ca.title = title_l;
+                    prepareSearchTitle(title_l);
+                    removeParentheses(title_l);
+                    if (title_l.length() > 0) {
+                        if (title.length() == 0)
+                            title.append(title_l);
+                        dummy cd = { pos, pos1 - pos + 4, titleWord };
+                        if (ca.index.size() == 0) {
+                            ca.index.push_back(cd);
+                        }
+                        else {
+                            dummy prev;
+                            prev.start = (*(ca.index.end() - 1)).start + (*(ca.index.end() - 1)).len;
+                            prev.len = pos - prev.start - tagsTitle[0].length();
+                            prev.type = articleWord;
+                            ca.index.push_back(prev);
+                            ca.index.push_back(cd);
+                        }
+                    }
+                }
+                pos = str.find(tagsTitle[0], pos1);
+                if (pos != std::wstring::npos) {
+                    pos += tagsTitle[0].length();
+                }
+            }
+            if (ca.index.size() > 0 && (*(ca.index.end() - 1)).start + (*(ca.index.end() - 1)).len < str.length()) {
+                ca.index.push_back({ (*(ca.index.end() - 1)).start + (*(ca.index.end() - 1)).len, std::wstring::npos, articleWord });
+            }
+            articles.insert(std::pair<size_t, article>(ca.id, ca));
+            auto tit = titles.find((title));
+            if (tit == titles.end()) {
+                std::vector<size_t> artVct;
+                artVct.push_back(ca.id);
+                titles.insert(std::pair<std::wstring, std::vector<size_t> >(title, artVct));
+            }
+            else {
+                tit->second.push_back(ca.id);
+            }
+/*            for (auto dit = ca.index.begin(); dit != ca.index.end(); ++dit) {
+                std::wstring interval = ca.text.substr(dit->start, dit->len);
+            }*/
+        }
+    }
+    return dicROS;
+}
+
 void COROSSParser::loadROS(const std::string& dict) {
 
     // load data to search in articles
@@ -528,6 +684,99 @@ void COROSSParser::loadROS(const std::string& dict) {
     }
 }
 
+wchar_t COROSSParser::loadOROSSArticle(std::wifstream& arts)
+{
+    article ca;
+    ca.clear();
+    ca.id = 0;
+    ca.dic = dicOROSS;
+    ca.state = ARTICLE_STATE_NEUTRAL;
+    while (!arts.eof()) {
+        std::wstring str(L"");
+        std::getline(arts, str);
+        if (str.length() == 0)
+            continue;
+        std::vector<std::wstring> parts = split(str, L'\t');
+        if (parts[0] == L"a_dic:") {
+            // add article
+            articles.insert(std::pair<size_t, article>(ca.id, ca));
+            std::wstring title_l(ca.title);
+            prepareSearchTitle(title_l);
+            auto tit = titles.find(title_l);
+            if (tit == titles.end()) {
+                std::vector<size_t> artVct;
+                artVct.push_back(ca.id);
+                titles.insert(std::pair<std::wstring, std::vector<size_t> >(title_l, artVct));
+            }
+            else {
+                tit->second.push_back(ca.id);
+            }
+            if (parts[1] == L"50")
+                return dicOROSS;
+            return dicROS;
+        }
+        if (parts[0] == L"a:") {
+            ca.id = std::stol(parts[1]);
+        }
+        else if (parts[0] == L"a_title:") {
+            ca.title = parts[1];
+            size_t pos = ca.title.find(L"\u0301");
+            while (pos != std::wstring::npos) {
+                ca.title.replace(pos, 1, L"");
+                pos = ca.title.find(L"\u0301", pos + 1);
+            }
+        }
+        else if (parts[0] == L"a_text:") {
+            ca.text = parts[1];
+        }
+        else if (parts[0] == L"a_src:") {
+            ca.src = parts[1];
+        }
+        else if (parts[0] == L"a_rtf:") {
+            ca.rtf = L""; //parts[1];
+        }
+        else if (parts[0] == L"a_tl:") {
+            ca.titleLen = std::stol(parts[1]);
+        }
+        else if (parts[0] == L"a_f:") {
+            std::vector<std::wstring> formulas = split(parts[1], L',');
+            for (auto it = formulas.begin(); it != formulas.end(); ++it) {
+                ca.formulas.push_back(std::stol(*it));
+            }
+        }
+        else if (parts[0] == L"a_o:") {
+            std::vector<std::wstring> orthos = split(parts[1], L',');
+            for (auto it = orthos.begin(); it != orthos.end(); ++it) {
+                ca.orthos.push_back(std::stol(*it));
+            }
+        }
+        else if (parts[0] == L"a_d:") {
+            dummy cd;
+            std::vector<std::wstring> p = split(parts[1], L',');
+            cd.start = std::stol(p[0]);
+            cd.len = p[1] == L"-1" ? std::wstring::npos : std::stol(p[1]);
+            cd.type = (char)p[2][0];
+            ca.index.push_back(cd);
+        }
+    }
+    if (ca.id != 0) {
+        ca.state = ARTICLE_STATE_NEUTRAL;
+        articles.insert(std::pair<size_t, article>(ca.id, ca));
+        std::wstring title_l(ca.title);
+        prepareSearchTitle(title_l);
+        auto tit = titles.find(title_l);
+        if (tit == titles.end()) {
+            std::vector<size_t> artVct;
+            artVct.push_back(ca.id);
+            titles.insert(std::pair<std::wstring, std::vector<size_t> >(title_l, artVct));
+        }
+        else {
+            tit->second.push_back(ca.id);
+        }
+        artId = ca.id;
+    }
+    return dicROS;
+}
 void COROSSParser::loadOROSS(const std::string& dict) {
 
     // load data to search in articles
@@ -576,6 +825,34 @@ void COROSSParser::loadOROSS(const std::string& dict) {
 //                break;
         }
         arts.close();
+    }
+}
+
+void COROSSParser::loadAll()
+{
+    std::wifstream dic(config["dic"], std::wifstream::binary);
+    if (dic.is_open()) {
+        dic.imbue(russian);
+        //dic.seekg(3);
+        std::wstring str(L"");
+        while (!dic.eof()) {
+            std::getline(dic, str);
+            if (str.length() == 0)
+                continue;
+            if (str.find(L"a_dic:") == 0)
+                break;
+        }
+        wchar_t dictype = dicOROSS;
+        std::vector<std::wstring> parts = split(str, L'\t');
+        if (parts[1] == L"49")
+            dictype = dicROS;
+        while (!dic.eof()) {
+            if (dictype == dicOROSS)
+                dictype = loadOROSSArticle(dic);
+            else
+                dictype = loadROSArticle(dic);
+        }
+        dic.close();
     }
 }
 

@@ -434,6 +434,9 @@ protected:
     void loadGramms(std::vector<std::string> dics);
     void loadROS(const std::string& dict);
     void loadOROSS(const std::string& dict);
+    void loadAll();
+    wchar_t loadOROSSArticle(std::wifstream& arts);
+    wchar_t loadROSArticle(std::wifstream& ros);
     void loadMorph();
     void loadSymbolsMap(const std::string& symbols);
     void loadMorph(const std::string& foreign, const std::string& lemmata);
