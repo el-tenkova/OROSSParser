@@ -6,6 +6,8 @@
 #include <vector>
 #include <sstream>
 #include <iterator>
+#include <cstdlib>
+#include <iostream>
 
 #include "COROSSParserCfg.h"
 
@@ -60,6 +62,9 @@ void COROSSParserCfg::load(const std::string& cfgFile)
 
         }
         config.close();
+        for (auto it = configMap.begin(); it != configMap.end(); ++it) {
+            std::cout << it->first << " : " << it->second << std::endl;
+        }
     }
 }
 
