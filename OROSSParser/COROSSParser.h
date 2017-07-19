@@ -264,6 +264,12 @@ private:
         Articles
     };
 
+    enum actionType {
+        Nothing = 0,
+        Delete = 2,
+        NewArt = 4,
+        Edited = 5
+    };
     const std::wstring str_words;
     const std::wstring str_words_articles;
     const std::wstring str_words_tutorial;
@@ -435,8 +441,10 @@ protected:
     void loadROS(const std::string& dict);
     void loadOROSS(const std::string& dict);
     void loadAll();
+    void applyChanges();
     wchar_t loadOROSSArticle(std::wifstream& arts);
     wchar_t loadROSArticle(std::wifstream& ros);
+    void fillROSArticle(const std::wstring& str, article& ca);
     void loadMorph();
     void loadSymbolsMap(const std::string& symbols);
     void loadMorph(const std::string& foreign, const std::string& lemmata);
