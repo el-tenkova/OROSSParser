@@ -203,7 +203,7 @@ void COROSSParser::loadDic(const std::string& dict)
 
     if (arts.is_open()) {
         arts.imbue(russian);
-        arts.seekg(3);
+//        arts.seekg(3);
         std::wstring key;
         article ca;
         ca.id = 0;
@@ -354,6 +354,7 @@ wchar_t COROSSParser::loadROSArticle(std::wifstream& ros)
     ca.clear();
     ca.state = ARTICLE_STATE_NEUTRAL;
     ca.id = 0;
+    ca.dic = dicROS;
     while (!ros.eof()) {
         std::wstring str(L"");
         std::getline(ros, str);
@@ -371,6 +372,8 @@ wchar_t COROSSParser::loadROSArticle(std::wifstream& ros)
         }
         else if (parts[0] == L"a_src:") {
             {
+                str = parts[1];
+                ca.src = parts[1];
                 std::wregex search(L"\\<b\\>(\\<i\\>)*\\-*\\u2013*\\u2014*(\\</i\\>)*\\</b\\>");
 
                 std::regex_iterator<std::wstring::iterator> rit(str.begin(), str.end(), search);
@@ -449,6 +452,7 @@ wchar_t COROSSParser::loadROSArticle(std::wifstream& ros)
                 str.replace(pos + 4, 0, tagsTitle[1]);
                 pos = str.find(L"</b>", pos + tagsTitle[1].length() + 1);
             }
+            ca.text = str;
             pos = str.find(L"<b>");
             std::wstring title;
             while (pos != std::wstring::npos) {
@@ -724,7 +728,7 @@ wchar_t COROSSParser::loadOROSSArticle(std::wifstream& arts)
             while (pos != std::wstring::npos) {
                 ca.title.replace(pos, 1, L"");
                 pos = ca.title.find(L"\u0301", pos + 1);
-            }
+            }            
         }
         else if (parts[0] == L"a_text:") {
             ca.text = parts[1];
@@ -854,6 +858,7 @@ void COROSSParser::loadAll()
         }
         dic.close();
     }
+
 }
 
 void COROSSParser::loadGramms(std::vector<std::string> dics)
