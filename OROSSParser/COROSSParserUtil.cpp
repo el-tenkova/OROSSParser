@@ -822,7 +822,6 @@ std::vector<std::wstring> COROSSParser::getFullWords(const std::wstring& word, s
     std::wstring str(word);
     offset = 0;
     len = word.length();
-    std::locale loc;
     std::wregex e(L"\\([^\\(\\)]+\\)");
 
     std::regex_iterator<std::wstring::iterator> rit(str.begin(), str.end(), e);
@@ -843,14 +842,14 @@ std::vector<std::wstring> COROSSParser::getFullWords(const std::wstring& word, s
     //    std::wstring::iterator i = str.begin();
     auto i = str.begin();
     for (i; i < str.end(); ++i) {
-        if (!(std::ispunct((*i), loc) || std::isdigit((*i), loc)))
+        if (!(std::ispunct((*i), russian) || std::isdigit((*i), russian)))
             break;
         offset++;
         len--;
     }
     if (i != str.end()) {
         for (i = str.end() - 1; i != str.end(); --i) {
-            if (!(std::ispunct((*i), loc) || std::isdigit((*i), loc)))
+            if (!(std::ispunct((*i), russian) || std::isdigit((*i), russian)))
                 break;
             len--;
         }
@@ -886,7 +885,7 @@ std::vector<std::wstring> COROSSParser::getFullWords(const std::wstring& word, s
         auto i = tmp.begin();
         size_t idx = 0;
         for (i; i < tmp.end(); ++i, idx++) {
-            if (!(std::ispunct((*i), loc) || std::isdigit((*i), loc)) && (*i) != L'/') {
+            if (!(std::ispunct((*i), russian) || std::isdigit((*i), russian)) && (*i) != L'/') {
                 break;
             }
         }
@@ -896,7 +895,7 @@ std::vector<std::wstring> COROSSParser::getFullWords(const std::wstring& word, s
         if (tmp.length() != 0) {
             idx = tmp.length();
             for (i = tmp.end() - 1; i != tmp.end(); --i, idx--) {
-                if (!(std::ispunct((*i), loc) || std::isdigit((*i), loc)) && (*i) != L'/') {
+                if (!(std::ispunct((*i), russian) || std::isdigit((*i), russian)) && (*i) != L'/') {
                     tmp = tmp.substr(0, idx);
                     break;
                 }
