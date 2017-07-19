@@ -219,17 +219,15 @@ long COROSSParser::Init(modeName Mode, const std::string& cfg)
     loadMorph(config["foreign"], config["lemmata"]);
 
     //loadWords();
+    if (mode != Create && mode != ROSOnly && mode != WebUpdate) {
+        loadDic(config["arts"]);
+    }    
     if (mode == AddROS || mode == ROSOnly) {
         loadROS(config["ROS_2012"]);
     }
     else if (mode == WebUpdate) {
         loadAll();
     }
-    else if (mode != Create && mode != ROSOnly) {
-        loadDic(config["arts"]);
-    }
-
-
 
     return res;
 }
@@ -237,13 +235,13 @@ long COROSSParser::Init(modeName Mode, const std::string& cfg)
 long COROSSParser::Terminate()
 {
     processArticles();
+    saveDic();
     if (mode != Create && mode != Update) {
         presaveArticles(SAVE_SEARCH);
         makeSQL();
     }
     saveData(SAVE_SEARCH);
     saveWords();
-    saveDic();
     error.close();
     morph.Terminate();
     return 0;
