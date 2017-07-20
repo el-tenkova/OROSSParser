@@ -341,7 +341,10 @@ void COROSSParser::correctText(std::wstring& text)
 
     pos = text.find(L"\u0301");
     while (pos != std::wstring::npos) {
-        text.replace(pos, 1, L"");
+        if (mode != WebUpdate) // accent from TinyMCE
+            text.replace(pos, 1, L"");
+        else
+            text.replace(pos, 1, L"&#x301");
         pos = text.find(L"\u0301", pos + 1);
     }
 
@@ -361,6 +364,8 @@ void COROSSParser::correctText(std::wstring& text)
             pos = text.find(*it, pos + 1);
         }
     }
+
+
 }
 
 void COROSSParser::correctWord(std::wstring& text)
@@ -1368,7 +1373,7 @@ void COROSSParser::writeBOM(std::wofstream& stream)
 #endif    
 }
 
-size_t COROSSParser::artTitle(const std::wstring& article)
+size_t COROSSParser::orossTitle(const std::wstring& article)
 {
     std::wstring str(article);
     std::wregex search(L"\\<b\\>(.*?)\\</b\\>");
@@ -1387,8 +1392,10 @@ size_t COROSSParser::artTitle(const std::wstring& article)
             std::wstring prefix((*rit).prefix());
             for (auto cit = prefix.begin(); cit != prefix.end(); ++cit) {
                 if ((*cit) != L' ' && (*cit) != L',' && (*cit) != L'-' &&
-                    (*cit) != L'…' && (*cit) != L'\u2013' && (*cit) != L'\u2014' &&
-                    (*cit) != L'\u0438'){
+                    (*cit) != L'…' &&
+                    (*cit) != L'\u2013' && (*cit) != L'\u2014' &&
+                    (*cit) != L'\u0438' && 
+                    !std::ispunct((*cit), russian)) {
                     done = true;
                     break;
                 }

@@ -300,7 +300,7 @@ long COROSSParser::PreViewArticle()
                 continue;
             article.append(str);
         }
-        size_t titleLen = artTitle(article);
+        size_t titleLen = orossTitle(article);
         std::wstring title = article.substr(0, titleLen);
         AddArticle(title, article);
         auto ait = articles.begin();
@@ -742,7 +742,7 @@ void COROSSParser::processArticles() {
     for (tit; tit != titles.end(); ++tit) {
         for (auto it = tit->second.begin(); it != tit->second.end(); ++it) {
             article ca = articles[(*it)];
-            if (ca.dic == dicOROSS && ca.state != ARTICLE_STATE_TO_DELETE) {
+            if (/*ca.dic == dicOROSS && */ca.state != ARTICLE_STATE_TO_DELETE) {
                 if (ca.id != artId) {
                     replaceArtId(ca, ca.text, ca.id, artId);
                 }
