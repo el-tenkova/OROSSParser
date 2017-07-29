@@ -773,6 +773,9 @@ void COROSSParser::processArticles() {
         saveArticles();
         countArticles(); // update count of articles for orthos and formulas
     }
+    else if(mode == WebUpdate) {
+        countArticles();
+    }
 }
 
 void COROSSParser::processArticle(article& ca) {
