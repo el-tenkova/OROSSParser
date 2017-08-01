@@ -1309,7 +1309,7 @@ VALUES (");
         str.append(L"','");
         str.append(ait->second.text);
         str.append(L"','");
-        str.append(ait->second.rtf);
+        str.append(toRTF(ait->second.src));
         str.append(L"','");
         str.append(ait->second.src);
         str.append(L"',");
