@@ -7,6 +7,8 @@
 #include <codecvt>
 #include <regex>
 #include <sstream>
+#include <cstdlib>
+#include <iostream>
 
 #include <functional>
 
@@ -878,7 +880,9 @@ void COROSSParser::applyChanges()
         //dic.seekg(3);
         std::wstring str(L"");
         actionType act = Nothing;
-        std::wstring text;
+        std::wstring text(L"");
+
+        std::cout << "applyChanges" << std::endl;
         size_t id = 0;
         wchar_t dictype = dicOROSS;
         while (!dic.eof()) {
@@ -950,10 +954,12 @@ void COROSSParser::applyChanges()
             }
             if (parts[0] == L"a:") {
                 id = std::stol(parts[1]);
+                std::cout << id << std::endl;
             }
             else if (parts[0] == L"a_text:") {
                 text = parts[1];
                 correctText(text);
+                //std::cout << text.c_str() << std::endl;
             }
             else if (parts[0] == L"a_act:") {
                 act = (actionType)std::stol(parts[1]);
@@ -961,6 +967,11 @@ void COROSSParser::applyChanges()
             else if (parts[0] == L"a_dic:") {
                 if (parts[1].length() > 0)
                     dictype = (wchar_t)std::stol(parts[1]);
+            }
+            else if (str[0] == L'<' && str[1] == 'p') {
+                text.erase(text.end() - 1);
+//                text.append(L" ");
+                text.append(str);
             }
         }
         dic.close();
@@ -1044,4 +1055,3 @@ void COROSSParser::loadMorph(const std::string& foreign, const std::string& lemm
 {
     morph.Load(foreign, lemmata, russian);
 }
-
