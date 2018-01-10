@@ -226,6 +226,7 @@ long COROSSParser::Init(modeName Mode, const std::string& cfg)
         loadROS(config["ROS_2012"]);
     }
     else if (mode == WebUpdate) {
+        std::cout << "WebUpdate" << std::endl;
         loadAll();
     }
 

@@ -356,15 +356,16 @@ void COROSSParser::correctText(std::wstring& text)
             text.replace(pos, 1, L"</p><p>\u25ca");
         }
     }
-    std::vector<std::wstring>::iterator it = tagsAccents.begin();
-    for (it; it != tagsAccents.end(); it += 2) {
-        pos = text.find(*it);
-        while (pos != std::wstring::npos) {
-            text.replace(pos, (*it).length(), *(it + 1));
-            pos = text.find(*it, pos + 1);
+    if (mode != WebUpdate) {
+        std::vector<std::wstring>::iterator it = tagsAccents.begin();
+        for (it; it != tagsAccents.end(); it += 2) {
+            pos = text.find(*it);
+            while (pos != std::wstring::npos) {
+                text.replace(pos, (*it).length(), *(it + 1));
+                pos = text.find(*it, pos + 1);
+            }
         }
     }
-
 
 }
 
@@ -375,15 +376,16 @@ void COROSSParser::correctWord(std::wstring& text)
         text.replace(pos, 1, L"-");
         pos = text.find(L"\u001e");
     }
-    std::vector<std::wstring>::iterator it = tagsAccents.begin();
-    for (it; it != tagsAccents.end(); it += 2) {
-        pos = text.find(*it);
-        while (pos != std::wstring::npos) {
-            text.replace(pos, (*it).length(), (*(it + 1)).substr(0, 1));
-            pos = text.find(*it, pos + 1);
+    if (mode != WebUpdate) {
+        std::vector<std::wstring>::iterator it = tagsAccents.begin();
+        for (it; it != tagsAccents.end(); it += 2) {
+            pos = text.find(*it);
+            while (pos != std::wstring::npos) {
+                text.replace(pos, (*it).length(), (*(it + 1)).substr(0, 1));
+                pos = text.find(*it, pos + 1);
+            }
         }
     }
-
 }
 
 std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
@@ -1362,17 +1364,6 @@ bool COROSSParser::isStopLabel(const std::wstring& key, const std::wstring inter
     return false;
 }
 
-void COROSSParser::writeBOM(std::wofstream& stream)
-{
- //   std::string bom(u8"\uEFBBBF");
-#ifdef _WINDOWS    
-    stream.put(0xEF);
-    stream.put(0xBB);
-    stream.put(0xBF);
-    stream.flush();
-#endif    
-}
-
 size_t COROSSParser::orossTitle(const std::wstring& article)
 {
     std::wstring str(article);
@@ -1410,3 +1401,13 @@ size_t COROSSParser::orossTitle(const std::wstring& article)
     return len;
 }
 
+void COROSSParser::writeBOM(std::wofstream& stream)
+{
+ //   std::string bom(u8"\uEFBBBF");
+#ifdef _WINDOWS    
+    stream.put(0xEF);
+    stream.put(0xBB);
+    stream.put(0xBF);
+    stream.flush();
+#endif    
+}

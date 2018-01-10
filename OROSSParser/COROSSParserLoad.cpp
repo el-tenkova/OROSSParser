@@ -7,6 +7,8 @@
 #include <codecvt>
 #include <regex>
 #include <sstream>
+#include <cstdlib>
+#include <iostream>
 
 #include <functional>
 
@@ -842,7 +844,7 @@ void COROSSParser::loadAll()
 {
     artId = 1;
     std::wifstream dic(config["dic"], std::wifstream::binary);
-/*    if (dic.is_open()) {
+    if (dic.is_open()) {
         dic.imbue(russian);
         //dic.seekg(3);
         std::wstring str(L"");
@@ -864,7 +866,7 @@ void COROSSParser::loadAll()
                 dictype = loadROSArticle(dic);
         }
         dic.close();
-    } */
+    }
     if (mode == WebUpdate) {
         applyChanges();
     }
@@ -878,7 +880,9 @@ void COROSSParser::applyChanges()
         //dic.seekg(3);
         std::wstring str(L"");
         actionType act = Nothing;
-        std::wstring text;
+        std::wstring text(L"");
+
+        std::cout << "applyChanges" << std::endl;
         size_t id = 0;
         wchar_t dictype = dicOROSS;
         while (!dic.eof()) {
@@ -916,6 +920,7 @@ void COROSSParser::applyChanges()
                             }
                             // remove article from articles
                             articles.erase(ait);
+                            artId++;
                             // add as new
                             if (dictype == dicROS) {
                                 article ca = { artId, dictype, L"", text, text, L"" };
@@ -949,10 +954,12 @@ void COROSSParser::applyChanges()
             }
             if (parts[0] == L"a:") {
                 id = std::stol(parts[1]);
+                std::cout << id << std::endl;
             }
             else if (parts[0] == L"a_text:") {
                 text = parts[1];
                 correctText(text);
+                //std::cout << text.c_str() << std::endl;
             }
             else if (parts[0] == L"a_act:") {
                 act = (actionType)std::stol(parts[1]);
@@ -961,35 +968,69 @@ void COROSSParser::applyChanges()
                 if (parts[1].length() > 0)
                     dictype = (wchar_t)std::stol(parts[1]);
             }
+            else if (str[0] == L'<' && str[1] == 'p') {
+                text.erase(text.end() - 1);
+//                text.append(L" ");
+                text.append(str);
+            }
         }
         dic.close();
         if (id != 0) {
-            if (act == Delete) {
-                auto ait = articles.find(id);
-                if (ait != articles.end())
-                    ait->second.state = ARTICLE_STATE_TO_DELETE;
-            }
-            else if (act == Edited) {
-                auto ait = articles.find(id);
-                if (ait != articles.end()) {
-                    ait->second.clear();
-                    ait->second.id = id;
-                    ait->second.dic = dictype;
-                    ait->second.src = text;
-                    ait->second.text = text;
-                    ait->second.state = ARTICLE_STATE_NEW;
+            if (id != 0) {
+                if (act == Delete) {
+                    auto ait = articles.find(id);
+                    if (ait != articles.end())
+                        ait->second.state = ARTICLE_STATE_TO_DELETE;
                 }
-            }
-            else if (act == NewArt) {
-                artId++;
-                article ca = { artId, dictype, L"", text, text, L"" };
-                ca.state = ARTICLE_STATE_NEW;
-                if (dictype == dicROS)
-                    fillROSArticle(text, ca);
-                else {// OROSS
-                    size_t titleLen = orossTitle(text);
-                    std::wstring title = text.substr(0, titleLen);
-                    AddArticle(title, text);
+                else if (act == Edited) {
+                    auto ait = articles.find(id);
+                    if (ait != articles.end()) {
+                        dictype = ait->second.dic;
+                        // find article, remove it form articles and titles, add as new
+                        std::wstring title_l(ait->second.title);
+                        prepareSearchTitle(title_l);
+                        auto tit = titles.find(title_l);
+                        if (tit != titles.end()) {
+                            if (tit->second.size() == 1)
+                                titles.erase(tit);
+                            else {
+                                auto it = tit->second.begin();
+                                for (; it != tit->second.end(); ++it) {
+                                    if ((*it) == ait->second.id)
+                                        break;
+                                }
+                                if (it != tit->second.end())
+                                    tit->second.erase(it);
+                            }
+                        }
+                        // remove article from articles
+                        articles.erase(ait);
+                        artId++;
+                        // add as new
+                        if (dictype == dicROS) {
+                            article ca = { artId, dictype, L"", text, text, L"" };
+                            ca.state = ARTICLE_STATE_NEW;
+                            fillROSArticle(text, ca);
+                        }
+                        else {// OROSS
+                            size_t titleLen = orossTitle(text);
+                            std::wstring title = text.substr(0, titleLen);
+                            AddArticle(title, text);
+                        }
+                    }
+                }
+                else if (act == NewArt) {
+                    artId++;
+                    if (dictype == dicROS) {
+                        article ca = { artId, dictype, L"", text, text, L"" };
+                        ca.state = ARTICLE_STATE_NEW;
+                        fillROSArticle(text, ca);
+                    }
+                    else {// OROSS
+                        size_t titleLen = orossTitle(text);
+                        std::wstring title = text.substr(0, titleLen);
+                        AddArticle(title, text);
+                    }
                 }
             }
         }
@@ -1014,4 +1055,3 @@ void COROSSParser::loadMorph(const std::string& foreign, const std::string& lemm
 {
     morph.Load(foreign, lemmata, russian);
 }
-
