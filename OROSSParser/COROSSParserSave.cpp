@@ -2386,6 +2386,46 @@ void COROSSParser::processMistakes() {
     }
 }
 
+void COROSSParser::processAccents() {
+    size_t mistId = 1;
+    std::wstring acSign(L"&#x301")
+    for (auto wit = words.begin(); wit != words.end(); ++wit) {
+        for (auto ait = wit->second.arts.begin(); ait != wit->second.arts.end(); ++ait) {
+            auto it = articles.find(ait->id);
+            if (it != articles.end()) {
+                article ca = it->second;
+                std::wstring acc(ca.text.substr(ait->start, ait->len));
+                size_t pos = acc.find(L"&#x301");
+                while (pos!= std::wstring::npos) {
+
+                }
+            }
+        }
+
+/*        std::wstring mist(wit->first);
+        if (wit->first.find(L' ') != std::wstring::npos ||
+            wit->first.find(L'-') != std::wstring::npos ||
+            wit->first.find(L'\u2013') != std::wstring::npos ||
+            wit->first.find(L'\u2014') != std::wstring::npos) {
+            //            std::wstring mist(wit->first);
+            prepareOrthoKey(mist);
+            mistakeMap::iterator mit = mistakes.find(mist);
+            if (mit == mistakes.end()) {
+                mistake cm = { mistId };
+                cm.wordIds.push_back(wit->second.id);
+                mistakes.insert(std::pair<std::wstring, mistake>(mist, cm));
+                mistId++;
+            }
+            else {
+                if (std::find(mit->second.wordIds.begin(), mit->second.wordIds.end(), wit->second.id) == mit->second.wordIds.end()) {
+                    mit->second.wordIds.push_back(wit->second.id);
+                }
+            }
+        }
+        */
+    }
+}
+
 void COROSSParser::makeTutorialUpdate()
 {
     std::wofstream update(config["output"] + "update_contents.sql", std::wofstream::binary);

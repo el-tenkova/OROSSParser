@@ -141,6 +141,12 @@ struct mistake {
 };
 typedef std::map<std::wstring, mistake> mistakeMap;
 
+struct accent {
+    size_t id;
+    std::vector<size_t> wordIds;
+};
+typedef std::map<std::wstring, accent> accentMap;
+
 struct hist {
     size_t id;
     std::wstring name;
@@ -376,6 +382,7 @@ protected:
     grammMap trigramms;
     grammMap tetragramms;
     mistakeMap mistakes;
+    accentMap accents;
     artMap articles;
     titleMap titles;
     footMap footnotes;
@@ -470,6 +477,7 @@ protected:
     void processIndex(bool saveSearch = false);
     void processMistakes();
     void processArticle(article& ca);
+    void processAccents();
 
     void addArticlesToIndex();
     void addTutorialToIndex();
