@@ -507,6 +507,7 @@ void COROSSParser::makeSQL()
         makeTrigrammsTable(russian);
         makeTetragrammsTable(russian);
         makeMistakesTable(russian);
+        makeAccentsTable(russian);
         makeArticlesTable(russian);
         if (mode == ROSOnly)
             makeABCTable(russian);
@@ -924,6 +925,103 @@ void COROSSParser::makeWordsTable(const std::locale& loc)
             result.write(str.c_str(), str.length());
         }
         idx ++;
+    }
+    result.close();
+}
+
+void COROSSParser::makeAccentsTable(const std::locale& loc)
+{
+    size_t n = 1;
+    std::string filename(config["output_accents"] + "import_accents");
+    filename.append(std::to_string(n));
+    filename.append(".sql");
+    std::wofstream result(filename, std::wofstream::binary);
+    if (result.is_open()) {
+        writeBOM(result);
+        result.imbue(loc);
+    }
+    else {
+        return;
+    }
+    std::wstring str(L"\nCREATE TABLE IF NOT EXISTS accents (\n\
+    id int(11) NOT NULL,\n\
+    word varchar(256) NOT NULL,\n\
+    art_count int(11), \n\
+    PRIMARY KEY (id) \n\
+    );\n\n");
+    result.write(str.c_str(), str.length());
+
+    str.clear();
+    str.append(L"\nCREATE TABLE IF NOT EXISTS accents_articles (\n\
+    id int(11) NOT NULL,\n\
+    id_article int(11) NOT NULL,\n\
+    start int(11) NOT NULL, \n\
+    len int(11) NOT NULL, \n\
+    title int(10) NOT NULL,\n\
+    segment int(10) NOT NULL,\n\
+    number int(10) NOT NULL,\n\
+    PRIMARY KEY (id, id_article, start) \n\
+    );\n\n");
+    result.write(str.c_str(), str.length());
+
+    size_t idx = 0;
+    for (auto wit = accents.begin(); wit != accents.end(); ++wit) {
+        if (idx == 4999) {
+            idx = 0;
+            n++;
+            result.close();
+            filename.clear();
+            filename.append(config["output_accents"] + "import_accents");
+            filename.append(std::to_string(n));
+            filename.append(".sql");
+            result.open(filename, std::wofstream::binary);
+            if (result.is_open()) {
+                result.imbue(std::locale());
+                writeBOM(result);
+                result.imbue(loc);
+            }
+            else
+                return;
+        }
+
+        str.clear();
+        str.append(str_accents);//L"INSERT INTO words (id, title, word) 
+        str.append(L"\n\
+    VALUES (");
+        str.append(std::to_wstring(wit->second.id/*idx*/));
+        //        str.append(L",");
+        //        str.append(std::wstring(1, wit->second.isTitle));
+        str.append(L",'");
+        str.append(wit->first);
+        str.append(L"',");
+        str.append(std::to_wstring(wit->second.arts.size()));
+        str.append(L");\n");
+        result.write(str.c_str(), str.length());
+
+        artIdVct::iterator avt = wit->second.arts.begin();
+        for (avt; avt != wit->second.arts.end(); ++avt) {
+            str.clear();
+            str.append(str_accents_articles); //L"INSERT INTO words_articles (id, id_article) 
+            str.append(L"\n\
+    VALUES (");
+            str.append(std::to_wstring(wit->second.id /*idx*/));
+            str.append(L",");
+            str.append(std::to_wstring(avt->id));
+            str.append(L",");
+            str.append(std::to_wstring(avt->start));
+            str.append(L",");
+            str.append(std::to_wstring(avt->len));
+            str.append(L",");
+            str.append(std::wstring(1, avt->isTitle));
+            str.append(L",");
+            str.append(std::to_wstring(avt->group));
+            str.append(L",");
+            str.append(std::to_wstring(avt->number));
+            str.append(L");\n");
+            result.write(str.c_str(), str.length());
+        }
+
+        idx++;
     }
     result.close();
 }
@@ -1521,6 +1619,7 @@ void COROSSParser::presaveArticles(bool saveSearch) {
         tetragrId++;
     }
     processMistakes();
+    processAccents();
     printArticles();
 }
 
@@ -2387,42 +2486,40 @@ void COROSSParser::processMistakes() {
 }
 
 void COROSSParser::processAccents() {
-    size_t mistId = 1;
-    std::wstring acSign(L"&#x301")
+    size_t accId = 1;
+    std::wstring acSign(L"&#x301");
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> conv1;
     for (auto wit = words.begin(); wit != words.end(); ++wit) {
         for (auto ait = wit->second.arts.begin(); ait != wit->second.arts.end(); ++ait) {
             auto it = articles.find(ait->id);
             if (it != articles.end()) {
                 article ca = it->second;
-                std::wstring acc(ca.text.substr(ait->start, ait->len));
-                size_t pos = acc.find(L"&#x301");
+                std::string u8str = conv1.to_bytes(ca.text);
+                std::wstring acc(conv1.from_bytes(u8str.substr(ait->start, ait->len)));
+                size_t pos = acc.find(acSign);
+                if (pos == std::wstring::npos)
+                    continue;
                 while (pos!= std::wstring::npos) {
-
+                    acc.replace(pos, acSign.length(), L"1");
+                    pos = acc.find(acSign);
+                    if (pos != std::wstring::npos)
+                        break;
+                }
+                if (pos != std::wstring::npos)
+                    continue; // 2 or more accents
+                prepareOrthoKey(acc);
+                accentMap::iterator acit = accents.find(acc);
+                if (acit == accents.end()) {
+                    accent cac = {accId};
+                    cac.arts.push_back(*ait);
+                    accents.insert(std::pair<std::wstring, accent>(acc, cac));
+                    accId++;
+                }
+                else {
+                    acit->second.arts.push_back(*ait);
                 }
             }
         }
-
-/*        std::wstring mist(wit->first);
-        if (wit->first.find(L' ') != std::wstring::npos ||
-            wit->first.find(L'-') != std::wstring::npos ||
-            wit->first.find(L'\u2013') != std::wstring::npos ||
-            wit->first.find(L'\u2014') != std::wstring::npos) {
-            //            std::wstring mist(wit->first);
-            prepareOrthoKey(mist);
-            mistakeMap::iterator mit = mistakes.find(mist);
-            if (mit == mistakes.end()) {
-                mistake cm = { mistId };
-                cm.wordIds.push_back(wit->second.id);
-                mistakes.insert(std::pair<std::wstring, mistake>(mist, cm));
-                mistId++;
-            }
-            else {
-                if (std::find(mit->second.wordIds.begin(), mit->second.wordIds.end(), wit->second.id) == mit->second.wordIds.end()) {
-                    mit->second.wordIds.push_back(wit->second.id);
-                }
-            }
-        }
-        */
     }
 }
 

@@ -143,7 +143,7 @@ typedef std::map<std::wstring, mistake> mistakeMap;
 
 struct accent {
     size_t id;
-    std::vector<size_t> wordIds;
+    artIdVct arts;
 };
 typedef std::map<std::wstring, accent> accentMap;
 
@@ -295,6 +295,8 @@ private:
     const std::wstring str_sup1;
     const std::wstring str_sup2;
     const std::wstring str_sup3;
+    const std::wstring str_accents;
+    const std::wstring str_accents_articles;
 
 public:
     enum modeName
@@ -340,8 +342,10 @@ public:
         str_values(L"    VALUES ("),
         str_sup1(L"<sup>1</sup>"),
         str_sup2(L"<sup>2</sup>"),
-        str_sup3(L"<sup>3</sup>")
-    {};
+        str_sup3(L"<sup>3</sup>"),
+        str_accents(L"INSERT INTO accents (id, word, art_count) "),
+        str_accents_articles(L"INSERT INTO accents_articles (id, id_article, start, len, title, segment, number) ")
+        {};
 
 public:
     long Init(modeName mode);
@@ -470,6 +474,7 @@ protected:
     void makeTetragrammsTable(const std::locale& loc);
     void makeArticlesTable(const std::locale& loc);
     void makeMistakesTable(const std::locale& loc);
+    void makeAccentsTable(const std::locale& loc);
     void makeTutorialUpdate();
     void makeABCTable(const std::locale& loc);
 
