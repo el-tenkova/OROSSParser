@@ -1912,8 +1912,8 @@ std::vector<std::wstring> COROSSParser::addTitleToIndex(artMap::iterator ait, co
     std::wstring key(interval);
 
     size_t offset = 0;
-    size_t len = ait->second.index[0].start;
-    size_t utf_len = getUtfLen(ait->second.text, 0, ait->second.index[0].start);
+    size_t len = dit->start;
+    size_t utf_len = getUtfLen(ait->second.text, 0, dit->start);
 
     std::wstring under_b(L"<u>");
     std::wstring under_e(L"</u>");
@@ -2495,7 +2495,9 @@ void COROSSParser::processAccents() {
             if (it != articles.end()) {
                 article ca = it->second;
                 std::string u8str = conv1.to_bytes(ca.text);
-                std::wstring acc(conv1.from_bytes(u8str.substr(ait->start, ait->len)));
+                std::string tmp(u8str.substr(ait->start, ait->len));
+                std::wstring acc(conv1.from_bytes(tmp));
+//                std::wstring acc(conv1.from_bytes(u8str.substr(ait->start, ait->len)));
                 size_t pos = acc.find(acSign);
                 if (pos == std::wstring::npos)
                     continue;
