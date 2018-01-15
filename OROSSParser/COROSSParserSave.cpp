@@ -8,6 +8,8 @@
 #include <locale>
 #include <cwctype>
 #include <functional>
+#include <cstdlib>
+#include <iostream>
 
 #include "COROSSParser.h"
 
@@ -473,10 +475,14 @@ void COROSSParser::saveDic()
         for (auto ait = articles.begin(); ait != articles.end(); ++ait) {
             if (ait->second.state == ARTICLE_STATE_TO_DELETE)
                 continue;
-            if (ait->second.dic == dicOROSS)
+            if (ait->second.dic == dicOROSS) {
+                std::cout << "save OROSS: " << ait->second.dic << "  " << ait->second.id << std::endl;
                 saveOROSSArticle(dic, ait, true);
-            else
+            }
+            else {
+                std::cout << "save ROS: " << ait->second.dic << "  " << ait->second.id << std::endl;
                 saveROSArticle(dic, ait);
+            }
         }
         dic.close();
     }
@@ -903,7 +909,7 @@ void COROSSParser::makeWordsTable(const std::locale& loc)
             str.append(L");\n");
             result.write(str.c_str(), str.length());
         }
-        
+        wit->second.arts.clear();
         ruleIdVct::iterator rvt = wit->second.rules.begin();
         for (rvt; rvt != wit->second.rules.end(); ++rvt) {
             str.clear();
@@ -924,9 +930,11 @@ void COROSSParser::makeWordsTable(const std::locale& loc)
             str.append(L");\n");
             result.write(str.c_str(), str.length());
         }
+        wit->second.rules.clear();
         idx ++;
     }
     result.close();
+    words.clear();
 }
 
 void COROSSParser::makeAccentsTable(const std::locale& loc)
@@ -1095,8 +1103,10 @@ void COROSSParser::makeBigrammsTable(const std::locale& loc)
             str.append(L");\n");
             result.write(str.c_str(), str.length());
         }
+        bit->second.arts.clear();
     }
     result.close();
+    bigramms.clear();
 }
 
 void COROSSParser::makeTrigrammsTable(const std::locale& loc)
@@ -1168,8 +1178,10 @@ void COROSSParser::makeTrigrammsTable(const std::locale& loc)
             str.append(L");\n");
             result.write(str.c_str(), str.length());
         }
+        tit->second.arts.clear();
     }
     result.close();
+    trigramms.clear();
 }
 
 void COROSSParser::makeTetragrammsTable(const std::locale& loc)
@@ -1241,8 +1253,10 @@ void COROSSParser::makeTetragrammsTable(const std::locale& loc)
             str.append(L");\n");
             result.write(str.c_str(), str.length());
         }
+        tit->second.arts.clear();
     }
     result.close();
+    tetragramms.clear();
 }
 
 void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& result)
@@ -1369,6 +1383,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
                 str.append(L");\n");
                 result.write(str.c_str(), str.length());
             }
+            tags.clear();
         }
         std::vector<size_t>::iterator fit = ait->second.formulas.begin();
         for (fit; fit != ait->second.formulas.end(); ++fit) {
@@ -1381,7 +1396,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
             str.append(L");\n");
             result.write(str.c_str(), str.length());
         }
-
+        ait->second.formulas.clear();
         std::vector<size_t>::iterator cit = ait->second.comments.begin();
         for (cit; cit != ait->second.comments.end(); ++cit) {
             str.clear();
@@ -1394,7 +1409,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
             str.append(L");\n");
             result.write(str.c_str(), str.length());
         }
-
+        ait->second.comments.clear();
         str.clear();
         str.append(str_articles);//L"INSERT INTO articles (id, dic, title, text, rtf, src) 
         str.append(L"\n\
@@ -1406,8 +1421,12 @@ VALUES (");
         str.append(ait->second.title);
         str.append(L"','");
         str.append(ait->second.text);
+        ait->second.text.clear();
         str.append(L"','");
-        str.append(toRTF(ait->second.src));
+        std::wstring rtf = toRTF(ait->second.src);
+        //std::wcout << toRTF(ait->second.src) << std::endl;
+        str.append(rtf);
+        rtf.clear();
         str.append(L"','");
         str.append(ait->second.src);
         str.append(L"',");
@@ -1415,6 +1434,7 @@ VALUES (");
         str.append(L");\n");
         result.write(str.c_str(), str.length());
 
+        ait->second.clear();
         idx++;
     }
 }
