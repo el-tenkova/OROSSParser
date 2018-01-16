@@ -2521,10 +2521,10 @@ void COROSSParser::processAccents() {
                 std::string u8str = conv1.to_bytes(ca.text);
                 std::string tmp(u8str.substr(ait->start, ait->len));
                 std::wstring acc(conv1.from_bytes(tmp));
-//                std::wstring acc(conv1.from_bytes(u8str.substr(ait->start, ait->len)));
-                size_t pos = acc.find(acSign);
-                if (pos == std::wstring::npos)
+                size_t accpos = acc.find(acSign);
+                if (accpos == std::wstring::npos)
                     continue;
+                size_t pos = accpos;
                 while (pos!= std::wstring::npos) {
                     acc.replace(pos, acSign.length(), L"1");
                     pos = acc.find(acSign);
@@ -2533,18 +2533,23 @@ void COROSSParser::processAccents() {
                 }
                 if (pos != std::wstring::npos)
                     continue; // 2 or more accents
-                prepareOrthoKey(acc);
+                getPureWord(acc);
                 removeParentheses(acc);
+                std::wstring wacc(acc);
+                wacc.replace(wacc.find(L"1"), 1, L"");
+                pos = wacc.find(wit->first);
+                if (pos > accpos || (pos < accpos && (pos + wit->first.length() < accpos)))
+                    continue;
                 size_t idxw = 0;
                 size_t idxa = 0;
-                for (auto cit = acc.begin(); idxw < wit->first.length(); ++cit, idxa++) {
+                for (auto cit = acc.begin() + pos; idxw < wit->first.length(); ++cit, idxa++) {
                     if ((*cit) == L'1')
                         continue;
                     idxw++;
                 }
                 if (idxa < 3)
                     continue;
-                acc = acc.substr(0, idxa);
+                acc = acc.substr(pos, idxa);
                 accentMap::iterator acit = accents.find(acc);
                 if (acit == accents.end()) {
                     accent cac = {accId};
