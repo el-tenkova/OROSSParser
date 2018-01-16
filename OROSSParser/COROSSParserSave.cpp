@@ -2510,6 +2510,8 @@ void COROSSParser::processAccents() {
     std::wstring acSign(L"&#x301");
     std::wstring_convert<std::codecvt_utf8<wchar_t>> conv1;
     for (auto wit = words.begin(); wit != words.end(); ++wit) {
+        if (morph.IsLemma(wit->first) == false)
+            continue;
         if (wit->first.length() < 3)
             continue;
         for (auto ait = wit->second.arts.begin(); ait != wit->second.arts.end(); ++ait) {
@@ -2540,6 +2542,8 @@ void COROSSParser::processAccents() {
                         continue;
                     idxw++;
                 }
+                if (idxa < 3)
+                    continue;
                 acc = acc.substr(0, idxa);
                 accentMap::iterator acit = accents.find(acc);
                 if (acit == accents.end()) {
