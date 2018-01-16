@@ -2530,6 +2530,15 @@ void COROSSParser::processAccents() {
                 if (pos != std::wstring::npos)
                     continue; // 2 or more accents
                 prepareOrthoKey(acc);
+                removeParentheses(acc);
+                size_t idxw = 0;
+                size_t idxa = 0;
+                for (auto cit = acc.begin(); idxw < wit->first.length(); ++cit, idxa++) {
+                    if ((*cit) == L'1')
+                        continue;
+                    idxw++;
+                }
+                acc = acc.substr(0, idxa);
                 accentMap::iterator acit = accents.find(acc);
                 if (acit == accents.end()) {
                     accent cac = {accId};
