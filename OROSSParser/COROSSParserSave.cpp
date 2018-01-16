@@ -2510,6 +2510,8 @@ void COROSSParser::processAccents() {
     std::wstring acSign(L"&#x301");
     std::wstring_convert<std::codecvt_utf8<wchar_t>> conv1;
     for (auto wit = words.begin(); wit != words.end(); ++wit) {
+        if (wit->first.length() < 3)
+            continue;
         for (auto ait = wit->second.arts.begin(); ait != wit->second.arts.end(); ++ait) {
             auto it = articles.find(ait->id);
             if (it != articles.end()) {
