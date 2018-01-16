@@ -1612,7 +1612,7 @@ void COROSSParser::makeMistakesTable(const std::locale& loc) {
 void COROSSParser::presaveArticles(bool saveSearch) {
 
     processIndex(saveSearch);
-    if (mode != ROSOnly)
+/*    if (mode != ROSOnly)
         processComments();
     wordId = 1;
     auto wit = words.begin();
@@ -1638,7 +1638,7 @@ void COROSSParser::presaveArticles(bool saveSearch) {
         tit->second.id = tetragrId;
         tetragrId++;
     }
-    processMistakes();
+    processMistakes(); */
     processAccents();
     printArticles();
 }
@@ -2538,6 +2538,8 @@ void COROSSParser::processAccents() {
                 std::wstring wacc(acc);
                 wacc.replace(wacc.find(L"1"), 1, L"");
                 pos = wacc.find(wit->first);
+                if (pos == std::wstring::npos)
+                    continue;
                 if (pos > accpos || (pos < accpos && (pos + wit->first.length() < accpos)))
                     continue;
                 size_t idxw = 0;
