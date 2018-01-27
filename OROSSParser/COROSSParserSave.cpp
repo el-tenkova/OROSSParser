@@ -2520,13 +2520,14 @@ void COROSSParser::processAccents() {
             if (it != articles.end()) {
                 article ca = it->second;
                 std::string tmp;
-                std::string u8str = conv1.to_bytes(getSpecMarkedArticle(ca.text, true));
+                std::string u8str = conv1.to_bytes(ca.text);
                 if (ait->start + ait->len + acSignUtf8.length() <= u8str.length() &&
                     u8str.substr(ait->start + ait->len, acSignUtf8.length()) == acSignUtf8)
                     tmp = u8str.substr(ait->start, ait->len + acSign.length());
                 else
                     tmp = u8str.substr(ait->start, ait->len);
                 std::wstring acc(conv1.from_bytes(tmp));
+                acc = getSpecMarkedArticle(acc, true);
                 size_t accpos = acc.find(acSign);
                 bool noaccent = accpos == std::wstring::npos ? true : false;
 /*                if (accpos == std::wstring::npos) {
