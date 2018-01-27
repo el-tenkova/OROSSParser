@@ -490,7 +490,7 @@ protected:
     void printArticles();
     void countArticles();
 
-    void prepareOrthoKey(std::wstring& key);
+    void prepareOrthoKey(std::wstring& key, bool saveaccent=false);
     void prepareTitle(std::wstring& title);
     void prepareSearchTitle(std::wstring &title);
     void prepareComment(std::wstring& comment);
@@ -499,7 +499,7 @@ protected:
     void correctText(std::wstring& text);// with accent
     void correctWord(std::wstring& text);// without accent
     std::wstring getPureArticle(const std::wstring& art, bool full = false);
-    std::wstring getSpecMarkedArticle(const std::wstring& art);
+    std::wstring getSpecMarkedArticle(const std::wstring& art, bool saveaccent = false);
     std::wstring getPureWord(const std::wstring& word);
     std::vector<std::wstring> getWordsForIndex(const std::wstring& word, size_t& offset, size_t &len, bool title = false);
     std::vector<std::wstring> getFullWords(const std::wstring& word, size_t& offset, size_t &len, bool title = false);

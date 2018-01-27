@@ -2520,7 +2520,7 @@ void COROSSParser::processAccents() {
             if (it != articles.end()) {
                 article ca = it->second;
                 std::string tmp;
-                std::string u8str = conv1.to_bytes(ca.text);
+                std::string u8str = conv1.to_bytes(getSpecMarkedArticle(ca.text, true));
                 if (ait->start + ait->len + acSignUtf8.length() <= u8str.length() &&
                     u8str.substr(ait->start + ait->len, acSignUtf8.length()) == acSignUtf8)
                     tmp = u8str.substr(ait->start, ait->len + acSign.length());
@@ -2528,41 +2528,48 @@ void COROSSParser::processAccents() {
                     tmp = u8str.substr(ait->start, ait->len);
                 std::wstring acc(conv1.from_bytes(tmp));
                 size_t accpos = acc.find(acSign);
-                if (accpos == std::wstring::npos) {
+                bool noaccent = accpos == std::wstring::npos ? true : false;
+/*                if (accpos == std::wstring::npos) {
+                    // no accent: add ait
                     continue;
-                }
+                } */
                 size_t pos = accpos;
-                while (pos!= std::wstring::npos) {
-                    acc.replace(pos, acSign.length(), L"1");
-                    pos = acc.find(acSign);
+                if (!noaccent) {
+                    while (pos != std::wstring::npos) {
+                        acc.replace(pos, acSign.length(), L"1");
+                        pos = acc.find(acSign);
+                        if (pos != std::wstring::npos)
+                            break;
+                    }
                     if (pos != std::wstring::npos)
-                        break;
+                        continue; // 2 or more accents
                 }
-                if (pos != std::wstring::npos)
-                    continue; // 2 or more accents
-                getPureWord(acc);
+                acc = getPureWord(acc);
+                prepareOrthoKey(acc, true);
                 removeParentheses(acc);
-                std::wstring wacc(acc);
-                wacc.replace(wacc.find(L"1"), 1, L"");
-                pos = wacc.find(wit->first);
-                if (pos == std::wstring::npos)
-                    continue;
-                if (pos > accpos || (pos < accpos && (pos + wit->first.length() < accpos)))
-                    continue;
-                size_t idxw = 0;
-                size_t idxa = 0;
-                for (auto cit = acc.begin() + pos; idxw < wit->first.length(); ++cit, idxa++) {
-                    if ((*cit) == L'1')
+                if (!noaccent) {
+                    std::wstring wacc(acc);
+                    wacc.replace(wacc.find(L"1"), 1, L"");
+                    pos = wacc.find(wit->first);
+                    if (pos == std::wstring::npos)
                         continue;
-                    idxw++;
+                    if (pos > accpos || (pos < accpos && (pos + wit->first.length() < accpos)))
+                        continue;
+                    size_t idxw = 0;
+                    size_t idxa = 0;
+                    for (auto cit = acc.begin() + pos; idxw < wit->first.length(); ++cit, idxa++) {
+                        if ((*cit) == L'1')
+                            continue;
+                        idxw++;
+                    }
+                    /*                if (idxa < 3)
+                                        continue; */
+                    if (idxa == idxw) // last letter is accented
+                        idxa++;
+                    acc = acc.substr(pos, idxa);
+                    if (acc.length() <= 1)
+                        continue;
                 }
-/*                if (idxa < 3)
-                    continue; */
-                if (idxa == idxw) // last letter is accented
-                    idxa++;
-                acc = acc.substr(pos, idxa);
-                if (acc.length() <= 1)
-                    continue;
                 accentMap::iterator acit = accents.find(acc);
                 if (acit == accents.end()) {
                     accent cac = {accId};

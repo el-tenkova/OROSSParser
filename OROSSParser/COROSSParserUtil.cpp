@@ -284,7 +284,7 @@ void COROSSParser::prepareComment(std::wstring& comment)
 //    \u00B9\\u00B2\\u00B3
 }
 
-void COROSSParser::prepareOrthoKey(std::wstring& key)
+void COROSSParser::prepareOrthoKey(std::wstring& key, bool saveaccent)
 {
     std::vector<std::wstring> tags;
     tags.push_back(L"<i>");
@@ -302,7 +302,8 @@ void COROSSParser::prepareOrthoKey(std::wstring& key)
     tags.push_back(L"\u00B3");
     tags.push_back(L"\u00B2");
     tags.push_back(L"\u2026");
-    tags.push_back(L"&#x301");
+    if (!saveaccent)
+        tags.push_back(L"&#x301");
     std::vector<std::wstring>::iterator it = tags.begin();
     for (it; it != tags.end(); ++it) {
         size_t pos = key.find(*it);
@@ -766,7 +767,7 @@ size_t COROSSParser::getPureLen(const std::wstring& pure) {
     return pure_len;
 }
 
-std::wstring COROSSParser::getSpecMarkedArticle(const std::wstring& art) {
+std::wstring COROSSParser::getSpecMarkedArticle(const std::wstring& art, bool saveaccent) {
     size_t pos = std::wstring::npos;
     std::wstring pure(art);
     std::vector<std::wstring> tags;
@@ -782,7 +783,8 @@ std::wstring COROSSParser::getSpecMarkedArticle(const std::wstring& art) {
     tags.push_back(L"</p>");
     tags.push_back(L"<sup>");
     tags.push_back(L"</sup>");
-    tags.push_back(L"&#x301");
+    if (!saveaccent)
+        tags.push_back(L"&#x301");
     tags.push_back(L"\u25ca");
     tags.push_back(tagsTitle[0]);
     tags.push_back(tagsTitle[1]);
