@@ -2508,22 +2508,29 @@ void COROSSParser::processMistakes() {
 void COROSSParser::processAccents() {
     size_t accId = 1;
     std::wstring acSign(L"&#x301");
+    std::string acSignUtf8("&#x301");
     std::wstring_convert<std::codecvt_utf8<wchar_t>> conv1;
     for (auto wit = words.begin(); wit != words.end(); ++wit) {
         if (morph.IsLemma(wit->first) == false)
             continue;
-        if (wit->first.length() < 3)
-            continue;
+//        if (wit->first.length() < 3)
+//            continue;
         for (auto ait = wit->second.arts.begin(); ait != wit->second.arts.end(); ++ait) {
             auto it = articles.find(ait->id);
             if (it != articles.end()) {
                 article ca = it->second;
+                std::string tmp;
                 std::string u8str = conv1.to_bytes(ca.text);
-                std::string tmp(u8str.substr(ait->start, ait->len));
+                if (ait->start + ait->len + acSignUtf8.length() <= u8str.length() &&
+                    u8str.substr(ait->start + ait->len, acSignUtf8.length()) == acSignUtf8)
+                    tmp = u8str.substr(ait->start, ait->len + acSign.length());
+                else
+                    tmp = u8str.substr(ait->start, ait->len);
                 std::wstring acc(conv1.from_bytes(tmp));
                 size_t accpos = acc.find(acSign);
-                if (accpos == std::wstring::npos)
+                if (accpos == std::wstring::npos) {
                     continue;
+                }
                 size_t pos = accpos;
                 while (pos!= std::wstring::npos) {
                     acc.replace(pos, acSign.length(), L"1");
@@ -2549,9 +2556,13 @@ void COROSSParser::processAccents() {
                         continue;
                     idxw++;
                 }
-                if (idxa < 3)
-                    continue;
+/*                if (idxa < 3)
+                    continue; */
+                if (idxa == idxw) // last letter is accented
+                    idxa++;
                 acc = acc.substr(pos, idxa);
+                if (acc.length() <= 1)
+                    continue;
                 accentMap::iterator acit = accents.find(acc);
                 if (acit == accents.end()) {
                     accent cac = {accId};
