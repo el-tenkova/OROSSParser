@@ -2513,10 +2513,8 @@ void COROSSParser::processAccents() {
     for (auto wit = words.begin(); wit != words.end(); ++wit) {
         if (morph.IsLemma(wit->first) == false)
             continue;
-//        if (wit->first.length() < 3)
-//            continue;
         for (auto ait = wit->second.arts.begin(); ait != wit->second.arts.end(); ++ait) {
-            auto it = articles.find(ait->id);
+                auto it = articles.find(ait->id);
             if (it != articles.end()) {
                 article ca = it->second;
                 std::string tmp;
@@ -2530,47 +2528,50 @@ void COROSSParser::processAccents() {
                 acc = getSpecMarkedArticle(acc, true);
                 size_t accpos = acc.find(acSign);
                 bool noaccent = accpos == std::wstring::npos ? true : false;
-/*                if (accpos == std::wstring::npos) {
-                    // no accent: add ait
-                    continue;
-                } */
                 size_t pos = accpos;
                 if (!noaccent) {
                     while (pos != std::wstring::npos) {
                         acc.replace(pos, acSign.length(), L"1");
                         pos = acc.find(acSign);
-                        if (pos != std::wstring::npos)
-                            break;
                     }
-                    if (pos != std::wstring::npos)
-                        continue; // 2 or more accents
                 }
                 acc = getPureWord(acc);
-                prepareOrthoKey(acc, true);
+                std::transform(acc.begin(), acc.end(), acc.begin(),
+                               std::bind2nd(std::ptr_fun(&std::tolower<wchar_t>), russian));
+                prepareTitle(acc, true);
                 removeParentheses(acc);
+                std::wstring wacc(acc);
                 if (!noaccent) {
-                    std::wstring wacc(acc);
-                    wacc.replace(wacc.find(L"1"), 1, L"");
-                    pos = wacc.find(wit->first);
-                    if (pos == std::wstring::npos)
-                        continue;
-                    if (pos > accpos || (pos < accpos && (pos + wit->first.length() < accpos)))
-                        continue;
-                    size_t idxw = 0;
-                    size_t idxa = 0;
-                    for (auto cit = acc.begin() + pos; idxw < wit->first.length(); ++cit, idxa++) {
-                        if ((*cit) == L'1')
-                            continue;
-                        idxw++;
+                    pos = wacc.find(L"1");
+                    while (pos != std::wstring::npos) {
+                        wacc.replace(pos, 1, L"");
+                        pos = wacc.find(L"1");
                     }
-                    /*                if (idxa < 3)
-                                        continue; */
-                    if (idxa == idxw) // last letter is accented
-                        idxa++;
-                    acc = acc.substr(pos, idxa);
-                    if (acc.length() <= 1)
-                        continue;
                 }
+                pos = wacc.find(wit->first);
+                if (pos == std::wstring::npos)
+                    continue;
+                size_t idxw = 0;
+                size_t idxa = 0;
+                for (auto cit = acc.begin(); idxw < pos; ++cit, idxw++) {
+                    if ((*cit) == L'1')
+                        idxa++;
+                }
+                idxw = 0;
+                pos += idxa;
+                for (auto cit = acc.begin() + pos; idxw < wit->first.length(); ++cit, idxa++) {
+                    if ((*cit) == L'1')
+                        continue;
+                    idxw++;
+                }
+                if (!noaccent && idxa == idxw) {// last letter is accented
+                    if (pos + idxa < acc.length() && acc[pos + idxa] == L'1')
+                       idxa++;
+                }
+                acc = acc.substr(pos, idxa);
+                if (acc.length() <= 1)
+                    continue;
+                //}
                 accentMap::iterator acit = accents.find(acc);
                 if (acit == accents.end()) {
                     accent cac = {accId};

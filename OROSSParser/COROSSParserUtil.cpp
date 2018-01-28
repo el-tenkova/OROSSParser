@@ -139,7 +139,7 @@ std::wstring COROSSParser::prepareRest(const std::wstring& Rest)
     return result;
 }
 
-void COROSSParser::prepareTitle(std::wstring& title)
+void COROSSParser::prepareTitle(std::wstring& title, bool saveaccent)
 {
     prepareComment(title);
     std::vector<std::wstring> tags;
@@ -161,7 +161,8 @@ void COROSSParser::prepareTitle(std::wstring& title)
     tags.push_back(L"\u00B2");
     tags.push_back(L"\u2026"); */
     tags.push_back(L"\u25ca");
-    tags.push_back(L"&#x301");
+    if (!saveaccent)
+        tags.push_back(L"&#x301");
     std::vector<std::wstring>::iterator it = tags.begin();
     for (it; it != tags.end(); ++it) {
         size_t pos = title.find(*it);

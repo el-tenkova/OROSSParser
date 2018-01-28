@@ -491,7 +491,7 @@ protected:
     void countArticles();
 
     void prepareOrthoKey(std::wstring& key, bool saveaccent=false);
-    void prepareTitle(std::wstring& title);
+    void prepareTitle(std::wstring& title, bool saveaccent = false);
     void prepareSearchTitle(std::wstring &title);
     void prepareComment(std::wstring& comment);
     std::wstring prepareForSearch(const std::wstring& ortho);
