@@ -701,7 +701,10 @@ wchar_t COROSSParser::loadOROSSArticle(std::wifstream& arts)
     ca.clear();
     ca.id = 0;
     ca.dic = dicOROSS;
-    ca.state = ARTICLE_STATE_NEUTRAL;
+	if (mode == Rebuild)
+		ca.state = ARTICLE_STATE_NEW;
+	else
+		ca.state = ARTICLE_STATE_NEUTRAL;
     while (!arts.eof()) {
         std::wstring str(L"");
         std::getline(arts, str);
@@ -892,7 +895,7 @@ void COROSSParser::applyChanges()
             std::vector<std::wstring> parts = split(str, L'\t');
             if (parts[0] == L"a_c:") {
                 if (id != 0) {
-                    if (act == Delete) {
+                    if (act == Delete || act == Phantom) {
                         auto ait = articles.find(id);
                         if (ait != articles.end())
                             ait->second.state = ARTICLE_STATE_TO_DELETE;
@@ -977,7 +980,7 @@ void COROSSParser::applyChanges()
         dic.close();
         if (id != 0) {
             if (id != 0) {
-                if (act == Delete) {
+                if (act == Delete || act == Phantom) {
                     auto ait = articles.find(id);
                     if (ait != articles.end())
                         ait->second.state = ARTICLE_STATE_TO_DELETE;

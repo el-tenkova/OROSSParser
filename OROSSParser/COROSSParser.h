@@ -274,7 +274,8 @@ private:
         Nothing = 0,
         Delete = 2,
         NewArt = 4,
-        Edited = 5
+        Edited = 5,
+        Phantom = 6,
     };
     const std::wstring str_words;
     const std::wstring str_words_articles;

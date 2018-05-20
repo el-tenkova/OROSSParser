@@ -16,8 +16,8 @@
 #define SL_D_RAZD   L"<i>слитно/дефисно/раздельно</i>"
 #define PROVER_GLASN L"<i>проверяемая гласная</i>"
 #define PARA21  21
-#define SAVE_SEARCH false
-#define LOAD_SEARCH true
+#define SAVE_SEARCH true //false
+#define LOAD_SEARCH false //true
 
 //COROSSParser::str_words_articles(L"INSERT INTO words_articles (id, id_article) ");
 
@@ -225,7 +225,7 @@ long COROSSParser::Init(modeName Mode, const std::string& cfg)
     if (mode == AddROS || mode == ROSOnly) {
         loadROS(config["ROS_2012"]);
     }
-    else if (mode == WebUpdate) {
+    else if (mode == WebUpdate || mode == Rebuild) {
         std::cout << "WebUpdate" << std::endl;
         loadAll();
     }
@@ -237,11 +237,12 @@ long COROSSParser::Terminate()
 {
     processArticles();
     saveDic();
-    if (mode != Create && mode != Update) {
+  //  if (mode != Create && mode != Update) {
         presaveArticles(SAVE_SEARCH);
+        saveData(SAVE_SEARCH);
         makeSQL();
-    }
-    saveData(SAVE_SEARCH);
+   // }
+//    saveData(SAVE_SEARCH);
     saveWords();
     error.close();
     morph.Terminate();
