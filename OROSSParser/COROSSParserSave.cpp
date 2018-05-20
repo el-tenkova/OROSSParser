@@ -508,6 +508,8 @@ void COROSSParser::makeSQL()
             result_contents.close();
         }
        // makeHistoricTable(result_contents);
+        if (mode == ROSOnly)
+            makeABCTable(russian);
         makeWordsTable(russian);
         makeBigrammsTable(russian);
         makeTrigrammsTable(russian);
@@ -515,8 +517,6 @@ void COROSSParser::makeSQL()
         makeMistakesTable(russian);
         makeAccentsTable(russian);
         makeArticlesTable(russian);
-        if (mode == ROSOnly)
-            makeABCTable(russian);
     }
 }
 
@@ -2524,6 +2524,7 @@ void COROSSParser::processAccents() {
                     tmp = u8str.substr(ait->start, ait->len + acSign.length());
                 else
                     tmp = u8str.substr(ait->start, ait->len);
+                std::wcout << L"acc art id = " << ca.id << std::endl;
                 std::wstring acc(conv1.from_bytes(tmp));
                 acc = getSpecMarkedArticle(acc, true);
                 size_t accpos = acc.find(acSign);
