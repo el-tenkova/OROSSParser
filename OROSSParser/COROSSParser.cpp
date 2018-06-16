@@ -16,8 +16,8 @@
 #define SL_D_RAZD   L"<i>слитно/дефисно/раздельно</i>"
 #define PROVER_GLASN L"<i>проверяемая гласная</i>"
 #define PARA21  21
-#define SAVE_SEARCH true //false
-#define LOAD_SEARCH false //true
+#define SAVE_SEARCH false
+#define LOAD_SEARCH true
 
 //COROSSParser::str_words_articles(L"INSERT INTO words_articles (id, id_article) ");
 
@@ -219,7 +219,7 @@ long COROSSParser::Init(modeName Mode, const std::string& cfg)
     loadMorph(config["foreign"], config["lemmata"]);
 
     //loadWords();
-    if (mode != Create && mode != ROSOnly && mode != WebUpdate) {
+    if (mode != Create && mode != ROSOnly && mode != WebUpdate && mode != Rebuild) {
         loadDic(config["arts"]);
     }    
     if (mode == AddROS || mode == ROSOnly) {
@@ -228,6 +228,7 @@ long COROSSParser::Init(modeName Mode, const std::string& cfg)
     else if (mode == WebUpdate || mode == Rebuild) {
         std::cout << "WebUpdate" << std::endl;
         loadAll();
+        std::cout << "WebUpdate2" << std::endl;
     }
 
     return res;
@@ -237,11 +238,13 @@ long COROSSParser::Terminate()
 {
     processArticles();
     saveDic();
+ //   if (mode == Rebuild)
+    {
   //  if (mode != Create && mode != Update) {
         presaveArticles(SAVE_SEARCH);
         saveData(SAVE_SEARCH);
         makeSQL();
-   // }
+    }
 //    saveData(SAVE_SEARCH);
     saveWords();
     error.close();
@@ -757,8 +760,13 @@ void COROSSParser::processArticles() {
             }
         }
     }
-    articles.clear();
-    articles = sorted;
+    if (mode != Rebuild) {
+        articles.clear();
+        articles = sorted;
+    }
+/*    for (auto ait=articles.begin(); ait != articles.end(); ++ait) {
+        std::wcout << (*ait).second.id << L"   " << (*ait).second.src << std::endl;
+    } */
 
     for (auto ait = articles.begin(); ait != articles.end(); ++ait) {
         if (ait->second.dic == dicOROSS && ait->second.state == ARTICLE_STATE_NEW) {//ARTICLE_STATE_TO_DELETE)

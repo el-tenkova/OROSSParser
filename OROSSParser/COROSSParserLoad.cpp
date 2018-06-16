@@ -701,10 +701,10 @@ wchar_t COROSSParser::loadOROSSArticle(std::wifstream& arts)
     ca.clear();
     ca.id = 0;
     ca.dic = dicOROSS;
-	if (mode == Rebuild)
-		ca.state = ARTICLE_STATE_NEW;
-	else
-		ca.state = ARTICLE_STATE_NEUTRAL;
+    if (mode == Rebuild)
+        ca.state = ARTICLE_STATE_NEW;
+    else
+        ca.state = ARTICLE_STATE_NEUTRAL;
     while (!arts.eof()) {
         std::wstring str(L"");
         std::getline(arts, str);
@@ -742,7 +742,8 @@ wchar_t COROSSParser::loadOROSSArticle(std::wifstream& arts)
             }            
         }
         else if (parts[0] == L"a_text:") {
-            ca.text = parts[1];
+            if (mode != Rebuild)
+                ca.text = parts[1];
         }
         else if (parts[0] == L"a_src:") {
             ca.src = parts[1];
@@ -752,17 +753,28 @@ wchar_t COROSSParser::loadOROSSArticle(std::wifstream& arts)
         }
         else if (parts[0] == L"a_tl:") {
             ca.titleLen = std::stol(parts[1]);
+            if (mode == Rebuild){
+                size_t len = ca.titleLen - (tagsTitle[0].length() + tagsTitle[1].length());
+                ca.text.append(tagsTitle[0]);
+                ca.text.append(ca.src);
+                ca.text.insert(ca.titleLen - tagsTitle[1].length(), tagsTitle[1]);
+                //std::wcout << ca.text << std::endl;
+            }
         }
         else if (parts[0] == L"a_f:") {
-            std::vector<std::wstring> formulas = split(parts[1], L',');
-            for (auto it = formulas.begin(); it != formulas.end(); ++it) {
-                ca.formulas.push_back(std::stol(*it));
+            if (mode != Rebuild) {
+                std::vector<std::wstring> formulas = split(parts[1], L',');
+                for (auto it = formulas.begin(); it != formulas.end(); ++it) {
+                    ca.formulas.push_back(std::stol(*it));
+                }
             }
         }
         else if (parts[0] == L"a_o:") {
-            std::vector<std::wstring> orthos = split(parts[1], L',');
-            for (auto it = orthos.begin(); it != orthos.end(); ++it) {
-                ca.orthos.push_back(std::stol(*it));
+            if (mode != Rebuild) {
+                std::vector<std::wstring> orthos = split(parts[1], L',');
+                for (auto it = orthos.begin(); it != orthos.end(); ++it) {
+                    ca.orthos.push_back(std::stol(*it));
+                }
             }
         }
         else if (parts[0] == L"a_d:") {
@@ -771,11 +783,12 @@ wchar_t COROSSParser::loadOROSSArticle(std::wifstream& arts)
             cd.start = std::stol(p[0]);
             cd.len = p[1] == L"-1" ? std::wstring::npos : std::stol(p[1]);
             cd.type = (char)p[2][0];
-            ca.index.push_back(cd);
+            if (mode != Rebuild || (mode == Rebuild && cd.start < ca.titleLen))
+                ca.index.push_back(cd);
         }
     }
     if (ca.id != 0) {
-        ca.state = ARTICLE_STATE_NEUTRAL;
+        ca.state = mode != Rebuild ? ARTICLE_STATE_NEUTRAL : ARTICLE_STATE_NEW;
         articles.insert(std::pair<size_t, article>(ca.id, ca));
         std::wstring title_l(ca.title);
         prepareSearchTitle(title_l);
@@ -842,7 +855,6 @@ void COROSSParser::loadOROSS(const std::string& dict) {
         arts.close();
     }
 }
-
 void COROSSParser::loadAll()
 {
     artId = 1;
@@ -867,9 +879,14 @@ void COROSSParser::loadAll()
                 dictype = loadOROSSArticle(dic);
             else
                 dictype = loadROSArticle(dic);
+//            if (articles.size() == 50)
+//                break;
         }
         dic.close();
     }
+//    for (auto ait=articles.begin(); ait != articles.end(); ++ait) {
+//        std::wcout << (*ait).second.id << L"   " << (*ait).second.src << std::endl;
+//    }
     if (mode == WebUpdate) {
         applyChanges();
     }
