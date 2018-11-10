@@ -517,6 +517,7 @@ void COROSSParser::makeSQL()
         makeMistakesTable(russian);
         makeAccentsTable(russian);
         makeArticlesTable(russian);
+        makeAddInfoUpdate();
     }
 }
 
@@ -2614,6 +2615,29 @@ void COROSSParser::makeTutorialUpdate()
                     str.append(L";\n");
                     update.write(str.c_str(), str.length());
                 }
+            }
+        }
+        update.close();
+    }
+}
+
+void COROSSParser::makeAddInfoUpdate()
+{
+    std::wofstream update(config["output"] + "update_addinfo.sql", std::wofstream::binary);
+    
+    std::wstring str(L"");
+    if (update.is_open()) {
+        writeBOM(update);
+        update.imbue(russian);
+        for (auto ait = articles.begin(); ait != articles.end(); ++ait) {
+            for (auto it = ait->second.addinfo.begin(); it != ait->second.addinfo.end(); ++ait) {
+                str.clear();
+                str.append(L"UPDATE addinfo SET id_article='");
+                str.append(std::to_wstring(ait->second.id));
+                str.append(L"' WHERE id=");
+                str.append(std::to_wstring(*(it)));
+                str.append(L";\n");
+                update.write(str.c_str(), str.length());
             }
         }
         update.close();

@@ -72,6 +72,7 @@ struct article {
     std::vector<size_t> formulas;
     std::vector<size_t> orthos;
     std::vector<size_t> comments;
+    std::vector<size_t> addinfo;
     dummyVct index;
     std::vector<size_t> words;
     std::vector<size_t> bigramms;
@@ -454,6 +455,7 @@ protected:
     void loadOROSS(const std::string& dict);
     void loadAll();
     void applyChanges();
+	void loadAddinfo();
     wchar_t loadOROSSArticle(std::wifstream& arts);
     wchar_t loadROSArticle(std::wifstream& ros);
     void fillROSArticle(const std::wstring& str, article& ca);
@@ -477,6 +479,7 @@ protected:
     void makeMistakesTable(const std::locale& loc);
     void makeAccentsTable(const std::locale& loc);
     void makeTutorialUpdate();
+	void makeAddInfoUpdate();
     void makeABCTable(const std::locale& loc);
 
     void processComments();

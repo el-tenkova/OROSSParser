@@ -879,8 +879,8 @@ void COROSSParser::loadAll()
                 dictype = loadOROSSArticle(dic);
             else
                 dictype = loadROSArticle(dic);
-//            if (articles.size() == 50)
-//                break;
+            if (articles.size() == 1000)
+                break;
         }
         dic.close();
     }
@@ -888,7 +888,35 @@ void COROSSParser::loadAll()
 //        std::wcout << (*ait).second.id << L"   " << (*ait).second.src << std::endl;
 //    }
     if (mode == WebUpdate) {
+		loadAddinfo();
         applyChanges();
+    }
+}
+
+void COROSSParser::loadAddinfo()
+{
+    std::wifstream dic(config["addinfo"], std::wifstream::binary);
+    if (dic.is_open()) {
+        dic.imbue(russian);
+        //dic.seekg(3);
+        std::wstring str(L"");
+        size_t add_id = 0;
+        while (!dic.eof()) {
+            std::getline(dic, str);
+            if (str.length() == 0)
+                continue;
+            std::vector<std::wstring> parts = split(str, L'\t');
+            if (parts[0] == L"add_id:") {
+                add_id = std::stol(parts[1]);
+            }
+            else if (parts[0] == L"a_id:") {
+                size_t id = std::stol(parts[1]);
+                auto ait = articles.find(id);
+                if (ait != articles.end())
+                   ait->second.addinfo.push_back(add_id);
+            }
+        }
+        dic.close();
     }
 }
 

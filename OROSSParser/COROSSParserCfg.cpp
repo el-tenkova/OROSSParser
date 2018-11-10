@@ -41,6 +41,7 @@ void COROSSParserCfg::load(const std::string& cfgFile)
     configMap["pre_in"] = "";
     configMap["pre_out"] = "";
     configMap["changes"] = "";
+	configMap["addinfo"] = "";
 
     if (config.is_open()) {
         while (!config.eof()) {
