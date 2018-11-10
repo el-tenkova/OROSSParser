@@ -16,8 +16,8 @@
 #define SL_D_RAZD   L"<i>слитно/дефисно/раздельно</i>"
 #define PROVER_GLASN L"<i>проверяемая гласная</i>"
 #define PARA21  21
-#define SAVE_SEARCH true // false
-#define LOAD_SEARCH false // true
+#define SAVE_SEARCH false
+#define LOAD_SEARCH true
 
 //COROSSParser::str_words_articles(L"INSERT INTO words_articles (id, id_article) ");
 
