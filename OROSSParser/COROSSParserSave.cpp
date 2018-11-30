@@ -389,6 +389,11 @@ void COROSSParser::saveOROSSArticle(std::wofstream& arts, const artMap::iterator
     str.append(L"a_title:\t"); // title
     str.append(ait->second.title);
     str.append(L"\n");
+    if (!ait->second.ros_title.empty()){
+        str.append(L"a_title_ros:\t"); // title
+        str.append(ait->second.ros_title);
+        str.append(L"\n");
+    }
     str.append(L"a_text:\t"); // text
     str.append(ait->second.text);
     str.append(L"\n");
@@ -2630,10 +2635,10 @@ void COROSSParser::makeAddInfoUpdate()
         writeBOM(update);
         update.imbue(russian);
         for (auto ait = articles.begin(); ait != articles.end(); ++ait) {
-            for (auto it = ait->second.addinfo.begin(); it != ait->second.addinfo.end(); ++ait) {
+            for (auto it = ait->second.addinfo.begin(); it != ait->second.addinfo.end(); ++it) {
                 str.clear();
                 str.append(L"UPDATE addinfo SET id_article='");
-                str.append(std::to_wstring(ait->second.id));
+                str.append(std::to_wstring(ait->first));
                 str.append(L"' WHERE id=");
                 str.append(std::to_wstring(*(it)));
                 str.append(L";\n");

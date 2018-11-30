@@ -714,7 +714,7 @@ wchar_t COROSSParser::loadOROSSArticle(std::wifstream& arts)
         if (parts[0] == L"a_dic:") {
             // add article
             articles.insert(std::pair<size_t, article>(ca.id, ca));
-            std::wstring title_l(ca.title);
+            std::wstring title_l(ca.dic == dicOROSS && !ca.ros_title.empty() ? ca.ros_title : ca.title);
             prepareSearchTitle(title_l);
             auto tit = titles.find(title_l);
             if (tit == titles.end()) {
@@ -740,6 +740,14 @@ wchar_t COROSSParser::loadOROSSArticle(std::wifstream& arts)
                 ca.title.replace(pos, 1, L"");
                 pos = ca.title.find(L"\u0301", pos + 1);
             }            
+        }
+        else if (parts[0] == L"a_title_ros:") {
+            ca.ros_title = parts[1];
+            size_t pos = ca.ros_title.find(L"\u0301");
+            while (pos != std::wstring::npos) {
+                ca.ros_title.replace(pos, 1, L"");
+                pos = ca.ros_title.find(L"\u0301", pos + 1);
+            }
         }
         else if (parts[0] == L"a_text:") {
             if (mode != Rebuild)
@@ -901,6 +909,7 @@ void COROSSParser::loadAddinfo()
         //dic.seekg(3);
         std::wstring str(L"");
         size_t add_id = 0;
+        size_t id = 0;
         while (!dic.eof()) {
             std::getline(dic, str);
             if (str.length() == 0)
@@ -910,13 +919,14 @@ void COROSSParser::loadAddinfo()
                 add_id = std::stol(parts[1]);
             }
             else if (parts[0] == L"a_id:") {
-                size_t id = std::stol(parts[1]);
+                id = std::stol(parts[1]);
                 auto ait = articles.find(id);
                 if (ait != articles.end())
                    ait->second.addinfo.push_back(add_id);
             }
         }
         dic.close();
+        //if ()
     }
 }
 
