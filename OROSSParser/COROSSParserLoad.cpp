@@ -879,8 +879,8 @@ void COROSSParser::loadAll()
                 dictype = loadOROSSArticle(dic);
             else
                 dictype = loadROSArticle(dic);
-            if (articles.size() == 1000)
-                break;
+//            if (articles.size() == 1000)
+//                break;
         }
         dic.close();
     }
