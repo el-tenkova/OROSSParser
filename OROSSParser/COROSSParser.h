@@ -66,6 +66,7 @@ struct article {
     size_t id;
     wchar_t dic;
     std::wstring title;
+    std::wstring ros_title;
     std::wstring text;
     std::wstring src;
     std::wstring rtf;
