@@ -513,7 +513,6 @@ protected:
     std::vector<std::wstring> addTitleToIndex(artMap::iterator ait, const dummyVct::iterator& dit);
     std::vector<std::wstring> addWordToTutorialIndex(const size_t& id, const std::wstring& interval, const size_t& pos, const size_t& start, const size_t& utf_len, const wchar_t type, const size_t& number);
     void removeParentheses(std::wstring& str);
-    void removeSya(std::wstring& str);
     void cutTail(std::wstring& str);
     void cutHead(std::wstring& str);
     void replaceSup(std::wstring& str);

@@ -142,6 +142,7 @@ std::wstring COROSSParser::prepareRest(const std::wstring& Rest)
 void COROSSParser::prepareTitle(std::wstring& title, bool saveaccent)
 {
     prepareComment(title);
+
     std::vector<std::wstring> tags;
     tags.push_back(L"<i>");
     tags.push_back(L"</i>");
@@ -194,6 +195,12 @@ void COROSSParser::prepareTitle(std::wstring& title, bool saveaccent)
 void COROSSParser::prepareSearchTitle(std::wstring &title) {
     std::transform(title.begin(), title.end(), title.begin(),
         std::bind2nd(std::ptr_fun(&std::tolower<wchar_t>), russian));
+
+    std::vector<std::wstring> vs = split(title, L',');
+    if (vs.size() > 1) {
+        title = vs[0];
+    }
+
     size_t pos = title.find(L'…');
     while (pos != std::wstring::npos) {
         title.replace(pos, 1, L"...");
@@ -226,17 +233,6 @@ void COROSSParser::prepareSearchTitle(std::wstring &title) {
     todel.push_back(L'\u00AD');
     todel.push_back(L'\u2013');
     todel.push_back(L'\u2014');
-/*    for (auto sym = todel.begin(); sym != todel.end(); ++sym) {
-        pos = title.find(*sym);
-        while (pos != std::wstring::npos) {
-            if (pos + 1 < title.length() && title[pos + 1] == '.')
-                pos = pos + 1;
-            else
-                title.replace(pos, 1, L"");
-            pos = title.find(*sym, pos);// +1);
-        }
-    } 
-    todel.clear();*/
     todel.push_back(L';');
     todel.push_back(L' ');
     todel.push_back(L'»');
@@ -248,26 +244,7 @@ void COROSSParser::prepareSearchTitle(std::wstring &title) {
             pos = title.find(*sym, pos);// +1);
         }
     }
-/*    pos = title.find(L';'); 
-    while (pos != std::wstring::npos) {
-        title.replace(pos, 1, L"");
-        pos = title.find(L';', pos + 1);
-    }
-    pos = title.find(L' ');
-    while (pos != std::wstring::npos) {
-        title.replace(pos, 1, L"");
-        pos = title.find(L' ', pos + 1);
-    }
-    pos = title.find(L'»');
-    while (pos != std::wstring::npos) {
-        title.replace(pos, 1, L"");
-        pos = title.find(L'»', pos + 1);
-    }
-    pos = title.find(L'«');
-    while (pos != std::wstring::npos) {
-        title.replace(pos, 1, L"");
-        pos = title.find(L'«', pos + 1);
-    } */
+
     pos = title.find(L'ё');
     while (pos != std::wstring::npos) {
         title.replace(pos, 1, L"е");
@@ -1157,14 +1134,6 @@ void COROSSParser::removeParentheses(std::wstring& str) {
     }
 }
 
-void COROSSParser::removeSya(std::wstring& str) {
-    size_t pos = str.find(L"(ся)");
-    while (pos != std::wstring::npos) {
-        str.replace(pos, 4, L"");
-        pos = str.find(L"(ся)");
-    }
-}
-
 void COROSSParser::cutTail(std::wstring& str) {
     std::locale loc;
     size_t idx = str.length();
@@ -1439,20 +1408,42 @@ void COROSSParser::addToTitleMap(std::wstring& title_l, size_t artId)
 {
     auto tit = titles.find(title_l);
     auto ait = articles.find(artId);
-    assert(ait != articles.end());
+    std::wstring title(title_l);
+    bool sya = false;
+    if (tit == titles.end()) {
+        if (ait->second.dic == dicROS) {
+            size_t pos = title.rfind(L"ся");
+            if (pos == title.length() - 2) {
+                title.replace(pos, 2, L"");
+                sya = true;
+            }
+        }
+        else if (title.find(L',') != std::wstring::npos){
+            std::vector<std::wstring> vs = split(title, L',');
+            title = vs[0];
+        }
+    }
+    tit = titles.find(title);
     if (tit == titles.end()) {
         std::vector<size_t> artVct;
         artVct.push_back(ait->second.id);
-        titles.insert(std::pair < std::wstring, std::vector<size_t> >(title_l, artVct));
+        if (!sya)
+            titles.insert(std::pair < std::wstring, std::vector<size_t> >(title, artVct));
+        else
+            titles.insert(std::pair < std::wstring, std::vector<size_t> >(title_l, artVct));
     }
     else {
         bool found = false;
         bool done = false;
-        std::wstring title = (ait->second.dic == dicOROSS && !ait->second.ros_title.empty()) ? ait->second.ros_title : ait->second.title;
+        if (ait->second.dic == dicOROSS && !ait->second.ros_title.empty())
+            title = ait->second.ros_title;
         for (auto it = tit->second.begin(); it != tit->second.end(); ++it) {
             auto ait1 = articles.find((*it));
-            assert(ait1 != articles.end());
             std::wstring title1 = (ait1->second.dic == dicOROSS && !ait1->second.ros_title.empty()) ? ait1->second.ros_title : ait1->second.title;
+            if (ait1->second.dic == dicOROSS && title1.find(L',') != std::wstring::npos){
+                std::vector<std::wstring> vs = split(title1, L',');
+                title1 = vs[0];
+            }
             if (ait->second.dic == dicOROSS) {
                 if (title.compare(title1) == 0) {
                     if (!found)

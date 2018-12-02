@@ -428,7 +428,6 @@ void COROSSParser::fillROSArticle(const std::wstring& a, article& ca)
             if (ca.title.length() == 0)
                 ca.title = title_l;
             prepareSearchTitle(title_l);
-            removeSya(title_l);
             removeParentheses(title_l);
             if (title_l.length() > 0) {
                 if (title.length() == 0)
@@ -617,7 +616,6 @@ void COROSSParser::loadROS(const std::string& dict) {
                     if (ca.title.length() == 0)
                         ca.title = title_l;
                     prepareSearchTitle(title_l);
-                    removeSya(title_l);
                     removeParentheses(title_l);
                     if (title_l.length() > 0) {
                         if (title.length() == 0)
@@ -699,7 +697,7 @@ wchar_t COROSSParser::loadOROSSArticle(std::wifstream& arts)
             while (pos != std::wstring::npos) {
                 ca.title.replace(pos, 1, L"");
                 pos = ca.title.find(L"\u0301", pos + 1);
-            }            
+            }
         }
         else if (parts[0] == L"a_title_ros:") {
             ca.ros_title = parts[1];
