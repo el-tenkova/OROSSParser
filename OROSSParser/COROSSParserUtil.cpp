@@ -1413,7 +1413,7 @@ void COROSSParser::addToTitleMap(std::wstring& title_l, size_t artId)
     if (tit == titles.end()) {
         if (ait->second.dic == dicROS) {
             size_t pos = title.rfind(L"ся");
-            if (pos == title.length() - 2) {
+            if (pos != std::wstring::npos && pos == title.length() - 2) {
                 title.replace(pos, 2, L"");
                 sya = true;
             }
