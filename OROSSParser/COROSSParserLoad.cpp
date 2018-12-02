@@ -428,6 +428,7 @@ void COROSSParser::fillROSArticle(const std::wstring& a, article& ca)
             if (ca.title.length() == 0)
                 ca.title = title_l;
             prepareSearchTitle(title_l);
+            removeSya(title_l);
             removeParentheses(title_l);
             if (title_l.length() > 0) {
                 if (title.length() == 0)
@@ -616,6 +617,7 @@ void COROSSParser::loadROS(const std::string& dict) {
                     if (ca.title.length() == 0)
                         ca.title = title_l;
                     prepareSearchTitle(title_l);
+                    removeSya(title_l);
                     removeParentheses(title_l);
                     if (title_l.length() > 0) {
                         if (title.length() == 0)

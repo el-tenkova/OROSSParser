@@ -1157,6 +1157,14 @@ void COROSSParser::removeParentheses(std::wstring& str) {
     }
 }
 
+void COROSSParser::removeSya(std::wstring& str) {
+    size_t pos = str.find(L"(ся)");
+    while (pos != std::wstring::npos) {
+        str.replace(pos, 4, L"");
+        pos = str.find(L"(ся)");
+    }
+}
+
 void COROSSParser::cutTail(std::wstring& str) {
     std::locale loc;
     size_t idx = str.length();

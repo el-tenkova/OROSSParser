@@ -390,7 +390,7 @@ void COROSSParser::saveOROSSArticle(std::wofstream& arts, const artMap::iterator
     str.append(ait->second.title);
     str.append(L"\n");
     if (!ait->second.ros_title.empty()){
-        str.append(L"a_title_ros:\t"); // title
+        str.append(L"a_title_ros:\t"); // title авто…
         str.append(ait->second.ros_title);
         str.append(L"\n");
     }
