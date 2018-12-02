@@ -680,17 +680,8 @@ long COROSSParser::AddArticle(const std::wstring& Title, const std::wstring& Art
         // convert title to lower case
         std::wstring title_l(ca.title);
         prepareSearchTitle(title_l);
-        auto tit = titles.find(title_l);
-        if (tit == titles.end()) {
-            std::vector<size_t> artVct;
-            artVct.push_back(ca.id);
-            titles.insert(std::pair < std::wstring, std::vector<size_t> >(title_l, artVct));
-        }
-        else {
-            tit->second.push_back(artId);
-        }
+        addToTitleMap(title_l, artId);
         artId++;
-
     }
     return 0;
 }

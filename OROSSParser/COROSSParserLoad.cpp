@@ -224,17 +224,9 @@ void COROSSParser::loadDic(const std::string& dict)
                     articles.insert(std::pair<size_t, article>(artId, ca));
                     std::wstring title_l(ca.title);
                     prepareSearchTitle(title_l);
+                    addToTitleMap(title_l, ca.id);
 //                    std::transform(title_l.begin(), title_l.end(), title_l.begin(),
 //                        std::bind2nd(std::ptr_fun(&std::tolower<wchar_t>), russian));
-                    auto tit = titles.find(title_l);
-                    if (tit == titles.end()) {
-                        std::vector<size_t> artVct;
-                        artVct.push_back(artId); //ca.id);
-                        titles.insert(std::pair<std::wstring, std::vector<size_t> >(title_l, artVct));
-                    }
-                    else {
-                        tit->second.push_back(artId);//ca.id);
-                    }
                     artId++;
                     //artId = ca.id;
                 }
@@ -295,15 +287,7 @@ void COROSSParser::loadDic(const std::string& dict)
             articles.insert(std::pair<size_t, article>(artId, ca));
             std::wstring title_l(ca.title);
             prepareSearchTitle(title_l);
-            auto tit = titles.find(title_l);
-            if (tit == titles.end()) {
-                std::vector<size_t> artVct;
-                artVct.push_back(artId); //ca.id);
-                titles.insert(std::pair<std::wstring, std::vector<size_t> >(title_l, artVct));
-            }
-            else {
-                tit->second.push_back(artId);//ca.id);
-            }
+            addToTitleMap(title_l, ca.id);
             artId++;
             //artId = ca.id;
         }
@@ -471,16 +455,7 @@ void COROSSParser::fillROSArticle(const std::wstring& a, article& ca)
         ca.index.push_back({ (*(ca.index.end() - 1)).start + (*(ca.index.end() - 1)).len, std::wstring::npos, articleWord });
     }
     articles.insert(std::pair<size_t, article>(ca.id, ca));
-    auto tit = titles.find((title));
-    if (tit == titles.end()) {
-        std::vector<size_t> artVct;
-        artVct.push_back(ca.id);
-        titles.insert(std::pair<std::wstring, std::vector<size_t> >(title, artVct));
-    }
-    else {
-       // tit->second.push_back(ca.id);
-       tit->second.insert(tit->second.begin(), ca.id);
-    }
+    addToTitleMap(title, ca.id);
 }
 
 
@@ -673,16 +648,7 @@ void COROSSParser::loadROS(const std::string& dict) {
                 ca.index.push_back({ (*(ca.index.end() - 1)).start + (*(ca.index.end() - 1)).len, std::wstring::npos, articleWord });
             }
             articles.insert(std::pair<size_t, article>(ca.id, ca));
-//            for (auto it = art_titles.begin(); it != art_titles.end(); ++it) {
-                auto tit = titles.find((title));
-                if (tit == titles.end()) {
-                    std::vector<size_t> artVct;
-                    artVct.push_back(ca.id);
-                    titles.insert(std::pair<std::wstring, std::vector<size_t> >(title, artVct));
-                }
-                else {
-                    tit->second.push_back(ca.id);
-                }
+            addToTitleMap(title, ca.id);
   //          }
                 for (auto dit = ca.index.begin(); dit != ca.index.end(); ++dit) {
                     std::wstring interval = ca.text.substr(dit->start, dit->len);
@@ -716,15 +682,7 @@ wchar_t COROSSParser::loadOROSSArticle(std::wifstream& arts)
             articles.insert(std::pair<size_t, article>(ca.id, ca));
             std::wstring title_l(ca.dic == dicOROSS && !ca.ros_title.empty() ? ca.ros_title : ca.title);
             prepareSearchTitle(title_l);
-            auto tit = titles.find(title_l);
-            if (tit == titles.end()) {
-                std::vector<size_t> artVct;
-                artVct.push_back(ca.id);
-                titles.insert(std::pair<std::wstring, std::vector<size_t> >(title_l, artVct));
-            }
-            else {
-                tit->second.push_back(ca.id);
-            }
+            addToTitleMap(title_l, ca.id);
             if (parts[1] == L"50")
                 return dicOROSS;
             return dicROS;
@@ -800,15 +758,7 @@ wchar_t COROSSParser::loadOROSSArticle(std::wifstream& arts)
         articles.insert(std::pair<size_t, article>(ca.id, ca));
         std::wstring title_l(ca.title);
         prepareSearchTitle(title_l);
-        auto tit = titles.find(title_l);
-        if (tit == titles.end()) {
-            std::vector<size_t> artVct;
-            artVct.push_back(ca.id);
-            titles.insert(std::pair<std::wstring, std::vector<size_t> >(title_l, artVct));
-        }
-        else {
-            tit->second.push_back(ca.id);
-        }
+        addToTitleMap(title_l, ca.id);
         artId = ca.id;
     }
     return dicROS;

@@ -226,6 +226,17 @@ void COROSSParser::prepareSearchTitle(std::wstring &title) {
     todel.push_back(L'\u00AD');
     todel.push_back(L'\u2013');
     todel.push_back(L'\u2014');
+/*    for (auto sym = todel.begin(); sym != todel.end(); ++sym) {
+        pos = title.find(*sym);
+        while (pos != std::wstring::npos) {
+            if (pos + 1 < title.length() && title[pos + 1] == '.')
+                pos = pos + 1;
+            else
+                title.replace(pos, 1, L"");
+            pos = title.find(*sym, pos);// +1);
+        }
+    } 
+    todel.clear();*/
     todel.push_back(L';');
     todel.push_back(L' ');
     todel.push_back(L'»');
@@ -1414,4 +1425,60 @@ void COROSSParser::writeBOM(std::wofstream& stream)
     stream.put(0xBF);
     stream.flush();
 #endif    
+}
+
+void COROSSParser::addToTitleMap(std::wstring& title_l, size_t artId)
+{
+    auto tit = titles.find(title_l);
+    auto ait = articles.find(artId);
+    assert(ait != articles.end());
+    if (tit == titles.end()) {
+        std::vector<size_t> artVct;
+        artVct.push_back(ait->second.id);
+        titles.insert(std::pair < std::wstring, std::vector<size_t> >(title_l, artVct));
+    }
+    else {
+        bool found = false;
+        bool done = false;
+        std::wstring title = (ait->second.dic == dicOROSS && !ait->second.ros_title.empty()) ? ait->second.ros_title : ait->second.title;
+        for (auto it = tit->second.begin(); it != tit->second.end(); ++it) {
+            auto ait1 = articles.find((*it));
+            assert(ait1 != articles.end());
+            std::wstring title1 = (ait1->second.dic == dicOROSS && !ait1->second.ros_title.empty()) ? ait1->second.ros_title : ait1->second.title;
+            if (ait->second.dic == dicOROSS) {
+                if (title.compare(title1) == 0) {
+                    if (!found)
+                        found = true;
+                }
+                else {
+                    if (found) {
+                        tit->second.insert(it, ait->second.id);
+                        done = true;
+                        break;
+                    }
+                }
+            }
+            else {
+                if (title.compare(title1) == 0) {
+                    if (!found) {
+                        found = true;
+                        if (ait1->second.dic == dicOROSS) {
+                            tit->second.insert(it, ait->second.id);
+                            done = true;
+                            break;
+                        }
+                    }
+                }
+                else {
+                    if (found) {
+                        tit->second.insert(it, ait->second.id);
+                        done = true;
+                        break;
+                    }
+                }
+            }
+        }
+        if (!done)
+            tit->second.push_back(ait->second.id);
+    }
 }
