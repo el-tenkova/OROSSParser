@@ -196,11 +196,6 @@ void COROSSParser::prepareSearchTitle(std::wstring &title) {
     std::transform(title.begin(), title.end(), title.begin(),
         std::bind2nd(std::ptr_fun(&std::tolower<wchar_t>), russian));
 
-    std::vector<std::wstring> vs = split(title, L',');
-    if (vs.size() > 1) {
-        title = vs[0];
-    }
-
     size_t pos = title.find(L'…');
     while (pos != std::wstring::npos) {
         title.replace(pos, 1, L"...");
