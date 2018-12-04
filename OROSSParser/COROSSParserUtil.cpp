@@ -1421,7 +1421,7 @@ void COROSSParser::addToTitleMap(std::wstring& title_l, size_t artId)
                 }
             }
         }
-        else if (title.find(L',') != std::wstring::npos){
+        else if (title.find(L',') != std::wstring::npos) {
             std::vector<std::wstring> vs = split(title, L',');
             title = vs[0];
         }
@@ -1430,9 +1430,9 @@ void COROSSParser::addToTitleMap(std::wstring& title_l, size_t artId)
     if (tit == titles.end()) {
         std::vector<size_t> artVct;
         artVct.push_back(ait->second.id);
-        if (!sya)
-            titles.insert(std::pair < std::wstring, std::vector<size_t> >(title, artVct));
-        else
+//        if (sya)
+//            titles.insert(std::pair < std::wstring, std::vector<size_t> >(title, artVct));
+//        else
             titles.insert(std::pair < std::wstring, std::vector<size_t> >(title_l, artVct));
     }
     else {
