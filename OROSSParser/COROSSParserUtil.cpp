@@ -1414,13 +1414,11 @@ void COROSSParser::addToTitleMap(std::wstring& title_l, size_t artId)
         bool done = false;
         if (ait->second.dic == dicOROSS && !ait->second.ros_title.empty())
             title = ait->second.ros_title;
+        else
+            title = ait->second.title;
         for (auto it = tit->second.begin(); it != tit->second.end(); ++it) {
             auto ait1 = articles.find((*it));
             std::wstring title1 = (ait1->second.dic == dicOROSS && !ait1->second.ros_title.empty()) ? ait1->second.ros_title : ait1->second.title;
-            if (ait1->second.dic == dicOROSS && title1.find(L',') != std::wstring::npos){
-                std::vector<std::wstring> vs = split(title1, L',');
-                title1 = vs[0];
-            }
             if (ait->second.dic == dicOROSS) {
                 if (title.compare(title1) == 0) {
                     if (!found)
