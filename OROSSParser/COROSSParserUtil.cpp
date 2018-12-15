@@ -1404,39 +1404,16 @@ void COROSSParser::addToTitleMap(std::wstring& title_l, size_t artId)
     auto tit = titles.find(title_l);
     auto ait = articles.find(artId);
     std::wstring title(title_l);
-    bool sya = false;
-    if (tit == titles.end()) {
-        if (ait->second.dic == dicROS) {
-            size_t pos = ait->second.title.rfind(L"(ся)");
-            if (pos != std::wstring::npos) {
-                size_t pos = title.rfind(L"ся");
-                if (pos != std::wstring::npos && pos == title.length() - 2) {
-                    title.replace(pos, 2, L"");
-                    sya = true;
-                }
-            }
-        }
-        else if (title.find(L',') != std::wstring::npos) {
-            std::vector<std::wstring> vs = split(title, L',');
-            title = vs[0];
-        }
-    }
-    tit = titles.find(title);
     if (tit == titles.end()) {
         std::vector<size_t> artVct;
         artVct.push_back(ait->second.id);
-//        if (sya)
-//            titles.insert(std::pair < std::wstring, std::vector<size_t> >(title, artVct));
-//        else
-            titles.insert(std::pair < std::wstring, std::vector<size_t> >(title_l, artVct));
+        titles.insert(std::pair < std::wstring, std::vector<size_t> >(title_l, artVct));
     }
     else {
         bool found = false;
         bool done = false;
         if (ait->second.dic == dicOROSS && !ait->second.ros_title.empty())
             title = ait->second.ros_title;
-        else if (!sya)
-            title = ait->second.title;
         for (auto it = tit->second.begin(); it != tit->second.end(); ++it) {
             auto ait1 = articles.find((*it));
             std::wstring title1 = (ait1->second.dic == dicOROSS && !ait1->second.ros_title.empty()) ? ait1->second.ros_title : ait1->second.title;
