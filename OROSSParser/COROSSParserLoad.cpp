@@ -680,7 +680,11 @@ wchar_t COROSSParser::loadOROSSArticle(std::wifstream& arts)
         if (parts[0] == L"a_dic:") {
             // add article
             articles.insert(std::pair<size_t, article>(ca.id, ca));
-            std::wstring title_l(ca.dic == dicOROSS && !ca.ros_title.empty() ? ca.ros_title : ca.title);
+            std::wstring title_l(ca.title);
+            if (ca.dic == dicOROSS && !ca.ros_title.empty()) {
+                title_l = ca.ros_title;
+                removeParentheses(title_l);
+            }
             prepareSearchTitle(title_l);
             addToTitleMap(title_l, ca.id);
             if (parts[1] == L"50")
@@ -825,7 +829,7 @@ void COROSSParser::loadAll()
             std::getline(dic, str);
             if (str.length() == 0)
                 continue;
-            if (str.find(L"a_dic:") == 0)
+            if (str.find(L"a_dic:") == 0) 
                 break;
         }
         wchar_t dictype = dicOROSS;
