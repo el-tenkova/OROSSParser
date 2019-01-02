@@ -606,7 +606,7 @@ void COROSSParser::loadROS(const std::string& dict) {
 
 //            std::map<std::wstring, size_t> art_titles;
             // make article and add it to articles
-            article ca = { artId, dicROS, L"", str, src, L"" }; //toRTF(src) };
+            article ca = { artId, dicROS, L"", L"", str, src, L"" }; //toRTF(src) };
             ca.state = ARTICLE_STATE_NEW;
             pos = str.find(L"<b>");
             std::wstring title;
@@ -852,8 +852,8 @@ void COROSSParser::loadAll()
 //    for (auto ait=articles.begin(); ait != articles.end(); ++ait) {
 //        std::wcout << (*ait).second.id << L"   " << (*ait).second.src << std::endl;
 //    }
-    if (mode == WebUpdate) {
-		loadAddinfo();
+    if (mode == WebUpdate || mode == WebUpdateROS) {
+        loadAddinfo();
         applyChanges();
     }
 }
@@ -938,7 +938,7 @@ void COROSSParser::applyChanges()
                             artId++;
                             // add as new
                             if (dictype == dicROS) {
-                                article ca = { artId, dictype, L"", text, text, L"" };
+                                article ca = { artId, dictype, L"", L"", text, text, L"" };
                                 ca.state = ARTICLE_STATE_NEW;
                                 fillROSArticle(text, ca);
                             }
@@ -952,7 +952,7 @@ void COROSSParser::applyChanges()
                     else if (act == NewArt) {
                         artId++;
                         if (dictype == dicROS) {
-                            article ca = { artId, dictype, L"", text, text, L"" };
+                            article ca = { artId, dictype, L"", L"", text, text, L"" };
                             ca.state = ARTICLE_STATE_NEW;
                             fillROSArticle(text, ca);
                         }
@@ -1023,7 +1023,7 @@ void COROSSParser::applyChanges()
                         artId++;
                         // add as new
                         if (dictype == dicROS) {
-                            article ca = { artId, dictype, L"", text, text, L"" };
+                            article ca = { artId, dictype, L"", L"", text, text, L"" };
                             ca.state = ARTICLE_STATE_NEW;
                             fillROSArticle(text, ca);
                         }
@@ -1037,7 +1037,7 @@ void COROSSParser::applyChanges()
                 else if (act == NewArt) {
                     artId++;
                     if (dictype == dicROS) {
-                        article ca = { artId, dictype, L"", text, text, L"" };
+                        article ca = { artId, dictype, L"", L"", text, text, L"" };
                         ca.state = ARTICLE_STATE_NEW;
                         fillROSArticle(text, ca);
                     }

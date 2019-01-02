@@ -326,7 +326,7 @@ void COROSSParser::correctText(std::wstring& text)
 
     pos = text.find(L"\u0301");
     while (pos != std::wstring::npos) {
-        if (mode != WebUpdate) // accent from TinyMCE
+        if (mode != WebUpdate && mode != WebUpdateROS) // accent from TinyMCE
             text.replace(pos, 1, L"");
         else
             text.replace(pos, 1, L"&#x301");
@@ -341,7 +341,7 @@ void COROSSParser::correctText(std::wstring& text)
             text.replace(pos, 1, L"</p><p>\u25ca");
         }
     }
-    if (mode != WebUpdate) {
+    if (mode != WebUpdate && mode != WebUpdateROS) {
         std::vector<std::wstring>::iterator it = tagsAccents.begin();
         for (it; it != tagsAccents.end(); it += 2) {
             pos = text.find(*it);
@@ -361,7 +361,7 @@ void COROSSParser::correctWord(std::wstring& text)
         text.replace(pos, 1, L"-");
         pos = text.find(L"\u001e");
     }
-    if (mode != WebUpdate) {
+    if (mode != WebUpdate && mode != WebUpdateROS) {
         std::vector<std::wstring>::iterator it = tagsAccents.begin();
         for (it; it != tagsAccents.end(); it += 2) {
             pos = text.find(*it);
@@ -1455,4 +1455,5 @@ void COROSSParser::addToTitleMap(std::wstring& title_l, size_t artId)
         if (!done)
             tit->second.push_back(ait->second.id);
     }
+    
 }

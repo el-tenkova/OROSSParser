@@ -93,7 +93,7 @@ long COROSSParser::Init(modeName Mode)
 
     mode = Mode;
 
-    if (mode != ROSOnly)
+    if (mode != ROSOnly && mode != WebUpdateROS)
         loadSearchData(LOAD_SEARCH);
 
     if (mode == PreView)
@@ -204,7 +204,7 @@ long COROSSParser::Init(modeName Mode, const std::string& cfg)
         return 0;
     }
 
-    if (mode != ROSOnly)
+    if (mode != ROSOnly && mode != WebUpdateROS)
         loadSearchData(LOAD_SEARCH);
     if (mode == PreView)
         return res;
@@ -219,13 +219,13 @@ long COROSSParser::Init(modeName Mode, const std::string& cfg)
     loadMorph(config["foreign"], config["lemmata"]);
 
     //loadWords();
-    if (mode != Create && mode != ROSOnly && mode != WebUpdate && mode != Rebuild) {
+    if (mode != Create && mode != ROSOnly && mode != WebUpdate && mode != Rebuild && mode != WebUpdateROS) {
         loadDic(config["arts"]);
     }    
     if (mode == AddROS || mode == ROSOnly) {
         loadROS(config["ROS_2012"]);
     }
-    else if (mode == WebUpdate || mode == Rebuild) {
+    else if (mode == WebUpdate || mode == Rebuild || WebUpdateROS) {
         std::cout << "WebUpdate" << std::endl;
         loadAll();
         std::cout << "WebUpdate2" << std::endl;
@@ -774,7 +774,7 @@ void COROSSParser::processArticles() {
         saveArticles();
         countArticles(); // update count of articles for orthos and formulas
     }
-    else if(mode == WebUpdate) {
+    else if(mode == WebUpdate || mode == WebUpdateROS) {
         countArticles();
     }
 }

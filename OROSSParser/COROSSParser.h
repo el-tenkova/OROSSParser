@@ -312,6 +312,7 @@ public:
         OROSSConvert,
         PreView,
         WebUpdate,
+        WebUpdateROS,
     };
 
     COROSSParser() :
@@ -480,7 +481,7 @@ protected:
     void makeMistakesTable(const std::locale& loc);
     void makeAccentsTable(const std::locale& loc);
     void makeTutorialUpdate();
-	void makeAddInfoUpdate();
+    void makeAddInfoUpdate();
     void makeABCTable(const std::locale& loc);
 
     void processComments();
