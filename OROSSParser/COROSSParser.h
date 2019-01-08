@@ -16,7 +16,11 @@
 #include <fstream>
 #include <codecvt>
 
+#ifndef _ORFO
 #include "COROSSParserMorphS.h"
+#else
+#include "COROSSParserMorph.h"
+#endif
 #include "COROSSParserDiacr.h"
 #include "COROSSParserTree.h"
 #include "COROSSParserSoundEx.h"
@@ -481,7 +485,7 @@ protected:
     void makeMistakesTable(const std::locale& loc);
     void makeAccentsTable(const std::locale& loc);
     void makeTutorialUpdate();
-    void makeAddInfoUpdate();
+	void makeAddInfoUpdate();
     void makeABCTable(const std::locale& loc);
 
     void processComments();
