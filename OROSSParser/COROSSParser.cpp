@@ -733,38 +733,11 @@ void COROSSParser::processArticles() {
 
     artMap sorted;
     // sort by title
-    artMap startedWithDash;
-    size_t dashId = 1;
+    artId = 1;
     auto tit = titles.begin();
     for (tit; tit != titles.end(); ++tit) {
         for (auto it = tit->second.begin(); it != tit->second.end(); ++it) {
             article ca = articles[(*it)];
-            if (ca.state != ARTICLE_STATE_TO_DELETE && ca.title[0] == L'-') {
-                startedWithDash.insert(std::pair<size_t, article>(dashId, ca));
-                dashId++;
-            }
-        }
-    }
-    artId = 1;
-    tit = titles.begin();
-    wchar_t prev = tit->first[0];
-    wchar_t cur = prev;
-    for (tit; tit != titles.end(); ++tit) {
-        cur = tit->first[0];
-        if (cur != prev) {
-            for (auto dit = startedWithDash.begin(); dit != startedWithDash.end(); ++dit) {
-                if (dit->second.title[1] == prev) {
-                    dit->second.id = artId;
-                    sorted.insert(std::pair<size_t, article>(artId, dit->second));
-                    artId++;
-                }
-            }
-            prev = cur;
-        }
-        for (auto it = tit->second.begin(); it != tit->second.end(); ++it) {
-            article ca = articles[(*it)];
-            if (ca.title[0] == L'-')
-                continue;
             if (/*ca.dic == dicOROSS && */ca.state != ARTICLE_STATE_TO_DELETE) {
                 if (ca.id != artId) {
                     replaceArtId(ca, ca.text, ca.id, artId);

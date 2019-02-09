@@ -516,6 +516,7 @@ void COROSSParser::makeSQL()
             result_contents.close();
         }
        // makeHistoricTable(result_contents);
+        std::cout << "make ABC" << std::endl;
         if (mode == ROSOnly || mode == WebUpdateROS)
             makeABCTable(russian);
         makeWordsTable(russian);
