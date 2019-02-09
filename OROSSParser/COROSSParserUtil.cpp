@@ -232,6 +232,7 @@ void COROSSParser::prepareSearchTitle(std::wstring &title) {
     todel.push_back(L' ');
     todel.push_back(L'»');
     todel.push_back(L'«');
+    todel.push_back(L'*');
     for (auto sym = todel.begin(); sym != todel.end(); ++sym) {
         pos = title.find(*sym);
         while (pos != std::wstring::npos) {
