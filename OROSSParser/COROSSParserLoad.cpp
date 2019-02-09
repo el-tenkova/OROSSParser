@@ -441,6 +441,7 @@ void COROSSParser::fillROSArticle(const std::wstring& a, article& ca)
                 }
             }
             else {
+                ca.title.append(L";");
                 ca.title.append(title_l);
             }
             prepareSearchTitle(title_l);
