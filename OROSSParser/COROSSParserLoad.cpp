@@ -425,11 +425,24 @@ void COROSSParser::fillROSArticle(const std::wstring& a, article& ca)
             std::wstring title_l = str.substr(pos, pos1 - pos);
             replaceSup(title_l);
             prepareTitle(title_l);
+            bool sya = false;
             size_t pos_sya = title_l.rfind(L"(ся)");
             if (pos_sya != std::wstring::npos &&  pos_sya == title_l.length() - 4)
-                title_l.replace(pos_sya, 4, L"");
-            if (ca.title.length() == 0)
+                sya = true;
+//                title_l.replace(pos_sya, 4, L"";
+            if (ca.title.length() == 0) {
                 ca.title = title_l;
+                if (sya) {
+                    removeParentheses(ca.title);
+                    std::wstring bezSya(title_l);
+                    bezSya.replace(pos_sya, 4, L"");
+                    ca.title.append(L";");
+                    ca.title.append(bezSya);
+                }
+            }
+            else {
+                ca.title.append(title_l);
+            }
             prepareSearchTitle(title_l);
             removeParentheses(title_l);
             if (title_l.length() > 0) {
