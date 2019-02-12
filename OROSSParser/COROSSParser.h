@@ -563,6 +563,7 @@ protected:
     void saveOROSSArticle(std::wofstream& arts, const artMap::iterator& ait, const bool& dic = false);
     void saveROSArticle(std::wofstream& arts, const artMap::iterator& ait);
     void addToTitleMap(std::wstring& title_l, size_t artId);
+    bool inVector(const std::vector<std::wstring>& v, const std::wstring& str);
 };
 
 #endif //__OROSSPARSERPURE_H_

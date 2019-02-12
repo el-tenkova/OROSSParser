@@ -1400,6 +1400,16 @@ void COROSSParser::writeBOM(std::wofstream& stream)
 #endif    
 }
 
+bool COROSSParser::inVector(const std::vector<std::wstring>& v, const std::wstring& str)
+{
+    bool ret = false;
+    for (auto it = v.begin(); it != v.end(); ++it) {
+        if ((*it).compare(str) == 0)
+            return true;
+    }
+    return false;
+}
+
 void COROSSParser::addToTitleMap(std::wstring& title_l, size_t artId)
 {
     auto tit = titles.find(title_l);
@@ -1421,13 +1431,14 @@ void COROSSParser::addToTitleMap(std::wstring& title_l, size_t artId)
             if (title[title.length() - 1] == L'*')
                 title.replace(title.length() - 1, 1, L"");
         }
+        std::vector<std::wstring> title_in = split(title, L';');
         for (auto it = tit->second.begin(); it != tit->second.end(); ++it) {
             auto ait1 = articles.find((*it));
             std::wstring title1 = (ait1->second.dic == dicOROSS && !ait1->second.ros_title.empty()) ? ait1->second.ros_title : ait1->second.title;
             if (title1[title1.length() - 1] == L'*')
                 title1.replace(title1.length() - 1, 1, L"");
             if (ait->second.dic == dicOROSS) {
-                if (title.compare(title1) == 0) {
+                if (inVector(title_in, title1)) {
                     if (!found)
                         found = true;
                 }
@@ -1440,7 +1451,7 @@ void COROSSParser::addToTitleMap(std::wstring& title_l, size_t artId)
                 }
             }
             else {
-                if (title.compare(title1) == 0) {
+                if (inVector(title_in, title1)) {
                     if (!found) {
                         found = true;
                         if (ait1->second.dic == dicOROSS) {
