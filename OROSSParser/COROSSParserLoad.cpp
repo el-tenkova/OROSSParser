@@ -418,6 +418,10 @@ void COROSSParser::fillROSArticle(const std::wstring& a, article& ca)
     }
     ca.text = str;
     pos = str.find(L"<b>");
+    std::vector<std::wstring> syavect;
+    syavect.push_back(L"(ся)");
+    syavect.push_back(L"(сь)");
+    syavect.push_back(L"(те)");
     std::wstring title;
     while (pos != std::wstring::npos) {
         size_t pos1 = str.find(L"</b>", pos + 1);
@@ -426,23 +430,28 @@ void COROSSParser::fillROSArticle(const std::wstring& a, article& ca)
             replaceSup(title_l);
             prepareTitle(title_l);
             bool sya = false;
-            size_t pos_sya = title_l.rfind(L"(ся)");
-            if (pos_sya != std::wstring::npos &&  pos_sya == title_l.length() - 4)
-                sya = true;
+            size_t pos_sya = std::wstring::npos;
+            for (auto syait = syavect.begin(); syait != syavect.end(); ++syait) {
+                pos_sya = title_l.rfind((*syait));
+                if (pos_sya != std::wstring::npos &&  pos_sya == title_l.length() - 4) {
+                    sya = true;
+                    break;
+                }
+            }
 //                title_l.replace(pos_sya, 4, L"";
             if (ca.title.length() == 0) {
                 ca.title = title_l;
-                if (sya) {
-                    removeParentheses(ca.title);
-                    std::wstring bezSya(title_l);
-                    bezSya.replace(pos_sya, 4, L"");
-                    ca.title.append(L";");
-                    ca.title.append(bezSya);
-                }
             }
             else {
                 ca.title.append(L";");
                 ca.title.append(title_l);
+            }
+            if (sya) {
+                removeParentheses(ca.title);
+                std::wstring bezSya(title_l);
+                bezSya.replace(pos_sya, 4, L"");
+                ca.title.append(L";");
+                ca.title.append(bezSya);
             }
             prepareSearchTitle(title_l);
             removeParentheses(title_l);
