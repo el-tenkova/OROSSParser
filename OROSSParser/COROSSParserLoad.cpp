@@ -453,6 +453,13 @@ void COROSSParser::fillROSArticle(const std::wstring& a, article& ca)
                 ca.title.append(L";");
                 ca.title.append(bezSya);
             }
+            if (!sya && morph.IsLemma(title_l) == false){
+                std::wstring l = morph.GetLemma(title_l);
+                if (l.length() > 0) {
+                    ca.title.append(L";");
+                    ca.title.append(l);
+                }
+            }
             prepareSearchTitle(title_l);
             removeParentheses(title_l);
             if (title_l.length() > 0) {
