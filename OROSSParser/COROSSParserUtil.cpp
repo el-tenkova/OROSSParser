@@ -1475,3 +1475,48 @@ void COROSSParser::addToTitleMap(std::wstring& title_l, size_t artId)
     }
     
 }
+
+void COROSSParser::checkComplexTitle(article& ca)
+{
+    std::vector<std::wstring> tv = split(ca.title, L';');
+    if (tv.size() > 1) {
+        auto it = tv.begin();
+        std::wstring nt((*it));
+        ++it;
+        for (; it != tv.end(); ++it) {
+            std::wstring str = (*it);
+            if (realTitles.find(str) != realTitles.end()) {
+                nt.append(L";");
+                nt.append(str);
+                continue;
+            }
+            auto tit = titles.find(str);
+            if (tit == titles.end()) {
+                if (ca.t_type == article::titleType::titleSya) {
+                    nt.append(L";");
+                    nt.append(str);
+                    break;
+                }
+                continue;
+            }
+            std::vector<size_t> av = tit->second;
+            auto ait = av.begin();
+            for (; ait != av.end(); ++ait) {
+                if ((*ait) == ca.id)
+                    continue;
+                if (articles[*ait].dic == dicROS)
+                    break;
+            }
+            if (ait == av.end()) { // нет статей из РОС
+                for (ait = av.begin(); ait != av.end(); ++ait) {
+                    if (articles[*ait].dic == dicOROSS) {
+                        nt.append(L";");
+                        nt.append(str);
+                        break;
+                    }
+                }
+            }
+        }
+        ca.title = nt;
+    }
+}

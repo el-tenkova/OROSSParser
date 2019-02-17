@@ -769,6 +769,9 @@ void COROSSParser::processArticles() {
 
         }
     }
+    for (auto ait = articles.begin(); ait != articles.end(); ++ait) {
+        checkComplexTitle((*ait).second);
+    }
     // save articles without commentary information
     if (mode == Update || mode == Create) {
         saveArticles();

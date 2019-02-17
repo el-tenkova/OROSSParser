@@ -452,12 +452,14 @@ void COROSSParser::fillROSArticle(const std::wstring& a, article& ca)
                 bezSya.replace(pos_sya, 4, L"");
                 ca.title.append(L";");
                 ca.title.append(bezSya);
+                ca.t_type = article::titleType::titleSya;
             }
             if (!sya && morph.IsLemma(title_l) == false){
                 std::wstring l = morph.GetLemma(title_l);
                 if (l.length() > 0) {
                     ca.title.append(L";");
                     ca.title.append(l);
+                    ca.t_type = article::titleType::titleLemma;
                 }
             }
             prepareSearchTitle(title_l);
@@ -717,6 +719,8 @@ wchar_t COROSSParser::loadOROSSArticle(std::wifstream& arts)
             if (ca.dic == dicOROSS && !ca.ros_title.empty()) {
                 title_l = ca.ros_title;
                 removeParentheses(title_l);
+                if (realTitles.find(ca.title) == realTitles.end())
+                    realTitles.insert(std::pair<std::wstring, size_t>(ca.title, 1));
             }
             prepareSearchTitle(title_l);
             addToTitleMap(title_l, ca.id);

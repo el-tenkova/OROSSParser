@@ -67,6 +67,12 @@ typedef std::map<size_t, std::vector<subst> > substMap;
 #define ARTICLE_STATE_TO_DELETE 4
 
 struct article {
+    enum titleType
+    {
+        titleUsual = 0,
+        titleSya,
+        titleLemma,
+    };
     size_t id;
     wchar_t dic;
     std::wstring title;
@@ -85,6 +91,7 @@ struct article {
     std::vector<size_t> tetragramms;
     size_t state;
     size_t titleLen;
+    titleType t_type;
     //
     void clear() {
         id = 0;
@@ -100,6 +107,7 @@ struct article {
         words.clear();
         state = ARTICLE_STATE_NEW;
         titleLen = 0;
+        t_type = titleUsual;
     };
 };
 
@@ -433,6 +441,7 @@ protected:
     std::vector<std::wstring> tagsRuleParts;
     //// tmp
     std::map<size_t, size_t> wordIds;
+    std::map<std::wstring, size_t> realTitles;
 
     COROSSParserCfg config;
     COROSSParserMorph morph;
@@ -564,6 +573,7 @@ protected:
     void saveROSArticle(std::wofstream& arts, const artMap::iterator& ait);
     void addToTitleMap(std::wstring& title_l, size_t artId);
     bool inVector(const std::vector<std::wstring>& v, const std::wstring& str);
+    void checkComplexTitle(article& ca);
 };
 
 #endif //__OROSSPARSERPURE_H_
