@@ -2641,7 +2641,7 @@ void COROSSParser::makeAddInfoUpdate()
         for (auto ait = articles.begin(); ait != articles.end(); ++ait) {
             for (auto it = ait->second.addinfo.begin(); it != ait->second.addinfo.end(); ++it) {
                 str.clear();
-                str.append(L"UPDATE addinfo SET id_article='");
+                str.append(L"UPDATE articles_addinfo SET id_article='");
                 str.append(std::to_wstring(ait->first));
                 str.append(L"' WHERE id=");
                 str.append(std::to_wstring(*(it)));
