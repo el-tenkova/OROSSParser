@@ -952,6 +952,8 @@ void COROSSParser::applyChanges()
                             dictype = ait->second.dic;
                             // find article, remove it form articles and titles, add as new
                             std::wstring title_l(ait->second.title);
+                            if (ait->second.dic == dicOROSS && !ait->second.ros_title.empty())
+                                title_l = ait->second.ros_title;
                             prepareSearchTitle(title_l);
                             auto tit = titles.find(title_l);
                             if (tit != titles.end()) {
@@ -1037,6 +1039,8 @@ void COROSSParser::applyChanges()
                         dictype = ait->second.dic;
                         // find article, remove it form articles and titles, add as new
                         std::wstring title_l(ait->second.title);
+                        if (ait->second.dic == dicOROSS && !ait->second.ros_title.empty())
+                            title_l = ait->second.ros_title;
                         prepareSearchTitle(title_l);
                         auto tit = titles.find(title_l);
                         if (tit != titles.end()) {
