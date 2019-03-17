@@ -307,7 +307,7 @@ long COROSSParser::PreViewArticle()
         }
         size_t titleLen = orossTitle(article);
         std::wstring title = article.substr(0, titleLen);
-        AddArticle(title, article);
+        AddArticle(title, article, std::wstring(L""));
         auto ait = articles.begin();
         processArticle(ait->second);
         std::cout << config["pre_out"] << std::endl;
@@ -608,7 +608,7 @@ long COROSSParser::AddOrthogr(const std::wstring& Orthogr, const std::wstring& F
 }
 
 
-long COROSSParser::AddArticle(const std::wstring& Title, const std::wstring& Article)
+long COROSSParser::AddArticle(const std::wstring& Title, const std::wstring& Article, const std::wstring& ros_title)
 {
     std::wstring art(Article);
     correctText(art);
@@ -621,6 +621,8 @@ long COROSSParser::AddArticle(const std::wstring& Title, const std::wstring& Art
     bool found = false;
     if (mode == Update) {
         std::wstring title_l(title);
+        if (!ros_title.empty())
+            title_l = ros_title;
         prepareSearchTitle(title_l);
         //        std::transform(title_l.begin(), title_l.end(), title_l.begin(),
         //            std::bind2nd(std::ptr_fun(&std::tolower<wchar_t>), russian));
@@ -674,11 +676,15 @@ long COROSSParser::AddArticle(const std::wstring& Title, const std::wstring& Art
         titleLen += tagsTitle[0].length() + tagsTitle[1].length();
 
         ca.titleLen = titleLen;
+        if (!ros_title.empty())
+            ca.ros_title = ros_title;
 
         // add to articles
         articles.insert(std::pair<size_t, article>(artId, ca));
         // convert title to lower case
         std::wstring title_l(ca.title);
+        if (!ros_title.empty())
+            title_l = ros_title;
         prepareSearchTitle(title_l);
         addToTitleMap(title_l, artId);
         artId++;

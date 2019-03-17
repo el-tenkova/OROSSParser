@@ -375,7 +375,7 @@ public:
     long AddRule(const std::wstring& Num, const std::wstring& Rule);
     long AddRuleTitle(const std::wstring& Num, const std::wstring& Title);
     long AddOrthogr(const std::wstring& Orthogr, const std::wstring& Formula, const std::wstring& Example, const std::wstring& Rest, const long& IsActive, const long& IsPrefix);
-    long AddArticle(const std::wstring& Title, const std::wstring& Article);
+    long AddArticle(const std::wstring& Title, const std::wstring& Article, const std::wstring& ros_title);
     long AddInfoToRule(const std::wstring& Info);
     long AddFootNote(const long& ID, const std::wstring& Text);
     //
