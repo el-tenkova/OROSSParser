@@ -1042,6 +1042,8 @@ void COROSSParser::applyChanges()
                         std::wstring title_l(ait->second.title);
                         if (ait->second.dic == dicOROSS && !ait->second.ros_title.empty())
                             title_l = ait->second.ros_title;
+                        if (title_l.find(L';') != std::wstring::npos)
+                            title_l = title_l.substr(0, title_l.find(L';'));
                         prepareSearchTitle(title_l);
                         auto tit = titles.find(title_l);
                         if (tit != titles.end()) {
