@@ -819,6 +819,7 @@ void COROSSParser::makeFormulaTable(std::wofstream& result)
 void COROSSParser::makeWordsTable(const std::locale& loc)
 {
     size_t n = 1;
+    int split = std::stoi(config["split"]);
     std::string filename(config["output_words"] + "import_words");
     filename.append(std::to_string(n));
     filename.append(".sql");
@@ -865,7 +866,7 @@ void COROSSParser::makeWordsTable(const std::locale& loc)
 
     size_t idx = 0;
     for (auto wit = words.begin(); wit != words.end(); ++wit) {
-        if (idx == 4999) {
+        if (split == 1 && idx == 4999) {
             idx = 0;
             n++;
             result.close();
@@ -950,6 +951,7 @@ void COROSSParser::makeWordsTable(const std::locale& loc)
 void COROSSParser::makeAccentsTable(const std::locale& loc)
 {
     size_t n = 1;
+    int split = std::stoi(config["split"]);
     std::string filename(config["output_accents"] + "import_accents");
     filename.append(std::to_string(n));
     filename.append(".sql");
@@ -984,7 +986,7 @@ void COROSSParser::makeAccentsTable(const std::locale& loc)
 
     size_t idx = 0;
     for (auto wit = accents.begin(); wit != accents.end(); ++wit) {
-        if (idx == 4999) {
+        if (split == 1 && idx == 4999) {
             idx = 0;
             n++;
             result.close();
@@ -1272,6 +1274,7 @@ void COROSSParser::makeTetragrammsTable(const std::locale& loc)
 void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& result)
 {
     size_t n = 1;
+    int split = std::stoi(config["split"]);
     std::string filename(config["output_articles"] + "import_articles");
     filename.append(std::to_string(n));
     filename.append(".sql");
@@ -1341,7 +1344,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
     size_t idx = 0;
     for (; ait != articles.end(); ++ait)
     {
-        if (idx == 7999) {
+        if (split == 1 && idx == 7999) {
             idx = 0;
             n++;
             result.close();
@@ -1545,6 +1548,7 @@ VALUES (");
 void COROSSParser::makeMistakesTable(const std::locale& loc) {
 
     size_t n = 1;
+    int split = std::stoi(config["split"]);
     std::string filename(config["output_mistakes"] + "import_mistakes");
     filename.append(std::to_string(n));
     filename.append(".sql");
@@ -1574,7 +1578,7 @@ void COROSSParser::makeMistakesTable(const std::locale& loc) {
     size_t idx = 0;
     mistakeMap::iterator mit = mistakes.begin();
     for (; mit != mistakes.end(); ++mit) {
-        if (idx == 4999) {
+        if (split == 1 && idx == 4999) {
             idx = 0;
             n++;
             result.close();

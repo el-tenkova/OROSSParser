@@ -836,14 +836,14 @@ std::vector<std::wstring> COROSSParser::getFullWords(const std::wstring& word, s
     //    std::wstring::iterator i = str.begin();
     auto i = str.begin();
     for (i; i < str.end(); ++i) {
-        if (!(std::ispunct((*i), russian) || std::isdigit((*i), russian) || (*i) == L' '))
+        if (!(std::ispunct((*i), russian) /*|| std::isdigit((*i), russian)*/ || (*i) == L' '))
             break;
         offset++;
         len--;
     }
     if (i != str.end()) {
         for (i = str.end() - 1; i != str.end(); --i) {
-            if (!(std::ispunct((*i), russian) || std::isdigit((*i), russian) || (*i) == L' '))
+            if (!(std::ispunct((*i), russian) || /*std::isdigit((*i), russian) ||*/ (*i) == L' '))
                 break;
             len--;
         }
