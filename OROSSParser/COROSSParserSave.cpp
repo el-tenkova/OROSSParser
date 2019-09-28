@@ -2562,40 +2562,40 @@ void COROSSParser::processAccents() {
                         wacc.replace(pos, 1, L"");
                         pos = wacc.find(L"1");
                     }
-                }
-                pos = wacc.find(wit->first);
-                if (pos == std::wstring::npos)
-                    continue;
-                size_t idxw = 0;
-                size_t idxa = 0;
-                for (auto cit = acc.begin(); idxw < pos; ++cit, idxw++) {
-                    if ((*cit) == L'1')
-                        idxa++;
-                }
-                idxw = 0;
-                pos += idxa;
-                for (auto cit = acc.begin() + pos; idxw < wit->first.length(); ++cit, idxa++) {
-                    if ((*cit) == L'1')
+                    pos = wacc.find(wit->first);
+                    if (pos == std::wstring::npos)
                         continue;
-                    idxw++;
-                }
-                if (!noaccent && idxa == idxw) {// last letter is accented
-                    if (pos + idxa < acc.length() && acc[pos + idxa] == L'1')
-                       idxa++;
-                }
-                acc = acc.substr(pos, idxa);
-                if (acc.length() <= 1)
-                    continue;
-                //}
-                accentMap::iterator acit = accents.find(acc);
-                if (acit == accents.end()) {
-                    accent cac = {accId};
-                    cac.arts.push_back(*ait);
-                    accents.insert(std::pair<std::wstring, accent>(acc, cac));
-                    accId++;
-                }
-                else {
-                    acit->second.arts.push_back(*ait);
+                    size_t idxw = 0;
+                    size_t idxa = 0;
+                    for (auto cit = acc.begin(); idxw < pos; ++cit, idxw++) {
+                        if ((*cit) == L'1')
+                            idxa++;
+                    }
+                    idxw = 0;
+                    pos += idxa;
+                    for (auto cit = acc.begin() + pos; idxw < wit->first.length(); ++cit, idxa++) {
+                        if ((*cit) == L'1')
+                            continue;
+                        idxw++;
+                    }
+                    if (idxa == idxw) {// last letter is accented
+                        if (pos + idxa < acc.length() && acc[pos + idxa] == L'1')
+                            idxa++;
+                    }
+                    acc = acc.substr(pos, idxa);
+                    if (acc.length() <= 1)
+                        continue;
+                    //}
+                    accentMap::iterator acit = accents.find(acc);
+                    if (acit == accents.end()) {
+                        accent cac = { accId };
+                        cac.arts.push_back(*ait);
+                        accents.insert(std::pair<std::wstring, accent>(acc, cac));
+                        accId++;
+                    }
+                    else {
+                        acit->second.arts.push_back(*ait);
+                    }
                 }
             }
         }
