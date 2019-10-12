@@ -35,6 +35,9 @@ void COROSSParserCfg::load(const std::string& cfgFile)
     configMap["output_mistakes"] = "";
     configMap["output_abc"] = "";
     configMap["output_accents"] = "";
+    configMap["output_bigramms"] = "";
+    configMap["output_trigramms"] = "";
+    configMap["output_tetragramms"] = "";
     configMap["words"] = "";
     configMap["oross"] = "";
     configMap["dic"] = "";

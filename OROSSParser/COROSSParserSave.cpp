@@ -820,24 +820,19 @@ void COROSSParser::makeWordsTable(const std::locale& loc)
 {
     size_t n = 1;
     int split = std::stoi(config["split"]);
-    std::string filename(config["output_words"] + "import_words");
-    filename.append(std::to_string(n));
-    filename.append(".sql");
-    std::wofstream result(filename, std::wofstream::binary);
-    if (result.is_open()) {
-        writeBOM(result);
-        result.imbue(loc);
-    }
-    else {
+    if (!files.OpenToWrite(SQLImportFile::WORDS, SQLImportFile::WORDS_TUTORIAL, config["output_words"], loc))
+    {
+        files.Close(SQLImportFile::WORDS, SQLImportFile::WORDS_TUTORIAL);
         return;
     }
+
     std::wstring str(L"\nCREATE TABLE IF NOT EXISTS words (\n\
     id int(11) NOT NULL,\n\
     word varchar(256) NOT NULL,\n\
     art_count int(11), \n\
     PRIMARY KEY (id) \n\
     );\n\n");
-    result.write(str.c_str(), str.length());
+    files.WriteTo(SQLImportFile::WORDS, str);
 
     str.clear();
     str.append(L"\nCREATE TABLE IF NOT EXISTS words_articles (\n\
@@ -850,7 +845,7 @@ void COROSSParser::makeWordsTable(const std::locale& loc)
     number int(10) NOT NULL,\n\
     PRIMARY KEY (id, id_article, start) \n\
     );\n\n");
-    result.write(str.c_str(), str.length());
+    files.WriteTo(SQLImportFile::WORDS_ARTICLES, str);
 
     str.clear();
     str.append(L"\nCREATE TABLE IF NOT EXISTS words_tutorial (\n\
@@ -862,11 +857,11 @@ void COROSSParser::makeWordsTable(const std::locale& loc)
     number int(10) NOT NULL,\n\
     PRIMARY KEY (id, id_item, start) \n\
     );\n\n");
-    result.write(str.c_str(), str.length());
+    files.WriteTo(SQLImportFile::WORDS_TUTORIAL, str);
 
     size_t idx = 0;
     for (auto wit = words.begin(); wit != words.end(); ++wit) {
-        if (split == 1 && idx == 4999) {
+    /*    if (split == 1 && idx == 4999) {
             idx = 0;
             n++;
             result.close();
@@ -882,7 +877,7 @@ void COROSSParser::makeWordsTable(const std::locale& loc)
             }
             else
                 return;
-        }
+        }*/
 
         str.clear();
         str.append(str_words);//L"INSERT INTO words (id, title, word) 
@@ -896,7 +891,7 @@ void COROSSParser::makeWordsTable(const std::locale& loc)
         str.append(L"',");
         str.append(std::to_wstring(wit->second.arts.size()));
         str.append(L");\n");
-        result.write(str.c_str(), str.length());
+        files.WriteTo(SQLImportFile::WORDS, str);
 
         artIdVct::iterator avt = wit->second.arts.begin();
         for (avt; avt != wit->second.arts.end(); ++avt) {
@@ -918,7 +913,7 @@ void COROSSParser::makeWordsTable(const std::locale& loc)
             str.append(L",");
             str.append(std::to_wstring(avt->number));
             str.append(L");\n");
-            result.write(str.c_str(), str.length());
+            files.WriteTo(SQLImportFile::WORDS_ARTICLES, str);
         }
         wit->second.arts.clear();
         ruleIdVct::iterator rvt = wit->second.rules.begin();
@@ -939,12 +934,12 @@ void COROSSParser::makeWordsTable(const std::locale& loc)
             str.append(L",");
             str.append(std::to_wstring(rvt->number));
             str.append(L");\n");
-            result.write(str.c_str(), str.length());
+            files.WriteTo(SQLImportFile::WORDS_TUTORIAL, str);
         }
         wit->second.rules.clear();
         idx ++;
     }
-    result.close();
+    files.Close(SQLImportFile::WORDS, SQLImportFile::WORDS_TUTORIAL);
     words.clear();
 }
 
@@ -952,24 +947,19 @@ void COROSSParser::makeAccentsTable(const std::locale& loc)
 {
     size_t n = 1;
     int split = std::stoi(config["split"]);
-    std::string filename(config["output_accents"] + "import_accents");
-    filename.append(std::to_string(n));
-    filename.append(".sql");
-    std::wofstream result(filename, std::wofstream::binary);
-    if (result.is_open()) {
-        writeBOM(result);
-        result.imbue(loc);
-    }
-    else {
+    if (!files.OpenToWrite(SQLImportFile::ACCENTS, SQLImportFile::ACCENTS_ARTICLES, config["output_accents"], loc))
+    {
+        files.Close(SQLImportFile::ACCENTS, SQLImportFile::ACCENTS_ARTICLES);
         return;
     }
+
     std::wstring str(L"\nCREATE TABLE IF NOT EXISTS accents (\n\
     id int(11) NOT NULL,\n\
     word varchar(256) NOT NULL,\n\
     art_count int(11), \n\
     PRIMARY KEY (id) \n\
     );\n\n");
-    result.write(str.c_str(), str.length());
+    files.WriteTo(SQLImportFile::ACCENTS, str);
 
     str.clear();
     str.append(L"\nCREATE TABLE IF NOT EXISTS accents_articles (\n\
@@ -982,11 +972,11 @@ void COROSSParser::makeAccentsTable(const std::locale& loc)
     number int(10) NOT NULL,\n\
     PRIMARY KEY (id, id_article, start) \n\
     );\n\n");
-    result.write(str.c_str(), str.length());
+    files.WriteTo(SQLImportFile::ACCENTS_ARTICLES, str);
 
     size_t idx = 0;
     for (auto wit = accents.begin(); wit != accents.end(); ++wit) {
-        if (split == 1 && idx == 4999) {
+        /*if (split == 1 && idx == 4999) {
             idx = 0;
             n++;
             result.close();
@@ -1002,7 +992,7 @@ void COROSSParser::makeAccentsTable(const std::locale& loc)
             }
             else
                 return;
-        }
+        }*/
 
         str.clear();
         str.append(str_accents);//L"INSERT INTO words (id, title, word) 
@@ -1016,7 +1006,7 @@ void COROSSParser::makeAccentsTable(const std::locale& loc)
         str.append(L"',");
         str.append(std::to_wstring(wit->second.arts.size()));
         str.append(L");\n");
-        result.write(str.c_str(), str.length());
+        files.WriteTo(SQLImportFile::ACCENTS, str);
 
         artIdVct::iterator avt = wit->second.arts.begin();
         for (avt; avt != wit->second.arts.end(); ++avt) {
@@ -1038,24 +1028,19 @@ void COROSSParser::makeAccentsTable(const std::locale& loc)
             str.append(L",");
             str.append(std::to_wstring(avt->number));
             str.append(L");\n");
-            result.write(str.c_str(), str.length());
+            files.WriteTo(SQLImportFile::ACCENTS_ARTICLES, str);
         }
 
         idx++;
     }
-    result.close();
+    files.Close(SQLImportFile::ACCENTS, SQLImportFile::ACCENTS_ARTICLES);
 }
 
 void COROSSParser::makeBigrammsTable(const std::locale& loc)
 {
-    std::string filename(config["output"] + "import_bigramms");
-    filename.append(".sql");
-    std::wofstream result(filename, std::wofstream::binary);
-    if (result.is_open()) {
-        writeBOM(result);
-        result.imbue(loc);
-    }
-    else {
+    if (!files.OpenToWrite(SQLImportFile::BIGRAMMS, SQLImportFile::BIGRAMMS_ARTICLES, config["output_bigramms"], loc))
+    {
+        files.Close(SQLImportFile::BIGRAMMS, SQLImportFile::BIGRAMMS_ARTICLES);
         return;
     }
     std::wstring str(L"\nCREATE TABLE IF NOT EXISTS bigramms (\n\
@@ -1064,7 +1049,7 @@ void COROSSParser::makeBigrammsTable(const std::locale& loc)
     art_count int(11), \n\
     PRIMARY KEY (id) \n\
     );\n\n");
-    result.write(str.c_str(), str.length());
+    files.WriteTo(SQLImportFile::BIGRAMMS, str);
 
     str.clear();
     str.append(L"\nCREATE TABLE IF NOT EXISTS bigramms_articles (\n\
@@ -1077,7 +1062,7 @@ void COROSSParser::makeBigrammsTable(const std::locale& loc)
     number int(10) NOT NULL,\n\
     PRIMARY KEY (id, id_article, start) \n\
     );\n\n");
-    result.write(str.c_str(), str.length());
+    files.WriteTo(SQLImportFile::BIGRAMMS_ARTICLES, str);
 
     for (auto bit = bigramms.begin(); bit != bigramms.end(); ++bit) {
 
@@ -1091,7 +1076,7 @@ void COROSSParser::makeBigrammsTable(const std::locale& loc)
         str.append(L"',");
         str.append(std::to_wstring(bit->second.arts.size()));
         str.append(L");\n");
-        result.write(str.c_str(), str.length());
+        files.WriteTo(SQLImportFile::BIGRAMMS, str);
 
         artIdVct::iterator avt = bit->second.arts.begin();
         for (avt; avt != bit->second.arts.end(); ++avt) {
@@ -1113,33 +1098,29 @@ void COROSSParser::makeBigrammsTable(const std::locale& loc)
             str.append(L",");
             str.append(std::to_wstring(avt->number));
             str.append(L");\n");
-            result.write(str.c_str(), str.length());
+            files.WriteTo(SQLImportFile::BIGRAMMS_ARTICLES, str);
         }
         bit->second.arts.clear();
     }
-    result.close();
+    files.Close(SQLImportFile::BIGRAMMS, SQLImportFile::BIGRAMMS_ARTICLES);
     bigramms.clear();
 }
 
 void COROSSParser::makeTrigrammsTable(const std::locale& loc)
 {
-    std::string filename(config["output"] + "import_trigramms");
-    filename.append(".sql");
-    std::wofstream result(filename, std::wofstream::binary);
-    if (result.is_open()) {
-        writeBOM(result);
-        result.imbue(loc);
-    }
-    else {
+    if (!files.OpenToWrite(SQLImportFile::TRIGRAMMS, SQLImportFile::TRIGRAMMS_ARTICLES, config["output_trigramms"], loc))
+    {
+        files.Close(SQLImportFile::TRIGRAMMS, SQLImportFile::TRIGRAMMS_ARTICLES);
         return;
     }
+
     std::wstring str(L"\nCREATE TABLE IF NOT EXISTS trigramms (\n\
     id int(11) NOT NULL,\n\
     trigramm varchar(256) NOT NULL,\n\
     art_count int(11), \n\
     PRIMARY KEY (id) \n\
     );\n\n");
-    result.write(str.c_str(), str.length());
+    files.WriteTo(SQLImportFile::TRIGRAMMS, str);
 
     str.clear();
     str.append(L"\nCREATE TABLE IF NOT EXISTS trigramms_articles (\n\
@@ -1152,7 +1133,7 @@ void COROSSParser::makeTrigrammsTable(const std::locale& loc)
     number int(10) NOT NULL,\n\
     PRIMARY KEY (id, id_article, start) \n\
     );\n\n");
-    result.write(str.c_str(), str.length());
+    files.WriteTo(SQLImportFile::TRIGRAMMS_ARTICLES, str);
 
     for (auto tit = trigramms.begin(); tit != trigramms.end(); ++tit) {
 
@@ -1166,7 +1147,7 @@ void COROSSParser::makeTrigrammsTable(const std::locale& loc)
         str.append(L"',");
         str.append(std::to_wstring(tit->second.arts.size()));
         str.append(L");\n");
-        result.write(str.c_str(), str.length());
+        files.WriteTo(SQLImportFile::TRIGRAMMS, str);
 
         artIdVct::iterator avt = tit->second.arts.begin();
         for (avt; avt != tit->second.arts.end(); ++avt) {
@@ -1188,33 +1169,29 @@ void COROSSParser::makeTrigrammsTable(const std::locale& loc)
             str.append(L",");
             str.append(std::to_wstring(avt->number));
             str.append(L");\n");
-            result.write(str.c_str(), str.length());
+            files.WriteTo(SQLImportFile::TRIGRAMMS_ARTICLES, str);
         }
         tit->second.arts.clear();
     }
-    result.close();
+    files.Close(SQLImportFile::TRIGRAMMS, SQLImportFile::TRIGRAMMS_ARTICLES);
     trigramms.clear();
 }
 
 void COROSSParser::makeTetragrammsTable(const std::locale& loc)
 {
-    std::string filename(config["output"] + "import_tetragramms");
-    filename.append(".sql");
-    std::wofstream result(filename, std::wofstream::binary);
-    if (result.is_open()) {
-        writeBOM(result);
-        result.imbue(loc);
-    }
-    else {
+    if (!files.OpenToWrite(SQLImportFile::TETRAGRAMMS, SQLImportFile::TETRAGRAMMS_ARTICLES, config["output_tetragramms"], loc))
+    {
+        files.Close(SQLImportFile::TETRAGRAMMS, SQLImportFile::TETRAGRAMMS_ARTICLES);
         return;
     }
+
     std::wstring str(L"\nCREATE TABLE IF NOT EXISTS tetragramms (\n\
     id int(11) NOT NULL,\n\
     tetragramm varchar(256) NOT NULL,\n\
     art_count int(11), \n\
     PRIMARY KEY (id) \n\
     );\n\n");
-    result.write(str.c_str(), str.length());
+    files.WriteTo(SQLImportFile::TETRAGRAMMS, str);
 
     str.clear();
     str.append(L"\nCREATE TABLE IF NOT EXISTS tetragramms_articles (\n\
@@ -1227,7 +1204,7 @@ void COROSSParser::makeTetragrammsTable(const std::locale& loc)
     number int(10) NOT NULL,\n\
     PRIMARY KEY (id, id_article, start) \n\
     );\n\n");
-    result.write(str.c_str(), str.length());
+    files.WriteTo(SQLImportFile::TETRAGRAMMS_ARTICLES, str);
 
     for (auto tit = tetragramms.begin(); tit != tetragramms.end(); ++tit) {
 
@@ -1241,7 +1218,7 @@ void COROSSParser::makeTetragrammsTable(const std::locale& loc)
         str.append(L"',");
         str.append(std::to_wstring(tit->second.arts.size()));
         str.append(L");\n");
-        result.write(str.c_str(), str.length());
+        files.WriteTo(SQLImportFile::TETRAGRAMMS, str);
 
         artIdVct::iterator avt = tit->second.arts.begin();
         for (avt; avt != tit->second.arts.end(); ++avt) {
@@ -1263,11 +1240,11 @@ void COROSSParser::makeTetragrammsTable(const std::locale& loc)
             str.append(L",");
             str.append(std::to_wstring(avt->number));
             str.append(L");\n");
-            result.write(str.c_str(), str.length());
+            files.WriteTo(SQLImportFile::TETRAGRAMMS_ARTICLES, str);
         }
         tit->second.arts.clear();
     }
-    result.close();
+    files.Close(SQLImportFile::TETRAGRAMMS, SQLImportFile::TETRAGRAMMS_ARTICLES);
     tetragramms.clear();
 }
 
@@ -1275,15 +1252,9 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
 {
     size_t n = 1;
     int split = std::stoi(config["split"]);
-    std::string filename(config["output_articles"] + "import_articles");
-    filename.append(std::to_string(n));
-    filename.append(".sql");
-    std::wofstream result(filename, std::wofstream::binary);
-    if (result.is_open()) {
-        writeBOM(result);
-        result.imbue(loc);
-    }
-    else {
+    if (!files.OpenToWrite(SQLImportFile::ARTICLES, SQLImportFile::ARTICLES_RULES, config["output_articles"], loc))
+    {
+        files.Close(SQLImportFile::ARTICLES, SQLImportFile::ARTICLES_RULES);
         return;
     }
 
@@ -1297,7 +1268,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
     phantom int(2) NOT NULL,\n\
     PRIMARY KEY (id) \n\
     );\n\n");
-    result.write(str.c_str(), str.length());
+    files.WriteTo(SQLImportFile::ARTICLES, str);
 
     str.clear();
     str.append(L"\nCREATE TABLE IF NOT EXISTS articles_formulas (\n\
@@ -1305,7 +1276,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
     id_formula int(11) NOT NULL,\n\
     PRIMARY KEY (id, id_formula) \n\
     );\n\n");
-    result.write(str.c_str(), str.length());
+    files.WriteTo(SQLImportFile::ARTICLES_FORMULAS, str);
 
     str.clear();
     str.append(L"\nCREATE TABLE IF NOT EXISTS articles_orthos (\n\
@@ -1313,7 +1284,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
     id_ortho int(11) NOT NULL,\n\
     PRIMARY KEY (id, id_ortho) \n\
     );\n\n");
-    result.write(str.c_str(), str.length());
+    files.WriteTo(SQLImportFile::ARTICLES_ORTHOS, str);
 
     str.clear();
     str.append(L"\nCREATE TABLE IF NOT EXISTS articles_paras (\n\
@@ -1321,7 +1292,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
     id_para int(11) NOT NULL,\n\
     PRIMARY KEY (id, id_para) \n\
     );\n\n");
-    result.write(str.c_str(), str.length());
+    files.WriteTo(SQLImportFile::ARTICLES_PARAS, str);
 
     str.clear();
     str.append(L"\nCREATE TABLE IF NOT EXISTS articles_rules (\n\
@@ -1329,7 +1300,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
     id_rule int(11) NOT NULL,\n\
     PRIMARY KEY (id, id_rule) \n\
     );\n\n");
-    result.write(str.c_str(), str.length());
+    files.WriteTo(SQLImportFile::ARTICLES_RULES, str);
 
     str.clear();
     str.append(L"\nCREATE TABLE IF NOT EXISTS articles_comments (\n\
@@ -1337,14 +1308,14 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
     id_comment int(11) NOT NULL,\n\
     PRIMARY KEY (id, id_comment) \n\
     );\n\n");
-    result.write(str.c_str(), str.length());
+    files.WriteTo(SQLImportFile::ARTICLES_COMMENTS, str);
 
     artMap::iterator ait = articles.begin();
     size_t title = 1;
     size_t idx = 0;
     for (; ait != articles.end(); ++ait)
     {
-        if (split == 1 && idx == 7999) {
+        /*if (split == 1 && idx == 7999) {
             idx = 0;
             n++;
             result.close();
@@ -1360,7 +1331,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
             }
             else
                 return;
-        }
+        }*/
 
         if (ait->second.state == ARTICLE_STATE_TO_DELETE)
             continue;
@@ -1370,10 +1341,11 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
         for (size_t i = 0; i < 3; i++) {
             std::vector<size_t> tags;
             std::wstring pattern(L"");
+            int idx = 0;
             switch (i) {
-                case 0: pattern.append(L"formulas"); break;
-                case 1: pattern.append(L"rules"); break;
-                case 2: pattern.append(L"paras"); break;
+                case 0: pattern.append(L"formulas"); idx = SQLImportFile::ARTICLES_ORTHOS; break;
+                case 1: pattern.append(L"rules"); idx = SQLImportFile::ARTICLES_RULES; break;
+                case 2: pattern.append(L"paras"); idx = SQLImportFile::ARTICLES_PARAS; break;
             }
             getTags(ait->second.text, pattern, tags);
             std::vector<size_t>::iterator it = tags.begin();
@@ -1394,7 +1366,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
                 str.append(L",");
                 str.append(std::to_wstring(*it));
                 str.append(L");\n");
-                result.write(str.c_str(), str.length());
+                files.WriteTo(idx, str);
             }
             tags.clear();
         }
@@ -1407,7 +1379,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
             str.append(L",");
             str.append(std::to_wstring(*fit));
             str.append(L");\n");
-            result.write(str.c_str(), str.length());
+            files.WriteTo(SQLImportFile::ARTICLES_FORMULAS, str);
         }
         ait->second.formulas.clear();
         std::vector<size_t>::iterator cit = ait->second.comments.begin();
@@ -1420,7 +1392,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
             str.append(L",");
             str.append(std::to_wstring(*cit));
             str.append(L");\n");
-            result.write(str.c_str(), str.length());
+            files.WriteTo(SQLImportFile::ARTICLES_COMMENTS, str);
         }
         ait->second.comments.clear();
         str.clear();
@@ -1445,7 +1417,7 @@ VALUES (");
         str.append(L"',");
         str.append(L"0");
         str.append(L");\n");
-        result.write(str.c_str(), str.length());
+        files.WriteTo(SQLImportFile::ARTICLES, str);
 
         ait->second.clear();
         idx++;
@@ -1549,15 +1521,9 @@ void COROSSParser::makeMistakesTable(const std::locale& loc) {
 
     size_t n = 1;
     int split = std::stoi(config["split"]);
-    std::string filename(config["output_mistakes"] + "import_mistakes");
-    filename.append(std::to_string(n));
-    filename.append(".sql");
-    std::wofstream result(filename, std::wofstream::binary);
-    if (result.is_open()) {
-        writeBOM(result);
-        result.imbue(loc);
-    }
-    else {
+    if (!files.OpenToWrite(SQLImportFile::MISTAKES, SQLImportFile::MISTAKES_WORDS, config["output_mistakes"], loc))
+    {
+        files.Close(SQLImportFile::MISTAKES, SQLImportFile::MISTAKES_WORDS);
         return;
     }
     std::wstring str(L"\nCREATE TABLE IF NOT EXISTS mistakes (\n\
@@ -1565,7 +1531,7 @@ void COROSSParser::makeMistakesTable(const std::locale& loc) {
     mistake varchar(256) NOT NULL,\n\
     PRIMARY KEY (id) \n\
     );\n\n");
-    result.write(str.c_str(), str.length());
+    files.WriteTo(SQLImportFile::MISTAKES, str);
 
     str.clear();
     str.append(L"\nCREATE TABLE IF NOT EXISTS words_mistakes (\n\
@@ -1573,12 +1539,12 @@ void COROSSParser::makeMistakesTable(const std::locale& loc) {
     id_mistake int(11) NOT NULL,\n\
     PRIMARY KEY (id, id_mistake) \n\
     );\n\n");
-    result.write(str.c_str(), str.length());
+    files.WriteTo(SQLImportFile::MISTAKES_WORDS, str);
 
     size_t idx = 0;
     mistakeMap::iterator mit = mistakes.begin();
     for (; mit != mistakes.end(); ++mit) {
-        if (split == 1 && idx == 4999) {
+/*        if (split == 1 && idx == 4999) {
             idx = 0;
             n++;
             result.close();
@@ -1595,7 +1561,7 @@ void COROSSParser::makeMistakesTable(const std::locale& loc) {
             else
                 return;
         }
-
+        */
         str.clear();
         str.append(L"INSERT INTO mistakes (id, mistake) ");
         str.append(L"\n\
@@ -1604,7 +1570,7 @@ void COROSSParser::makeMistakesTable(const std::locale& loc) {
         str.append(L",'");
         str.append(mit->first);
         str.append(L"');\n");
-        result.write(str.c_str(), str.length());
+        files.WriteTo(SQLImportFile::MISTAKES, str);
 
         std::vector<size_t>::iterator wvt = mit->second.wordIds.begin();
         for (wvt; wvt != mit->second.wordIds.end(); ++wvt) {
@@ -1616,11 +1582,11 @@ void COROSSParser::makeMistakesTable(const std::locale& loc) {
             str.append(L",");
             str.append(std::to_wstring(mit->second.id));
             str.append(L");\n");
-            result.write(str.c_str(), str.length());
+            files.WriteTo(SQLImportFile::MISTAKES_WORDS, str);
         }
         idx++;
     }
-    result.close();
+    files.Close(SQLImportFile::MISTAKES, SQLImportFile::MISTAKES_WORDS);
 }
 
 void COROSSParser::presaveArticles(bool saveSearch) {
@@ -2636,25 +2602,24 @@ void COROSSParser::makeTutorialUpdate()
 
 void COROSSParser::makeAddInfoUpdate()
 {
-    std::wofstream update(config["output"] + "update_addinfo.sql", std::wofstream::binary);
-    
-    std::wstring str(L"");
-    if (update.is_open()) {
-        writeBOM(update);
-        update.imbue(russian);
-        for (auto ait = articles.begin(); ait != articles.end(); ++ait) {
-            for (auto it = ait->second.addinfo.begin(); it != ait->second.addinfo.end(); ++it) {
-                str.clear();
-                str.append(L"UPDATE articles_addinfo SET id_article='");
-                str.append(std::to_wstring(ait->first));
-                str.append(L"' WHERE id=");
-                str.append(std::to_wstring(*(it)));
-                str.append(L";\n");
-                update.write(str.c_str(), str.length());
-            }
-        }
-        update.close();
+    if (!files.OpenToWrite(SQLImportFile::ARTICLES_ADDINFO, SQLImportFile::ARTICLES_ADDINFO, config["output_articles"], russian))
+    {
+        files.Close(SQLImportFile::ARTICLES_ADDINFO, SQLImportFile::ARTICLES_ADDINFO);
+        return;
     }
+    std::wstring str(L"");
+    for (auto ait = articles.begin(); ait != articles.end(); ++ait) {
+        for (auto it = ait->second.addinfo.begin(); it != ait->second.addinfo.end(); ++it) {
+            str.clear();
+            str.append(L"UPDATE articles_addinfo SET id_article='");
+            str.append(std::to_wstring(ait->first));
+            str.append(L"' WHERE id=");
+            str.append(std::to_wstring(*(it)));
+            str.append(L";\n");
+            files.WriteTo(SQLImportFile::ARTICLES_ADDINFO, str);
+        }
+    }
+    files.Close(SQLImportFile::ARTICLES_ADDINFO, SQLImportFile::ARTICLES_ADDINFO);
 }
 
 void COROSSParser::makeABCTable(const std::locale& loc)
@@ -2782,5 +2747,85 @@ void COROSSParser::makeABCTable(const std::locale& loc)
                 break;
         }
         result.close();
+    }
+}
+
+// SQLImportFile
+SQLImportFile::SQLImportFile(void)
+{
+    files.insert(std::pair<int, FileToWrite>(ACCENTS, FileToWrite("import_accents")));
+    files.insert(std::pair<int, FileToWrite>(ACCENTS_ARTICLES, FileToWrite("import_accents_a")));
+
+    files.insert(std::pair<int, FileToWrite>(ARTICLES, FileToWrite("import_articles")));
+    files.insert(std::pair<int, FileToWrite>(ARTICLES_ADDINFO, FileToWrite("update_addinfo")));
+    files.insert(std::pair<int, FileToWrite>(ARTICLES_COMMENTS, FileToWrite("import_articles_c")));
+    files.insert(std::pair<int, FileToWrite>(ARTICLES_FORMULAS, FileToWrite("import_articles_f")));
+    files.insert(std::pair<int, FileToWrite>(ARTICLES_ORTHOS, FileToWrite("import_articles_o")));
+    files.insert(std::pair<int, FileToWrite>(ARTICLES_PARAS, FileToWrite("import_articles_p")));
+    files.insert(std::pair<int, FileToWrite>(ARTICLES_RULES, FileToWrite("import_articles_r")));
+
+    files.insert(std::pair<int, FileToWrite>(BIGRAMMS, FileToWrite("import_bigramms")));
+    files.insert(std::pair<int, FileToWrite>(BIGRAMMS_ARTICLES, FileToWrite("import_bigramms_a")));
+
+    files.insert(std::pair<int, FileToWrite>(MISTAKES, FileToWrite("import_mistakes")));
+    files.insert(std::pair<int, FileToWrite>(MISTAKES_WORDS, FileToWrite("import_mistakes_w")));
+
+    files.insert(std::pair<int, FileToWrite>(TETRAGRAMMS, FileToWrite("import_tetragramms")));
+    files.insert(std::pair<int, FileToWrite>(TETRAGRAMMS_ARTICLES, FileToWrite("import_tetragramms_a")));
+
+    files.insert(std::pair<int, FileToWrite>(TRIGRAMMS, FileToWrite("import_trigramms")));
+    files.insert(std::pair<int, FileToWrite>(TRIGRAMMS_ARTICLES, FileToWrite("import_trigramms_a")));
+
+    files.insert(std::pair<int, FileToWrite>(WORDS, FileToWrite("import_words")));
+    files.insert(std::pair<int, FileToWrite>(WORDS_ARTICLES, FileToWrite("import_words_a")));
+    files.insert(std::pair<int, FileToWrite>(WORDS_TUTORIAL, FileToWrite("import_words_t")));
+}
+int SQLImportFile::OpenToWrite(int begin, int end, const std::string& output, const std::locale& loc)
+{
+    for (int i = begin; i <= end; i++)
+    {
+        auto it = files.find(i);
+        if (it != files.end())
+        {
+            std::string path(output);
+            path.append(it->second.name);
+            path.append(".sql");
+            it->second.f = std::wofstream(path, std::wofstream::binary);
+            if (it->second.f.is_open()) {
+                writeBOM(it->second.f);
+                it->second.f.imbue(loc);
+            }
+            else
+                return 0;
+        }
+    }
+    return 1;
+}
+void SQLImportFile::writeBOM(std::wofstream& stream)
+{
+    //   std::string bom(u8"\uEFBBBF");
+#ifdef _WINDOWS    
+    stream.put(0xEF);
+    stream.put(0xBB);
+    stream.put(0xBF);
+    stream.flush();
+#endif    
+}
+
+void SQLImportFile::Close(int begin, int end)
+{
+    for (int i = begin; i <= end; i++)
+    {
+        auto it = files.find(i);
+        if (it != files.end())
+            it->second.f.close();
+    }
+}
+void SQLImportFile::WriteTo(int idx, const std::wstring& str)
+{
+    auto it = files.find(idx);
+    if (it != files.end())
+    {
+        it->second.f.write(str.c_str(), str.length());
     }
 }

@@ -270,6 +270,59 @@ struct part {
 };
 typedef std::map<std::wstring, part> partMap;
 
+class SQLImportFile
+{
+public:
+    enum
+    {
+        ACCENTS = 1,
+        ACCENTS_ARTICLES,
+        //
+        ARTICLES,
+        ARTICLES_COMMENTS,
+        ARTICLES_FORMULAS,
+        ARTICLES_ORTHOS,
+        ARTICLES_PARAS,
+        ARTICLES_RULES,
+        ARTICLES_ADDINFO,
+        //
+        BIGRAMMS,
+        BIGRAMMS_ARTICLES,
+        //
+        MISTAKES,
+        MISTAKES_WORDS,
+        //
+        TETRAGRAMMS,
+        TETRAGRAMMS_ARTICLES,
+        //
+        TRIGRAMMS,
+        TRIGRAMMS_ARTICLES,
+        //
+        WORDS,
+        WORDS_ARTICLES,
+        WORDS_TUTORIAL,
+        //
+        FILES_NUM,
+    };
+protected:
+    struct FileToWrite
+    {
+        std::string name;
+        std::wofstream f;
+        FileToWrite(std::string _name) { name = _name; }
+    };
+    std::map<int, FileToWrite> files;
+
+public:
+    SQLImportFile(void);
+    ~SQLImportFile(void) {};
+    int OpenToWrite(int begin, int end, const std::string& output, const std::locale& loc);
+    void Close(int begin, int end);
+    void WriteTo(int idx, const std::wstring& str);
+protected:
+    void writeBOM(std::wofstream& stream);
+};
+
 class COROSSParser
 {
 
@@ -450,6 +503,8 @@ protected:
     COROSSGrammaTree bigrDic;
     COROSSGrammaTree trigrDic;
     COROSSGrammaTree tetragrDic;
+
+    SQLImportFile files;
 
     void processArticles();
 
