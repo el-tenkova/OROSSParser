@@ -1473,6 +1473,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
             str.clear();
             str.append(str_articles_comments);
             str.append(L"\n");
+            files.WriteTo(SQLImportFile::ARTICLES_COMMENTS, str);
             std::vector<size_t>::iterator cit = ait->second.comments.begin();
             start = true;
             for (cit; cit != ait->second.comments.end(); ++cit) {
