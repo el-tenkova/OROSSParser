@@ -861,13 +861,10 @@ void COROSSParser::makeWordsTable(const std::locale& loc)
 
     size_t idx = 0;
     files.WriteTo(SQLImportFile::WORDS, str_words);
-    files.WriteTo(SQLImportFile::WORDS, L" VALUES\n");
     files.WriteTo(SQLImportFile::WORDS_ARTICLES, str_words_articles);
-    files.WriteTo(SQLImportFile::WORDS_ARTICLES, L" VALUES\n");
     if (mode != WebUpdateROS)
     {
         files.WriteTo(SQLImportFile::WORDS_TUTORIAL, str_words_tutorial);
-        files.WriteTo(SQLImportFile::WORDS_TUTORIAL, L" VALUES\n");
     }
     str.clear();
     bool start[3] = { true, true, true };
@@ -892,7 +889,7 @@ void COROSSParser::makeWordsTable(const std::locale& loc)
 
         str.clear();
         if (!start[0])
-            str.append(L",\n");
+            str.append(L",");
         start[0] = false;
         str.append(L"(");
         str.append(std::to_wstring(wit->second.id/*idx*/));
@@ -908,7 +905,7 @@ void COROSSParser::makeWordsTable(const std::locale& loc)
         for (avt; avt != wit->second.arts.end(); ++avt) {
             str.clear();
             if (!start[1])
-                str.append(L",\n");
+                str.append(L",");
             start[1] = false;
             str.append(L"(");
             str.append(std::to_wstring(wit->second.id /*idx*/));
@@ -932,7 +929,7 @@ void COROSSParser::makeWordsTable(const std::locale& loc)
         for (rvt; rvt != wit->second.rules.end(); ++rvt) {
             str.clear();
             if (!start[2])
-                str.append(L",\n");
+                str.append(L",");
             start[2] = false;
             str.append(L"(");
             str.append(std::to_wstring(wit->second.id /*idx*/));
