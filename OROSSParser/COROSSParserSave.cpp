@@ -1257,7 +1257,7 @@ void COROSSParser::makeTetragrammsTable(const std::locale& loc)
     if (tetragramms.size() > 0)
     {
         files.WriteTo(SQLImportFile::TETRAGRAMMS, str_tetragramms);
-        files.WriteTo(SQLImportFile::TETRAGRAMMS_ARTICLES, str_tetragramms);
+        files.WriteTo(SQLImportFile::TETRAGRAMMS_ARTICLES, str_tetragramms_articles);
     }
     bool start[2] = { true, true };
     for (auto tit = tetragramms.begin(); tit != tetragramms.end(); ++tit) {
@@ -1278,7 +1278,7 @@ void COROSSParser::makeTetragrammsTable(const std::locale& loc)
         for (avt; avt != tit->second.arts.end(); ++avt) {
             str.clear();
             if (!start[1])
-                str.append(L",\n");
+                str.append(L",");
             start[1] = false;
             str.append(L"(");
             str.append(std::to_wstring(tit->second.id));
@@ -1422,6 +1422,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
             }
             if (it == tags.end())
                 continue;
+            str.clear();
             str.append(L"INSERT INTO articles_");
             str.append(pattern);
             str.append(L"s (id, id_");
@@ -1441,7 +1442,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
                 files.WriteTo(idx, str);
                 start = false;
             }
-            files.WriteTo(idx, L";");
+            files.WriteTo(idx, L";\n");
             tags.clear();
         }
         if (ait->second.formulas.size() > 0)
@@ -1464,16 +1465,18 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
                 files.WriteTo(SQLImportFile::ARTICLES_FORMULAS, str);
                 start = false;
             }
-            files.WriteTo(SQLImportFile::ARTICLES_FORMULAS, L";");
+            files.WriteTo(SQLImportFile::ARTICLES_FORMULAS, L";\n");
         }
         ait->second.formulas.clear();
         if (ait->second.comments.size() > 0)
         {
             str.clear();
             str.append(str_articles_comments);
+            str.append(L"\n");
             std::vector<size_t>::iterator cit = ait->second.comments.begin();
             start = true;
             for (cit; cit != ait->second.comments.end(); ++cit) {
+                str.clear();
                 if (!start)
                     str.append(L",\n");
                 str.append(L"(");
