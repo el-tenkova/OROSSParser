@@ -860,6 +860,17 @@ void COROSSParser::makeWordsTable(const std::locale& loc)
     files.WriteTo(SQLImportFile::WORDS_TUTORIAL, str);
 
     size_t idx = 0;
+    files.WriteTo(SQLImportFile::WORDS, str_words);
+    files.WriteTo(SQLImportFile::WORDS, L"\n");
+    files.WriteTo(SQLImportFile::WORDS_ARTICLES, str_words_articles);
+    files.WriteTo(SQLImportFile::WORDS_ARTICLES, L"\n");
+    if (mode != WebUpdateROS)
+    {
+        files.WriteTo(SQLImportFile::WORDS_TUTORIAL, str_words_tutorial);
+        files.WriteTo(SQLImportFile::WORDS_TUTORIAL, L"\n");
+    }
+    str.clear();
+    bool start[3] = { true, true, true };
     for (auto wit = words.begin(); wit != words.end(); ++wit) {
     /*    if (split == 1 && idx == 4999) {
             idx = 0;
@@ -880,9 +891,10 @@ void COROSSParser::makeWordsTable(const std::locale& loc)
         }*/
 
         str.clear();
-        str.append(str_words);//L"INSERT INTO words (id, title, word) 
-        str.append(L"\n\
-    VALUES (");
+        if (!start[0])
+            str.append(L",\n");
+        start[0] = false;
+        str.append(L"VALUES (");
         str.append(std::to_wstring(wit->second.id/*idx*/));
 //        str.append(L",");
 //        str.append(std::wstring(1, wit->second.isTitle));
@@ -890,15 +902,15 @@ void COROSSParser::makeWordsTable(const std::locale& loc)
         str.append(wit->first);
         str.append(L"',");
         str.append(std::to_wstring(wit->second.arts.size()));
-        str.append(L");\n");
+        str.append(L")");
         files.WriteTo(SQLImportFile::WORDS, str);
-
         artIdVct::iterator avt = wit->second.arts.begin();
         for (avt; avt != wit->second.arts.end(); ++avt) {
             str.clear();
-            str.append(str_words_articles); //L"INSERT INTO words_articles (id, id_article) 
-            str.append(L"\n\
-    VALUES (");
+            if (!start[1])
+                str.append(L",\n");
+            start[1] = false;
+            str.append(L"VALUES (");
             str.append(std::to_wstring(wit->second.id /*idx*/));
             str.append(L",");
             str.append(std::to_wstring(avt->id));
@@ -912,16 +924,17 @@ void COROSSParser::makeWordsTable(const std::locale& loc)
             str.append(std::to_wstring(avt->group));
             str.append(L",");
             str.append(std::to_wstring(avt->number));
-            str.append(L");\n");
+            str.append(L")");
             files.WriteTo(SQLImportFile::WORDS_ARTICLES, str);
         }
         wit->second.arts.clear();
         ruleIdVct::iterator rvt = wit->second.rules.begin();
         for (rvt; rvt != wit->second.rules.end(); ++rvt) {
             str.clear();
-            str.append(str_words_tutorial); //L"INSERT INTO words_articles (id, id_article) 
-            str.append(L"\n\
-    VALUES (");
+            if (!start[2])
+                str.append(L",\n");
+            start[2] = false;
+            str.append(L"VALUES (");
             str.append(std::to_wstring(wit->second.id /*idx*/));
             str.append(L",");
             str.append(std::to_wstring(rvt->id));
@@ -933,12 +946,18 @@ void COROSSParser::makeWordsTable(const std::locale& loc)
             str.append(std::wstring(1, rvt->isRule));
             str.append(L",");
             str.append(std::to_wstring(rvt->number));
-            str.append(L");\n");
+            str.append(L")");
             files.WriteTo(SQLImportFile::WORDS_TUTORIAL, str);
         }
         wit->second.rules.clear();
         idx ++;
     }
+    if (!start[0])
+        files.WriteTo(SQLImportFile::WORDS, L";");
+    if (!start[1])
+        files.WriteTo(SQLImportFile::WORDS_ARTICLES, L";");
+    if (!start[2])
+        files.WriteTo(SQLImportFile::WORDS_TUTORIAL, L";");
     files.Close(SQLImportFile::WORDS, SQLImportFile::WORDS_TUTORIAL);
     words.clear();
 }
@@ -974,7 +993,12 @@ void COROSSParser::makeAccentsTable(const std::locale& loc)
     );\n\n");
     files.WriteTo(SQLImportFile::ACCENTS_ARTICLES, str);
 
+    files.WriteTo(SQLImportFile::ACCENTS, str_accents);
+    files.WriteTo(SQLImportFile::ACCENTS, L"\n");
+    files.WriteTo(SQLImportFile::ACCENTS_ARTICLES, str_accents_articles);
+    files.WriteTo(SQLImportFile::ACCENTS_ARTICLES, L"\n");
     size_t idx = 0;
+    bool start[2] = { true, true };
     for (auto wit = accents.begin(); wit != accents.end(); ++wit) {
         /*if (split == 1 && idx == 4999) {
             idx = 0;
@@ -995,9 +1019,10 @@ void COROSSParser::makeAccentsTable(const std::locale& loc)
         }*/
 
         str.clear();
-        str.append(str_accents);//L"INSERT INTO words (id, title, word) 
-        str.append(L"\n\
-    VALUES (");
+        if (!start[0])
+            str.append(L",\n");//L"INSERT INTO words (id, title, word) 
+        start[0] = false;
+        str.append(L"VALUES (");
         str.append(std::to_wstring(wit->second.id/*idx*/));
         //        str.append(L",");
         //        str.append(std::wstring(1, wit->second.isTitle));
@@ -1005,15 +1030,16 @@ void COROSSParser::makeAccentsTable(const std::locale& loc)
         str.append(wit->first);
         str.append(L"',");
         str.append(std::to_wstring(wit->second.arts.size()));
-        str.append(L");\n");
+        str.append(L")");
         files.WriteTo(SQLImportFile::ACCENTS, str);
 
         artIdVct::iterator avt = wit->second.arts.begin();
         for (avt; avt != wit->second.arts.end(); ++avt) {
             str.clear();
-            str.append(str_accents_articles); //L"INSERT INTO words_articles (id, id_article) 
-            str.append(L"\n\
-    VALUES (");
+            if (!start[1])
+                str.append(L",\n"); //L"INSERT INTO words_articles (id, id_article) 
+            start[1] = false;
+            str.append(L"VALUES (");
             str.append(std::to_wstring(wit->second.id /*idx*/));
             str.append(L",");
             str.append(std::to_wstring(avt->id));
@@ -1027,12 +1053,16 @@ void COROSSParser::makeAccentsTable(const std::locale& loc)
             str.append(std::to_wstring(avt->group));
             str.append(L",");
             str.append(std::to_wstring(avt->number));
-            str.append(L");\n");
+            str.append(L")");
             files.WriteTo(SQLImportFile::ACCENTS_ARTICLES, str);
         }
 
         idx++;
     }
+    if (!start[0])
+        files.WriteTo(SQLImportFile::ACCENTS, L";");
+    if (!start[1])
+        files.WriteTo(SQLImportFile::ACCENTS_ARTICLES, L";");
     files.Close(SQLImportFile::ACCENTS, SQLImportFile::ACCENTS_ARTICLES);
 }
 
@@ -1062,28 +1092,37 @@ void COROSSParser::makeBigrammsTable(const std::locale& loc)
     number int(10) NOT NULL,\n\
     PRIMARY KEY (id, id_article, start) \n\
     );\n\n");
-    files.WriteTo(SQLImportFile::BIGRAMMS_ARTICLES, str);
-
+    if (bigramms.size() > 0)
+    {
+        files.WriteTo(SQLImportFile::BIGRAMMS_ARTICLES, str);
+        files.WriteTo(SQLImportFile::BIGRAMMS, str_bigramms);
+        files.WriteTo(SQLImportFile::BIGRAMMS, L"\n");
+        files.WriteTo(SQLImportFile::BIGRAMMS_ARTICLES, str_bigramms_articles);
+        files.WriteTo(SQLImportFile::BIGRAMMS_ARTICLES, L"\n");
+    }
+    bool start[2] = { true, true };
     for (auto bit = bigramms.begin(); bit != bigramms.end(); ++bit) {
 
         str.clear();
-        str.append(str_bigramms);
-        str.append(L"\n\
-    VALUES (");
+        if (!start[0])
+            str.append(L",\n");
+        start[0] = false;
+        str.append(L"VALUES (");
         str.append(std::to_wstring(bit->second.id));
         str.append(L",'");
         str.append(bit->first);
         str.append(L"',");
         str.append(std::to_wstring(bit->second.arts.size()));
-        str.append(L");\n");
+        str.append(L")");
         files.WriteTo(SQLImportFile::BIGRAMMS, str);
 
         artIdVct::iterator avt = bit->second.arts.begin();
         for (avt; avt != bit->second.arts.end(); ++avt) {
             str.clear();
-            str.append(str_bigramms_articles);
-            str.append(L"\n\
-    VALUES (");
+            if (!start[1])
+                str.append(L",\n");
+            start[1] = false;
+            str.append(L"VALUES (");
             str.append(std::to_wstring(bit->second.id));
             str.append(L",");
             str.append(std::to_wstring(avt->id));
@@ -1097,11 +1136,15 @@ void COROSSParser::makeBigrammsTable(const std::locale& loc)
             str.append(std::to_wstring(avt->group));
             str.append(L",");
             str.append(std::to_wstring(avt->number));
-            str.append(L");\n");
+            str.append(L")");
             files.WriteTo(SQLImportFile::BIGRAMMS_ARTICLES, str);
         }
         bit->second.arts.clear();
     }
+    if (!start[0])
+        files.WriteTo(SQLImportFile::BIGRAMMS, L";");
+    if (!start[1])
+        files.WriteTo(SQLImportFile::BIGRAMMS_ARTICLES, L";");
     files.Close(SQLImportFile::BIGRAMMS, SQLImportFile::BIGRAMMS_ARTICLES);
     bigramms.clear();
 }
@@ -1135,26 +1178,36 @@ void COROSSParser::makeTrigrammsTable(const std::locale& loc)
     );\n\n");
     files.WriteTo(SQLImportFile::TRIGRAMMS_ARTICLES, str);
 
+    if (trigramms.size() > 0)
+    {
+        files.WriteTo(SQLImportFile::TRIGRAMMS, str_trigramms);
+        files.WriteTo(SQLImportFile::TRIGRAMMS, L"\n");
+        files.WriteTo(SQLImportFile::TRIGRAMMS_ARTICLES, str_trigramms_articles);
+        files.WriteTo(SQLImportFile::TRIGRAMMS_ARTICLES, L"\n");
+    }
+    bool start[2] = { true, true };
     for (auto tit = trigramms.begin(); tit != trigramms.end(); ++tit) {
 
         str.clear();
-        str.append(str_trigramms);
-        str.append(L"\n\
-    VALUES (");
+        if (!start[0])
+            str.append(L",\n");
+        start[0] = false;
+        str.append(L"VALUES (");
         str.append(std::to_wstring(tit->second.id));
         str.append(L",'");
         str.append(tit->first);
         str.append(L"',");
         str.append(std::to_wstring(tit->second.arts.size()));
-        str.append(L");\n");
+        str.append(L")");
         files.WriteTo(SQLImportFile::TRIGRAMMS, str);
 
         artIdVct::iterator avt = tit->second.arts.begin();
         for (avt; avt != tit->second.arts.end(); ++avt) {
             str.clear();
-            str.append(str_trigramms_articles);
-            str.append(L"\n\
-    VALUES (");
+            if (!start[1])
+                str.append(L",\n");
+            start[1] = false;
+            str.append(L"VALUES (");
             str.append(std::to_wstring(tit->second.id));
             str.append(L",");
             str.append(std::to_wstring(avt->id));
@@ -1168,11 +1221,15 @@ void COROSSParser::makeTrigrammsTable(const std::locale& loc)
             str.append(std::to_wstring(avt->group));
             str.append(L",");
             str.append(std::to_wstring(avt->number));
-            str.append(L");\n");
+            str.append(L")");
             files.WriteTo(SQLImportFile::TRIGRAMMS_ARTICLES, str);
         }
         tit->second.arts.clear();
     }
+    if (!start[0])
+        files.WriteTo(SQLImportFile::TRIGRAMMS, L";");
+    if (!start[1])
+        files.WriteTo(SQLImportFile::TRIGRAMMS_ARTICLES, L";");
     files.Close(SQLImportFile::TRIGRAMMS, SQLImportFile::TRIGRAMMS_ARTICLES);
     trigramms.clear();
 }
@@ -1206,26 +1263,35 @@ void COROSSParser::makeTetragrammsTable(const std::locale& loc)
     );\n\n");
     files.WriteTo(SQLImportFile::TETRAGRAMMS_ARTICLES, str);
 
+    if (tetragramms.size() > 0)
+    {
+        files.WriteTo(SQLImportFile::TETRAGRAMMS, str_tetragramms);
+        files.WriteTo(SQLImportFile::TETRAGRAMMS, L"\n");
+        files.WriteTo(SQLImportFile::TETRAGRAMMS_ARTICLES, str_tetragramms);
+        files.WriteTo(SQLImportFile::TETRAGRAMMS_ARTICLES, L"\n");
+    }
+    bool start[2] = { true, true };
     for (auto tit = tetragramms.begin(); tit != tetragramms.end(); ++tit) {
-
         str.clear();
-        str.append(str_tetragramms);
-        str.append(L"\n\
-    VALUES (");
+        if (!start[0])
+            str.append(L",\n");
+        start[0] = false;
+        str.append(L"VALUES (");
         str.append(std::to_wstring(tit->second.id));
         str.append(L",'");
         str.append(tit->first);
         str.append(L"',");
         str.append(std::to_wstring(tit->second.arts.size()));
-        str.append(L");\n");
+        str.append(L")");
         files.WriteTo(SQLImportFile::TETRAGRAMMS, str);
 
         artIdVct::iterator avt = tit->second.arts.begin();
         for (avt; avt != tit->second.arts.end(); ++avt) {
             str.clear();
-            str.append(str_tetragramms_articles);
-            str.append(L"\n\
-    VALUES (");
+            if (!start[1])
+                str.append(L",\n");
+            start[1] = false;
+            str.append(L"VALUES (");
             str.append(std::to_wstring(tit->second.id));
             str.append(L",");
             str.append(std::to_wstring(avt->id));
@@ -1239,11 +1305,15 @@ void COROSSParser::makeTetragrammsTable(const std::locale& loc)
             str.append(std::to_wstring(avt->group));
             str.append(L",");
             str.append(std::to_wstring(avt->number));
-            str.append(L");\n");
+            str.append(L")");
             files.WriteTo(SQLImportFile::TETRAGRAMMS_ARTICLES, str);
         }
         tit->second.arts.clear();
     }
+    if (!start[0])
+        files.WriteTo(SQLImportFile::TETRAGRAMMS, L";");
+    if (!start[1])
+        files.WriteTo(SQLImportFile::TETRAGRAMMS_ARTICLES, L";");
     files.Close(SQLImportFile::TETRAGRAMMS, SQLImportFile::TETRAGRAMMS_ARTICLES);
     tetragramms.clear();
 }
@@ -1313,6 +1383,13 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
     artMap::iterator ait = articles.begin();
     size_t title = 1;
     size_t idx = 0;
+    if (articles.size() > 0)
+    {
+        str.clear();
+        str.append(str_articles);//L"INSERT INTO articles (id, dic, title, text, rtf, src) 
+        str.append(L"\n");
+        files.WriteTo(SQLImportFile::ARTICLES, str);
+    }
     for (; ait != articles.end(); ++ait)
     {
         /*if (split == 1 && idx == 7999) {
@@ -1337,6 +1414,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
             continue;
 
         str.clear();
+        bool start = true;
         //
         for (size_t i = 0; i < 3; i++) {
             std::vector<size_t> tags;
@@ -1354,51 +1432,78 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
                 case 1: pattern.clear(); pattern.append(L"rule"); break;
                 case 2: pattern.clear(); pattern.append(L"para"); break;
             }
+            if (it == tags.end())
+                continue;
+            str.append(L"INSERT INTO articles_");
+            str.append(pattern);
+            str.append(L"s (id, id_");
+            str.append(pattern);
+            str.append(L")\n");
+            files.WriteTo(idx, str);
+            start = true;
             for (it; it != tags.end(); ++it) {
                 str.clear();
-                str.append(L"INSERT INTO articles_");
-                str.append(pattern);
-                str.append(L"s (id, id_");
-                str.append(pattern);
-                str.append(L") \n\
-                            VALUES (");
+                if (!start)
+                    str.append(L",\n");
+                str.append(L"VALUES (");
                 str.append(std::to_wstring(ait->second.id));
                 str.append(L",");
                 str.append(std::to_wstring(*it));
-                str.append(L");\n");
+                str.append(L")");
                 files.WriteTo(idx, str);
+                start = false;
             }
+            files.WriteTo(idx, L";");
             tags.clear();
         }
-        std::vector<size_t>::iterator fit = ait->second.formulas.begin();
-        for (fit; fit != ait->second.formulas.end(); ++fit) {
+        if (ait->second.formulas.size() > 0)
+        {
             str.clear();
-            str.append(L"INSERT INTO articles_formulas (id, id_formula) \n\
-                        VALUES (");
-            str.append(std::to_wstring(ait->second.id));
-            str.append(L",");
-            str.append(std::to_wstring(*fit));
-            str.append(L");\n");
+            str.append(L"INSERT INTO articles_formulas (id, id_formula)");
+            str.append(L"\n");
             files.WriteTo(SQLImportFile::ARTICLES_FORMULAS, str);
+            std::vector<size_t>::iterator fit = ait->second.formulas.begin();
+            start = true;
+            for (fit; fit != ait->second.formulas.end(); ++fit) {
+                str.clear();
+                if (!start)
+                    str.append(L",\n");
+                str.append(L"VALUES (");
+                str.append(std::to_wstring(ait->second.id));
+                str.append(L",");
+                str.append(std::to_wstring(*fit));
+                str.append(L")");
+                files.WriteTo(SQLImportFile::ARTICLES_FORMULAS, str);
+                start = false;
+            }
+            files.WriteTo(SQLImportFile::ARTICLES_FORMULAS, L";");
         }
         ait->second.formulas.clear();
-        std::vector<size_t>::iterator cit = ait->second.comments.begin();
-        for (cit; cit != ait->second.comments.end(); ++cit) {
+        if (ait->second.comments.size() > 0)
+        {
             str.clear();
-            str.append(str_articles_comments);//L"INSERT INTO articles_comments (id, id_comments) 
-            str.append(L"\n\
-                        VALUES (");
-            str.append(std::to_wstring(ait->second.id));
-            str.append(L",");
-            str.append(std::to_wstring(*cit));
-            str.append(L");\n");
-            files.WriteTo(SQLImportFile::ARTICLES_COMMENTS, str);
+            str.append(str_articles_comments);
+            str.append(L"\n");
+            std::vector<size_t>::iterator cit = ait->second.comments.begin();
+            start = true;
+            for (cit; cit != ait->second.comments.end(); ++cit) {
+                if (!start)
+                    str.append(L",\n");
+                str.append(L"VALUES (");
+                str.append(std::to_wstring(ait->second.id));
+                str.append(L",");
+                str.append(std::to_wstring(*cit));
+                str.append(L")");
+                files.WriteTo(SQLImportFile::ARTICLES_COMMENTS, str);
+                start = false;
+            }
+            files.WriteTo(SQLImportFile::ARTICLES_COMMENTS, L";");
         }
         ait->second.comments.clear();
         str.clear();
-        str.append(str_articles);//L"INSERT INTO articles (id, dic, title, text, rtf, src) 
-        str.append(L"\n\
-VALUES (");
+        if (ait != articles.begin())
+            str.append(L",\n");
+        str.append(L"VALUES (");
         str.append(std::to_wstring(ait->second.id));
         str.append(L",");
         str.append(std::to_wstring(ait->second.dic));
@@ -1416,12 +1521,13 @@ VALUES (");
         str.append(ait->second.src);
         str.append(L"',");
         str.append(L"0");
-        str.append(L");\n");
+        str.append(L")");
         files.WriteTo(SQLImportFile::ARTICLES, str);
 
         ait->second.clear();
         idx++;
     }
+    files.WriteTo(SQLImportFile::ARTICLES, L";");
 }
 
 void COROSSParser::getTags(const std::wstring& text, const std::wstring& tag, std::vector<size_t>& tagsVct)
@@ -1541,6 +1647,9 @@ void COROSSParser::makeMistakesTable(const std::locale& loc) {
     );\n\n");
     files.WriteTo(SQLImportFile::MISTAKES_WORDS, str);
 
+    files.WriteTo(SQLImportFile::MISTAKES, L"INSERT INTO mistakes (id, mistake)\n");
+    files.WriteTo(SQLImportFile::MISTAKES_WORDS, L"INSERT INTO words_mistakes (id, id_mistake)\n");
+    bool start[2] = { true, true };
     size_t idx = 0;
     mistakeMap::iterator mit = mistakes.begin();
     for (; mit != mistakes.end(); ++mit) {
@@ -1563,29 +1672,35 @@ void COROSSParser::makeMistakesTable(const std::locale& loc) {
         }
         */
         str.clear();
-        str.append(L"INSERT INTO mistakes (id, mistake) ");
-        str.append(L"\n\
-    VALUES (");
+        if (!start[0])
+            str.append(L",\n");
+        start[0] = false;
+        str.append(L"VALUES (");
         str.append(std::to_wstring(mit->second.id));
         str.append(L",'");
         str.append(mit->first);
-        str.append(L"');\n");
+        str.append(L"')");
         files.WriteTo(SQLImportFile::MISTAKES, str);
 
         std::vector<size_t>::iterator wvt = mit->second.wordIds.begin();
         for (wvt; wvt != mit->second.wordIds.end(); ++wvt) {
             str.clear();
-            str.append(L"INSERT INTO words_mistakes (id, id_mistake) ");
-            str.append(L"\n\
-    VALUES (");
+            if (!start[1])
+                str.append(L",\n");
+            start[1] = false;
+            str.append(L"VALUES (");
             str.append(std::to_wstring((*wvt)));
             str.append(L",");
             str.append(std::to_wstring(mit->second.id));
-            str.append(L");\n");
+            str.append(L")");
             files.WriteTo(SQLImportFile::MISTAKES_WORDS, str);
         }
         idx++;
     }
+    if (!start[0])
+        files.WriteTo(SQLImportFile::MISTAKES, L";");
+    if (!start[1])
+        files.WriteTo(SQLImportFile::MISTAKES_WORDS, L";");
     files.Close(SQLImportFile::MISTAKES, SQLImportFile::MISTAKES_WORDS);
 }
 
