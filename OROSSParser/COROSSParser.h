@@ -394,26 +394,26 @@ public:
         tetragrId(1),
         mode(Create),
         russian(std::locale(RUS_LOCALE), new std::codecvt_utf8<wchar_t, 0x10ffff, std::consume_header>()),
-        str_words(L"INSERT INTO words (id, word, art_count) "),
-        str_words_articles(L"INSERT INTO words_articles (id, id_article, start, len, title, segment, number) "),
-        str_words_tutorial(L"INSERT INTO words_tutorial (id, id_item, start, len, type, number) "),
-        str_bigramms(L"INSERT INTO bigramms (id, bigramm, art_count) "),
-        str_bigramms_articles(L"INSERT INTO bigramms_articles (id, id_article, start, len, title, segment, number) "),
-        str_trigramms(L"INSERT INTO trigramms (id, trigramm, art_count) "),
-        str_trigramms_articles(L"INSERT INTO trigramms_articles (id, id_article, start, len, title, segment, number) "),
-        str_tetragramms(L"INSERT INTO tetragramms (id, tetragramm, art_count) "),
-        str_tetragramms_articles(L"INSERT INTO tetragramms_articles (id, id_article, start, len, title, segment, number) "),
-        str_articles_orthos(L"INSERT INTO articles_orthos (id, id_ortho) "),
-        str_articles_formulas(L"INSERT INTO articles_formulas (id, id_formula) "),
-        str_articles_comments(L"INSERT INTO articles_comments (id, id_comment) "),
+        str_words(L"INSERT INTO words (id, word, art_count) VALUES"),
+        str_words_articles(L"INSERT INTO words_articles (id, id_article, start, len, title, segment, number) VALUES"),
+        str_words_tutorial(L"INSERT INTO words_tutorial (id, id_item, start, len, type, number) VALUES"),
+        str_bigramms(L"INSERT INTO bigramms (id, bigramm, art_count) VALUES"),
+        str_bigramms_articles(L"INSERT INTO bigramms_articles (id, id_article, start, len, title, segment, number) VALUES"),
+        str_trigramms(L"INSERT INTO trigramms (id, trigramm, art_count) VALUES"),
+        str_trigramms_articles(L"INSERT INTO trigramms_articles (id, id_article, start, len, title, segment, number) VALUES"),
+        str_tetragramms(L"INSERT INTO tetragramms (id, tetragramm, art_count) VALUES"),
+        str_tetragramms_articles(L"INSERT INTO tetragramms_articles (id, id_article, start, len, title, segment, number) VALUES"),
+        str_articles_orthos(L"INSERT INTO articles_orthos (id, id_ortho) VALUES"),
+        str_articles_formulas(L"INSERT INTO articles_formulas (id, id_formula) VALUES"),
+        str_articles_comments(L"INSERT INTO articles_comments (id, id_comment) VALUES"),
         //     str_articles(L"INSERT INTO articles (id, title, text, rtf, src, comment_id) "), //!!!!
-        str_articles(L"INSERT INTO articles (id, dic, title, text, rtf, src, phantom) "), //!!!!
+        str_articles(L"INSERT INTO articles (id, dic, title, text, rtf, src, phantom) VALUES"), //!!!!
         str_values(L"    VALUES ("),
         str_sup1(L"<sup>1</sup>"),
         str_sup2(L"<sup>2</sup>"),
         str_sup3(L"<sup>3</sup>"),
-        str_accents(L"INSERT INTO accents (id, word, art_count) "),
-        str_accents_articles(L"INSERT INTO accents_articles (id, id_article, start, len, title, segment, number) ")
+        str_accents(L"INSERT INTO accents (id, word, art_count) VALUES"),
+        str_accents_articles(L"INSERT INTO accents_articles (id, id_article, start, len, title, segment, number) VALUES")
         {};
 
 public:
