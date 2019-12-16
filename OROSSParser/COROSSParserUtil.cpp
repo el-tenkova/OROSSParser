@@ -1469,6 +1469,7 @@ void COROSSParser::addToTitleMap(std::wstring& title_l, size_t artId)
                     }
                 }
             }
+            break; // сравниваем только с первым заголовком
         }
         if (!done)
             tit->second.push_back(ait->second.id);
