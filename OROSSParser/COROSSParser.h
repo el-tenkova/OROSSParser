@@ -25,6 +25,7 @@
 #include "COROSSParserTree.h"
 #include "COROSSParserSoundEx.h"
 #include "COROSSParserCfg.h"
+#include "COROSSParserTranslit.h"
 
 #define ORTHO_SUBST 1
 #define FORMULA_SUBST 2
@@ -113,6 +114,7 @@ struct article {
 
 typedef std::map<size_t, article> artMap;
 typedef std::map<std::wstring, std::vector<size_t> > titleMap;
+typedef std::map<std::string, std::size_t> linkMap;
 
 struct place {
     size_t id; // article id
@@ -459,6 +461,7 @@ protected:
     artMap articles;
     titleMap titles;
     footMap footnotes;
+    linkMap links;
     std::map<std::wstring, size_t> stopDic;
     std::map<std::wstring, size_t> stopLabelDic;
     std::map<wchar_t, wchar_t > symMap;
@@ -499,6 +502,7 @@ protected:
     COROSSParserCfg config;
     COROSSParserMorph morph;
     COROSSDiacritics diacritics;
+    COROSSTranslit translit;
     COROSSSoundEx soundex;
     COROSSGrammaTree bigrDic;
     COROSSGrammaTree trigrDic;
@@ -629,6 +633,7 @@ protected:
     void addToTitleMap(std::wstring& title_l, size_t artId);
     bool inVector(const std::vector<std::wstring>& v, const std::wstring& str);
     void checkComplexTitle(article& ca);
+    void makeChpuLink(const std::wstring& title, std::string& link);
 };
 
 #endif //__OROSSPARSERPURE_H_

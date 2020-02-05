@@ -9,6 +9,8 @@
 #include <regex>
 #include <sstream>
 
+#ifndef _ORFO
+
 #include "COROSSParserMorphS.h"
 
 //#define FOREIGN_LIST "c:\\IRYA\\OROSSParser\\Data\\foreign.txt"
@@ -76,7 +78,9 @@ void COROSSParserMorph::Terminate()
 
 bool COROSSParserMorph::Check(const std::wstring& word)
 {
-    return true;
+    if (foreignMap.find(word) != foreignMap.end())
+        return true;
+    return false;
 }
 
 bool COROSSParserMorph::Search(const std::wstring& word)
@@ -100,3 +104,7 @@ std::wstring COROSSParserMorph::GetLemma(const std::wstring& word)
         return std::wstring(L"");
 }
 
+void COROSSParserMorph::Load()
+{
+}
+#endif // _ORFO

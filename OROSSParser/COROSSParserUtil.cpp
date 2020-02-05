@@ -1521,3 +1521,21 @@ void COROSSParser::checkComplexTitle(article& ca)
         ca.title = nt;
     }
 }
+void COROSSParser::makeChpuLink(const std::wstring& title, std::string& link)
+{
+    std::wstring mapped;
+    translit.resetResult();
+    std::transform(title.begin(), title.end(), mapped.begin(), translit);
+    std::string res(translit.getResult());
+    auto it = links.find(res);
+    size_t i = 1;
+    while (it != links.end())
+    {
+        res.clear();
+        res.append(translit.getResult());
+        res.append(std::to_string(i));
+        i++;
+        it = links.find(res);
+    }
+    link = res;
+}
