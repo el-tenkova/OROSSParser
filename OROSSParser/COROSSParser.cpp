@@ -47,17 +47,17 @@ long COROSSParser::Init(modeName Mode)
     tagsSpecial.push_back(L"&");
 
     tagsAccents.push_back(L"\u00E1");//?
-    tagsAccents.push_back(L"\u0430&#x301");
+    tagsAccents.push_back(L"\u0430&#x301;");
     tagsAccents.push_back(L"\u00F3"); //?
-    tagsAccents.push_back(L"\u043E&#x301");
+    tagsAccents.push_back(L"\u043E&#x301;");
     tagsAccents.push_back(L"\u044D\u0301");//э?
-    tagsAccents.push_back(L"\u044D&#x301");
+    tagsAccents.push_back(L"\u044D&#x301;");
     tagsAccents.push_back(L"\u00FD");//?
-    tagsAccents.push_back(L"\u0443&#x301");
+    tagsAccents.push_back(L"\u0443&#x301;");
     tagsAccents.push_back(L"\u044B\u0301");//ы?
-    tagsAccents.push_back(L"\u044B&#x301");
+    tagsAccents.push_back(L"\u044B&#x301;");
     tagsAccents.push_back(L"\u0438\u0301");//и?
-    tagsAccents.push_back(L"\u0438&#x301");
+    tagsAccents.push_back(L"\u0438&#x301;");
 
     rtfReplacements.push_back(L"<b>");
     rtfReplacements.push_back(L"\\\\b");
@@ -149,17 +149,17 @@ long COROSSParser::Init(modeName Mode, const std::string& cfg)
     tagsSpecial.push_back(L"&");
 
     tagsAccents.push_back(L"\u00E1");//?
-    tagsAccents.push_back(L"\u0430&#x301");
+    tagsAccents.push_back(L"\u0430&#x301;");
     tagsAccents.push_back(L"\u00F3"); //?
-    tagsAccents.push_back(L"\u043E&#x301");
+    tagsAccents.push_back(L"\u043E&#x301;");
     tagsAccents.push_back(L"\u044D\u0301");//э?
-    tagsAccents.push_back(L"\u044D&#x301");
+    tagsAccents.push_back(L"\u044D&#x301;");
     tagsAccents.push_back(L"\u00FD");//?
-    tagsAccents.push_back(L"\u0443&#x301");
+    tagsAccents.push_back(L"\u0443&#x301;");
     tagsAccents.push_back(L"\u044B\u0301");//ы?
-    tagsAccents.push_back(L"\u044B&#x301");
+    tagsAccents.push_back(L"\u044B&#x301;");
     tagsAccents.push_back(L"\u0438\u0301");//и?
-    tagsAccents.push_back(L"\u0438&#x301");
+    tagsAccents.push_back(L"\u0438&#x301;");
 
     rtfReplacements.push_back(L"<b>");
     rtfReplacements.push_back(L"\\\\b");

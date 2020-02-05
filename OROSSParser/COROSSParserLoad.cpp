@@ -809,7 +809,7 @@ void COROSSParser::loadOROSS(const std::string& dict) {
     // load data to search in articles
     std::wifstream arts(dict, std::wifstream::binary);
     size_t idx = 0;
-    std::wstring accent(L"&#x301");
+    std::wstring accent(L"&#x301;");
     if (arts.is_open()) {
         arts.imbue(russian);
         arts.seekg(3);
