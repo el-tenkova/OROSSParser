@@ -163,7 +163,7 @@ void COROSSParser::prepareTitle(std::wstring& title, bool saveaccent)
     tags.push_back(L"\u2026"); */
     tags.push_back(L"\u25ca");
     if (!saveaccent)
-        tags.push_back(L"&#x301");
+        tags.push_back(L"&#x301;");
     std::vector<std::wstring>::iterator it = tags.begin();
     for (it; it != tags.end(); ++it) {
         size_t pos = title.find(*it);
@@ -288,7 +288,7 @@ void COROSSParser::prepareOrthoKey(std::wstring& key, bool saveaccent)
     tags.push_back(L"\u00B2");
     tags.push_back(L"\u2026");
     if (!saveaccent)
-        tags.push_back(L"&#x301");
+        tags.push_back(L"&#x301;");
     std::vector<std::wstring>::iterator it = tags.begin();
     for (it; it != tags.end(); ++it) {
         size_t pos = key.find(*it);
@@ -330,7 +330,7 @@ void COROSSParser::correctText(std::wstring& text)
         if (mode != WebUpdate && mode != WebUpdateROS) // accent from TinyMCE
             text.replace(pos, 1, L"");
         else
-            text.replace(pos, 1, L"&#x301");
+            text.replace(pos, 1, L"&#x301;");
         pos = text.find(L"\u0301", pos + 1);
     }
 
@@ -676,12 +676,12 @@ std::wstring COROSSParser::getRestForPara(const std::wstring& Rest, const size_t
 std::wstring COROSSParser::toRTF(const std::wstring& article) {
     std::wstring str(L"");
     std::wstring art(article);
-    size_t pos = art.find(L"&#x301");
+    size_t pos = art.find(L"&#x301;");
     while (pos != std::wstring::npos) {
         art.insert(pos - 1, L"<f1>");
-        pos = art.find(L"&#x301");
-        art.replace(pos, wcslen(L"&#x301"), L"<f0>");
-        pos = art.find(L"&#x301", pos);
+        pos = art.find(L"&#x301;");
+        art.replace(pos, wcslen(L"&#x301;"), L"<f0>");
+        pos = art.find(L"&#x301;", pos);
     }
     pos = art.find(L'<');
     size_t i = 0;
@@ -769,7 +769,7 @@ std::wstring COROSSParser::getSpecMarkedArticle(const std::wstring& art, bool sa
     tags.push_back(L"<sup>");
     tags.push_back(L"</sup>");
     if (!saveaccent)
-        tags.push_back(L"&#x301");
+        tags.push_back(L"&#x301;");
     tags.push_back(L"\u25ca");
     tags.push_back(tagsTitle[0]);
     tags.push_back(tagsTitle[1]);

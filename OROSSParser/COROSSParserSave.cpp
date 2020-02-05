@@ -1922,7 +1922,7 @@ std::vector<std::wstring> COROSSParser::addWordToIndex(artMap::iterator ait,
 
     std::wstring under_b(L"<u>");
     std::wstring under_e(L"</u>");
-    std::wstring accent(L"&#x301");
+    std::wstring accent(L"&#x301;");
 
     key = getSpecMarkedArticle(key);
     std::vector<std::wstring> vw = getWordsForIndex(key, offset, len, type == titleWord);
@@ -2023,7 +2023,7 @@ std::vector<std::wstring> COROSSParser::addTitleToIndex(artMap::iterator ait, co
 
     std::wstring under_b(L"<u>");
     std::wstring under_e(L"</u>");
-    std::wstring accent(L"&#x301");
+    std::wstring accent(L"&#x301;");
 
     key = getSpecMarkedArticle(key);
 
@@ -2111,7 +2111,7 @@ std::vector<std::wstring> COROSSParser::addWordToTutorialIndex(const size_t& id,
 
     std::wstring under_b(L"<u>");
     std::wstring under_e(L"</u>");
-    std::wstring accent(L"&#x301");
+    std::wstring accent(L"&#x301;");
     std::wstring italic(L"<i>");
     std::wstring bold(L"<b>");
 
@@ -2593,8 +2593,8 @@ void COROSSParser::processMistakes() {
 
 void COROSSParser::processAccents() {
     size_t accId = 1;
-    std::wstring acSign(L"&#x301");
-    std::string acSignUtf8("&#x301");
+    std::wstring acSign(L"&#x301;");
+    std::string acSignUtf8("&#x301;");
     std::wstring_convert<std::codecvt_utf8<wchar_t>> conv1;
     for (auto wit = words.begin(); wit != words.end(); ++wit) {
         if (morph.IsLemma(wit->first) == false)
