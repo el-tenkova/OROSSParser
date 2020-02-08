@@ -1,4 +1,4 @@
-#ifndef _TRANSLIT_MAP_H
+﻿#ifndef _TRANSLIT_MAP_H
 #define _TRANSLIT_MAP_H
 
 #include <string>
