@@ -8,6 +8,7 @@
 #include <regex>
 #include <sstream>
 #include <functional>
+#include <cctype>
 
 #include "COROSSParser.h"
 
@@ -605,14 +606,13 @@ size_t COROSSParser::getParaNum(const std::wstring& rest)
 
 std::wstring COROSSParser::getRuleNum(const std::wstring& rest)
 {
-    std::locale loc;
     std::wstring ru(L"п.");
     size_t pos = rest.find(ru);
     if (pos != std::wstring::npos) {
         pos = pos + ru.length();
         size_t len = 0;
         for (auto i = rest.begin() + pos; i < rest.end(); ++i) {
-            if (!std::isdigit((*i), loc) && (*i) != L'.' && (*i) != L')') {
+            if (!std::isdigit((*i), russian) && (*i) != L'.' && (*i) != L')') {
                 pos++;
             }
             else {
@@ -626,7 +626,7 @@ std::wstring COROSSParser::getRuleNum(const std::wstring& rest)
         if (len > 0) {
             size_t idx = len;
             for (auto i = rest.begin() + pos + len; i < rest.end(); ++i, idx++) {
-                if (!std::isdigit((*i), loc) && (*i) != L'.' && (*i) != L')') {
+                if (!std::isdigit((*i), russian) && (*i) != L'.' && (*i) != L')') {
                     break;
                 }
             }
@@ -1131,22 +1131,32 @@ void COROSSParser::removeParentheses(std::wstring& str) {
 }
 
 void COROSSParser::cutTail(std::wstring& str) {
-    std::locale loc;
     size_t idx = str.length();
-    for (auto i = str.end() - 1; i != str.end(); --i, idx--) {
+    size_t len = str.length();
+    std::wstring strCp(str);
+    for (auto i = str.end() - 1; i != str.begin(); --i, idx--) {
         if ((*i) != L'-' &&  (*i) !=  L'…' && (*i) != L'.') {
             str = str.substr(0, idx);
             break;
         }
     }
-
+    if (idx == len)
+    {
+        // digits only
+        for (auto i = str.end() - 1; i != str.begin(); --i, idx--) {
+            if (std::isdigit(*i, russian))
+                continue;
+            break;
+        }
+        if (idx > 1 && idx != len) // cut ending digits (f.e. <sup>1</sup>)
+            str = str.substr(0, idx);
+    }
 }
 
 void COROSSParser::cutHead(std::wstring& str) {
-    std::locale loc;
     size_t idx = 0;
     for (auto i = str.begin(); i < str.end(); ++i, idx++) {
-        if (!(std::ispunct((*i), loc) || std::isdigit((*i), loc))) {
+        if (!(std::ispunct((*i), russian) || std::isdigit((*i), russian))) {
             str = str.substr(idx);
             break;
         }
