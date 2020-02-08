@@ -518,13 +518,14 @@ void COROSSParser::makeSQL()
        // makeHistoricTable(result_contents);
         std::cout << "make ABC" << std::endl;
      //   if (mode == ROSOnly || mode == WebUpdateROS)
-        makeABCTable(russian);
+//        makeABCTable(russian);
         makeWordsTable(russian);
         makeBigrammsTable(russian);
         makeTrigrammsTable(russian);
         makeTetragrammsTable(russian);
         makeMistakesTable(russian);
         makeAccentsTable(russian);
+        makeChpu();
         makeArticlesTable(russian);
         makeAddInfoUpdate();
     }
@@ -2728,6 +2729,63 @@ void COROSSParser::makeAddInfoUpdate()
     files.Close(SQLImportFile::ARTICLES_ADDINFO, SQLImportFile::ARTICLES_ADDINFO);
 }
 
+void COROSSParser::makeChpu()
+{
+    if (!files.OpenToWrite(SQLImportFile::ARTICLES_CHPU, SQLImportFile::ARTICLES_CHPU, config["output_articles"], russian))
+    {
+        files.Close(SQLImportFile::ARTICLES_CHPU, SQLImportFile::ARTICLES_CHPU);
+        return;
+    }
+
+    std::wstring str(L"\nCREATE TABLE IF NOT EXISTS articles_links (\n\
+    id int(11) NOT NULL,\n\
+    link varchar(256) NOT NULL,\n\
+    PRIMARY KEY (id) \n\
+    );\n\n");
+    files.WriteTo(SQLImportFile::ARTICLES_CHPU, str);
+
+    str.clear();
+    str.append(L"INSERT INTO articles_links (id, link) VALUES \n");
+    files.WriteTo(SQLImportFile::ARTICLES_CHPU, str);
+
+    std::map<std::wstring, size_t> chpuMap;
+    bool start = true;
+    for (auto ait = articles.begin(); ait != articles.end(); ++ait)
+    {
+        std::wstring mapped(ait->second.title.length() * 3, 0);
+        std::wstring res;
+        translit.resetResult(&res);
+        std::transform(ait->second.title.begin(), ait->second.title.end(),
+            mapped.begin(), translit);
+        if (chpuMap.find(res) == chpuMap.end()) {
+            chpuMap.insert(std::pair<std::wstring, size_t>(res, ait->second.id));
+        }
+        else {
+            size_t i = 1;
+            std::wstring tmp(res);
+            res.append(std::to_wstring(i));
+            while (chpuMap.find(res) != chpuMap.end()) {
+                i++;
+                res = tmp;
+                res.append(std::to_wstring(i));
+            }
+            chpuMap.insert(std::pair<std::wstring, size_t>(res, ait->second.id));
+        }
+        str.clear();
+        if (!start)
+            str.append(L",\n");
+        str.append(L"(");
+        str.append(std::to_wstring(ait->second.id));
+        str.append(L",");
+        str.append(res);
+        str.append(L")");
+        files.WriteTo(SQLImportFile::ARTICLES_CHPU, str);
+        start = false;
+    }
+    files.Close(SQLImportFile::ARTICLES_CHPU, SQLImportFile::ARTICLES_CHPU);
+    chpuMap.clear();
+}
+
 void COROSSParser::makeABCTable(const std::locale& loc)
 {
     std::map<wchar_t, std::wstring> abcMap;
@@ -2869,6 +2927,7 @@ SQLImportFile::SQLImportFile(void)
     files.insert(std::pair<int, FileToWrite>(ARTICLES_ORTHOS, FileToWrite("import_articles_o")));
     files.insert(std::pair<int, FileToWrite>(ARTICLES_PARAS, FileToWrite("import_articles_p")));
     files.insert(std::pair<int, FileToWrite>(ARTICLES_RULES, FileToWrite("import_articles_r")));
+    files.insert(std::pair<int, FileToWrite>(ARTICLES_CHPU, FileToWrite("import_articles_l")));
 
     files.insert(std::pair<int, FileToWrite>(BIGRAMMS, FileToWrite("import_bigramms")));
     files.insert(std::pair<int, FileToWrite>(BIGRAMMS_ARTICLES, FileToWrite("import_bigramms_a")));

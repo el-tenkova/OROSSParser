@@ -287,6 +287,7 @@ public:
         ARTICLES_PARAS,
         ARTICLES_RULES,
         ARTICLES_ADDINFO,
+        ARTICLES_CHPU,
         //
         BIGRAMMS,
         BIGRAMMS_ARTICLES,
@@ -553,7 +554,8 @@ protected:
     void makeMistakesTable(const std::locale& loc);
     void makeAccentsTable(const std::locale& loc);
     void makeTutorialUpdate();
-	void makeAddInfoUpdate();
+    void makeAddInfoUpdate();
+    void makeChpu();
     void makeABCTable(const std::locale& loc);
 
     void processComments();
@@ -633,7 +635,6 @@ protected:
     void addToTitleMap(std::wstring& title_l, size_t artId);
     bool inVector(const std::vector<std::wstring>& v, const std::wstring& str);
     void checkComplexTitle(article& ca);
-    void makeChpuLink(const std::wstring& title, std::string& link);
 };
 
 #endif //__OROSSPARSERPURE_H_
