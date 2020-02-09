@@ -714,7 +714,14 @@ wchar_t COROSSParser::loadOROSSArticle(std::wifstream& arts)
         std::vector<std::wstring> parts = split(str, L'\t');
         if (parts[0] == L"a_dic:") {
             // add article
-            articles.insert(std::pair<size_t, article>(ca.id, ca));
+            if (mode != Rebuild)
+                articles.insert(std::pair<size_t, article>(ca.id, ca));
+            else
+            {
+                std::wstring title(ca.title);
+                std::wstring src(ca.src);
+                AddArticle(title, src, std::wstring(L""));
+             }
             std::wstring title_l(ca.title);
             if (ca.dic == dicOROSS && !ca.ros_title.empty()) {
                 title_l = ca.ros_title;
@@ -733,11 +740,14 @@ wchar_t COROSSParser::loadOROSSArticle(std::wifstream& arts)
             artId = ca.id;
         }
         else if (parts[0] == L"a_title:") {
-            ca.title = parts[1];
-            size_t pos = ca.title.find(L"\u0301");
-            while (pos != std::wstring::npos) {
-                ca.title.replace(pos, 1, L"");
-                pos = ca.title.find(L"\u0301", pos + 1);
+            if (mode != Rebuild)
+            {
+                ca.title = parts[1];
+                size_t pos = ca.title.find(L"\u0301");
+                while (pos != std::wstring::npos) {
+                    ca.title.replace(pos, 1, L"");
+                    pos = ca.title.find(L"\u0301", pos + 1);
+                }
             }
         }
         else if (parts[0] == L"a_title_ros:") {
@@ -754,19 +764,25 @@ wchar_t COROSSParser::loadOROSSArticle(std::wifstream& arts)
         }
         else if (parts[0] == L"a_src:") {
             ca.src = parts[1];
+            if (mode == Rebuild)
+            {
+                size_t titleLen = orossTitle(ca.src);
+                ca.title = ca.src.substr(0, titleLen);
+            }
         }
         else if (parts[0] == L"a_rtf:") {
             ca.rtf = L""; //parts[1];
         }
         else if (parts[0] == L"a_tl:") {
-            ca.titleLen = std::stol(parts[1]);
-            if (mode == Rebuild){
+            if (mode != Rebuild)
+                ca.titleLen = std::stol(parts[1]);
+/*            if (mode == Rebuild){
                 size_t len = ca.titleLen - (tagsTitle[0].length() + tagsTitle[1].length());
                 ca.text.append(tagsTitle[0]);
                 ca.text.append(ca.src);
                 ca.text.insert(ca.titleLen - tagsTitle[1].length(), tagsTitle[1]);
                 //std::wcout << ca.text << std::endl;
-            }
+            }*/
         }
         else if (parts[0] == L"a_f:") {
             if (mode != Rebuild) {
