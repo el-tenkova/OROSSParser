@@ -1119,6 +1119,8 @@ void COROSSParser::getFormulas(const std::wstring& article, const std::wstring& 
     std::vector<size_t>& orthos, std::vector<size_t>& formulas,
     substMap& substs, dummyVct& index)
 {
+    std::string host(config["host"]);
+    std::wstring hoststr(host.begin(), host.end());
     std::wstring a(pure);
     std::wstring afull(article);
     //    std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
@@ -1160,7 +1162,11 @@ void COROSSParser::getFormulas(const std::wstring& article, const std::wstring& 
                     size_t shift = shiftLeft(afull, pref + (*rit).prefix().length() + 1);
                     //                    subst cs = {FORMULA_SUBST, fit->second.id, fm.str().length() - 1 + shift, L"", 0};
                     subst cs = { FORMULA_SUBST, fit->second.id, (*rit).str().length() - 1 + shift, L"", 0 };
-                    cs.substitution.append(L"<a class=\"formula\" href=\"http://ruslang-oross.ru/orthogr/formula?id=");//#formula");
+                    cs.substitution.append(L"<a class=\"formula\" href=\"");
+                    cs.substitution.append(hoststr);
+                    if (*(hoststr.end() - 1) != L'/')
+                        cs.substitution.append(L"/");
+                    cs.substitution.append(L"orthogr/formula?id=");//#formula");
                     cs.substitution.append(std::to_wstring(fit->second.id));
                     cs.substitution.append(L"\" >");
                     //                    cs.substitution.append(afull.substr(fm.prefix().length() + 1 - shift, fm.str().length() - 1 + shift));
