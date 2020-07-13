@@ -501,7 +501,7 @@ void COROSSParser::makeSQL()
     std::wofstream result_contents(config["output"] + "import_contents.sql", std::wofstream::binary);
 
     std::wstring caret(L"\n");
-
+    std::cout << "makeSQL" << std::endl;
     if (result_contents.is_open()) {
         if (mode != ROSOnly) {
             writeBOM(result_contents);
@@ -2745,7 +2745,7 @@ void COROSSParser::makeChpu()
     files.WriteTo(SQLImportFile::ARTICLES_CHPU, str);
 
     str.clear();
-    str.append(L"INSERT INTO articles_links (id, link) VALUES \n");
+    str.append(L"INSERT INTO articles_links (id, link) VALUES ");
     files.WriteTo(SQLImportFile::ARTICLES_CHPU, str);
 
     std::map<std::wstring, size_t> chpuMap;
@@ -2776,12 +2776,13 @@ void COROSSParser::makeChpu()
             str.append(L",\n");
         str.append(L"(");
         str.append(std::to_wstring(ait->second.id));
-        str.append(L",");
+        str.append(L",'");
         str.append(res);
-        str.append(L")");
+        str.append(L"')");
         files.WriteTo(SQLImportFile::ARTICLES_CHPU, str);
         start = false;
     }
+    files.WriteTo(SQLImportFile::ARTICLES_CHPU, L";");
     files.Close(SQLImportFile::ARTICLES_CHPU, SQLImportFile::ARTICLES_CHPU);
     chpuMap.clear();
 }
