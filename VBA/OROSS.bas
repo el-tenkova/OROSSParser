@@ -86,7 +86,9 @@ Sub ParseOROSS()
    
     Dim objParser As Object
     Set objParser = New OROSSParser
-    res = objParser.Init(OROSSParserLib.Update) 'Create)
+    Dim mode As OROSSParserLib.modeName
+    mode = OROSSParserLib.Create 'OROSSConvert 'OROSSParserLib.Create
+    res = objParser.Init(mode, "c:\IRYA\OROSSParser\OROSSParser\OROSSParser.cfg")
     
     Set objRegExpRule = ruleRegEx()
     Set objRegExpRuleSimp = ruleSimpRegEx()
@@ -94,11 +96,12 @@ Sub ParseOROSS()
     Set objRegExpRuleTitle = ruleTitleRegEx()
     
     Dim theDoc As Document
-    Set theDoc = Documents.Open("c:\IRYA\GuideORFO.doc") '"c:\IRYA\—правочник-test1.doc")
+'    Set theDoc = Documents.Open("c:\IRYA\GuideORFO.doc") '"c:\IRYA\—правочник-test1.doc")
+    Set theDoc = Documents.Open("c:\IRYA\GuideORFO1.doc")
 '    Set theDoc = Documents.Open("c:\IRYA\—правочник-test1.doc")
     Dim para As Paragraph
     
-    Set para = theDoc.Paragraphs.Item(1)
+    Set para = theDoc.Paragraphs.item(1)
     cp = theDoc.Paragraphs.count
     
     tile = False
@@ -107,7 +110,7 @@ Sub ParseOROSS()
     Call CheckFootNotes(theDoc, objParser)
     footNote = 1
 '    If orthoWait Then
-    For i = 1 To 1 'cp
+    For i = 1 To cp
         If para.Range.Characters.count > 1 Then
             Call CheckPara(para, objParser)
         End If
@@ -118,17 +121,21 @@ Sub ParseOROSS()
     Next i
 
  '   End If
-    
-    'Set theDoc = Documents.Open("c:\IRYA\OROS_2014 гранки закрыт дл€ правки.doc") '"c:\IRYA\errors.doc")
-    Set theDoc = Documents.Open("c:\IRYA\Update\rus_accents.docx") '"c:\IRYA\errors.doc")
-    Set para = theDoc.Paragraphs.Item(1)
+'    Set theDoc = Documents.Open("c:\IRYA\OROS_2014 гранки закрыт дл€ правки.doc") '"c:\IRYA\errors.doc")
+'    Set theDoc = Documents.Open("c:\IRYA\Update\scnd-2017-all.docx")
+'    Set theDoc = Documents.Open("c:\IRYA\Update\big-nov2016-all.docx")
+'    Set theDoc = Documents.Open("c:\IRYA\Update\errors-brazda.docx")
+'     Set theDoc = Documents.Open("c:\IRYA\Update\upd-para32-0412.docx")
+'    Set theDoc = Documents.Open("c:\IRYA\Update\upd-my-0412.docx")
+    Set theDoc = Documents.Open("c:\IRYA\errors3.doc")
+    Set para = theDoc.Paragraphs.item(1)
     cp = theDoc.Paragraphs.count
     
     For i = 1 To cp
 '        If i > 19230 Then
             If Not para Is Nothing Then
                 If para.Range.Characters.count > 1 Then
-                    Set para = CheckArticle(para, objParser)
+                    Set para = CheckArticle(para, objParser, mode)
                 Else
                     Set para = para.Next()
                 End If
@@ -142,6 +149,49 @@ Sub ParseOROSS()
     
     res = objParser.Terminate()
 End Sub
+Sub ConvertOROSS()
+   
+    Dim objParser As Object
+    Set objParser = New OROSSParser
+    Dim mode As OROSSParserLib.modeName
+    mode = OROSSParserLib.OROSSConvert 'OROSSParserLib.Create
+    res = objParser.Init(mode, "c:\IRYA\OROSSParser\OROSSParser\OROSSParser.cfg")
+    
+    Dim theDoc As Document
+    'Set theDoc = Documents.Open("c:\IRYA\Update\wrong-accent.rtf")
+'    Set theDoc = Documents.Open("c:\IRYA\OROS_2014 гранки закрыт дл€ правки.doc") '"c:\IRYA\errors.doc")
+'    Set theDoc = Documents.Open("c:\IRYA\Update\big-nov2016-all.docx")
+'    Set theDoc = Documents.Open("c:\IRYA\Update\upd-para12-3003.doc")
+'    Set theDoc = Documents.Open("c:\IRYA\Update\scnd-2017-all.docx")
+'    Set theDoc = Documents.Open("upd-my-0412.docx")
+'    Set theDoc = Documents.Open("c:\IRYA\Update\dactiloscopy.docx")
+'    Set theDoc = Documents.Open("c:\IRYA\Update\upd-para32-0412.docx")
+'    Set theDoc = Documents.Open("c:\IRYA\Update\Errors-brazda.docx")
+    Set theDoc = Documents.Open("c:\IRYA\errors3.doc")
+
+    Dim para As Paragraph
+    Set para = theDoc.Paragraphs.item(1)
+    cp = theDoc.Paragraphs.count
+    
+    For i = 1 To cp
+'        If i > 19230 Then
+            If Not para Is Nothing Then
+                If para.Range.Characters.count > 1 Then
+                    Set para = CheckArticle(para, objParser, mode)
+                Else
+                    Set para = para.Next()
+                End If
+            Else
+                Exit For
+            End If
+ '       Else
+ '           Set para = para.Next()
+ '       End If
+    Next i
+    
+    res = objParser.Terminate()
+End Sub
+
 Sub CheckFootNotes(theDoc As Document, oParser As Object)
     Dim note As footNote
     Dim cn As Long
@@ -150,11 +200,11 @@ Sub CheckFootNotes(theDoc As Document, oParser As Object)
     idx = 1
     If cn > 0 Then
         For i = 1 To cn
-            Set note = theDoc.Range.Footnotes.Item(i)
+            Set note = theDoc.Range.Footnotes.item(i)
             text = ""
-            text = text & "<sup><a href=" & Chr(34) & "#ft" & Trim$(str$(idx)) & Chr(34)
-            text = text & " id=" & Chr(34) & "foot" & Trim$(str$(idx)) & Chr(34) & " >"
-            text = text & "[" & Trim$(str$(idx)) & "]</a></sup>"
+            text = text & "<sup><a href=" & Chr(34) & "#ft" & Trim$(Str$(idx)) & Chr(34)
+            text = text & " id=" & Chr(34) & "foot" & Trim$(Str$(idx)) & Chr(34) & " >"
+            text = text & "[" & Trim$(Str$(idx)) & "]</a></sup>"
             
             text = text & ConvertText(note.Range.words, 1, 0, False, True)
             res = oParser.AddFootNote(idx, text)
@@ -204,7 +254,7 @@ Sub CheckPara(para As Paragraph, oParser As Object)
                     tile = False
                     tileName = ""
                 End If
-                Num = Trim$(para.Range.words.Item(2))
+                Num = Trim$(para.Range.words.item(2))
                 If Num = "1" Then
                     Debug.Print "para 40"
                 End If
@@ -218,11 +268,11 @@ Sub CheckPara(para As Paragraph, oParser As Object)
                 ruleLen = IsRule(para)
                 subLen = IsSubRule(para)
                 If ruleLen <> 0 Then
-                    Num = Trim$(para.Range.words.Item(1))
+                    Num = Trim$(para.Range.words.item(1))
                     prev = ""
                     If Not IsDigit(Num) Then
                         For w = 1 To para.Previous().Range.words.count
-                            prev = Trim$(para.Previous().Range.words.Item(w))
+                            prev = Trim$(para.Previous().Range.words.item(w))
                             If Len(prev) > 0 Then
                                 Exit For
                             End If
@@ -350,14 +400,14 @@ Sub AddPara(Num As String, para As Paragraph, objParser As Object)
     Dim count As Integer
     Done = 0
     If InStr(para.Range.text, "1)") = 0 Then
-        word = Trim$(para.Range.words.Item(para.Range.words.count - 1))
+        word = Trim$(para.Range.words.item(para.Range.words.count - 1))
         If Trim$(word) = ")" Then
             comma = 0
             cl = 1
             op = 0
             count = 0 ' para.Range.Words.item(para.Range.Words.count - 1).Characters.count
             For i = para.Range.words.count - 2 To 1 Step -1
-                word = Trim$(para.Range.words.Item(i))
+                word = Trim$(para.Range.words.item(i))
                 count = count + 1 'para.Range.Words.item(i).Characters.count
                 If InStr(word, ")") <> 0 Then
                     cl = cl + 1
@@ -494,6 +544,7 @@ Function DoReplacements(text As String) As String
     text = Replace(text, ChrW(&H1A), "-")
     text = Replace(text, ChrW(&H1E), "-")
     text = Replace(text, ChrW(&H2D), "-")
+    text = Replace(text, ChrW(&HAD), "-")
 '    text = Replace(text, ChrW$(&H7), "")
     For i = 1 To 3
         ch = "b"
@@ -560,6 +611,7 @@ Function ConvertText(words As words, start As Integer, finish As Integer, Option
     Dim length1 As Integer
     Dim length2 As Integer
     Dim text As String
+    Dim Code As Integer
     text = ""
     If finish = 0 Then
         finish = wc
@@ -572,45 +624,83 @@ Function ConvertText(words As words, start As Integer, finish As Integer, Option
 '                text = text & "[" & Trim$(str$(footNote)) & "]</a></sup>"
 '                footNote = footNote + 1
  '           Else
-                If words.Item(j).Bold Then
-                    text = text + "<b>"
-                End If
-                If words.Item(j).Italic Then
-                    text = text + "<i>"
+                If words.item(j).Characters.count >= 1 And words.item(j).Characters.item(1) <> "І" Then
+                    If words.item(j).Bold Then
+                        text = text + "<b>"
+                    End If
+                    If words.item(j).Italic Then
+                        text = text + "<i>"
+                    End If
                 End If
     '            If para.Range.Words.item(j).Underline Then
                     'Debug.Print words.item(j).text
-                    For i = 1 To words.Item(j).Characters.count
+                    For i = 1 To words.item(j).Characters.count
 '                        Debug.Print AscW(words.item(j).Characters(i).text)
-                        If words.Item(j).Characters(i).text <> " " Then
+                        If words.item(j).Characters(i).text <> " " Then
                             'ch = AscW(words.item(j).Characters(i).text)
                             'Debug.Print ch
                             If words(j).Characters(i).Footnotes.count > 0 And Not noFootNote Then
-                                text = text & "<sup><a href=" & Chr(34) & "#foot" & Trim$(str$(footNote)) & Chr(34)
-                                text = text & " id=" & Chr(34) & "ft" & Trim$(str$(footNote)) & Chr(34) & " >"
-                                text = text & "[" & Trim$(str$(footNote)) & "]</a></sup>"
+                                text = text & "<sup><a href=" & Chr(34) & "#foot" & Trim$(Str$(footNote)) & Chr(34)
+                                text = text & " id=" & Chr(34) & "ft" & Trim$(Str$(footNote)) & Chr(34) & " >"
+                                text = text & "[" & Trim$(Str$(footNote)) & "]</a></sup>"
                                 footNote = footNote + 1
                             Else
-                                If words.Item(j).Characters(i) = "#" Then
-                                    text = text + "&#x301"
+                                If words.item(j).Characters(i) = "#" Then
+                                    text = text + "&#x301;"
                                 Else
-                                    If words.Item(j).Characters(i).Font.Superscript <> 0 Then
-                                        text = text + "<sup>" + words.Item(j).Characters(i).text + "</sup>"
+                                    If words.item(j).Characters(i).Font.Superscript <> 0 Then
+                                        text = text + "<sup>" + words.item(j).Characters(i).text + "</sup>"
                                     Else
-                                        If words.Item(j).Characters(i).Font.Subscript <> 0 Then
-                                            text = text + "<sub>" + words.Item(j).Characters(i).text + "</sub>"
+                                        If words.item(j).Characters(i).Font.Subscript <> 0 Then
+                                            text = text + "<sub>" + words.item(j).Characters(i).text + "</sub>"
                                         Else
-                                            If words.Item(j).Characters(i).Underline Then
-                                                text = text + "<u>" + words.Item(j).Characters(i).text
-                                                If Not noAccent And words.Item(j).Characters(i).Font.name = "Times Roman Cyr Acsent" Then
-                                                    text = text + "&#x301"
+                                            If words.item(j).Characters(i).Underline Then
+                                                text = text + "<u>" ' + words.Item(j).Characters(i).text
+                                                'If Not noAccent And words.Item(j).Characters(i).Font.name = "Times Roman Cyr Acsent" Then
+                                                '    text = text + "&#x301"
+                                                'End If
+                                                If words.item(j).Characters(i).Font.Hidden = 0 And words.item(j).Characters(i).Font.Color <> wdColorWhite Then
+                                                    Code = AscW(Mid(words.item(j).Characters(i).text, 1, 1))
+                                                    text = text + Mid(words.item(j).Characters(i).text, 1, 1)
+                                                    If Not noAccent And words.item(j).Characters(i).Font.name = "Times Roman Cyr Acsent" Then
+                                                        If AccentIsPossible(Code) = True Then
+                                                            text = text + "&#x301;"
+                                                        End If
+                                                    Else
+                                                        If Not noAccent And Len(words.item(j).Characters(i).text) > 1 Then
+                                                            '0x301
+                                                            Code = AscW(Mid(words.item(j).Characters(i).text, 2, 1))
+                                                            If Code = &H301 Then
+                                                                Code = AscW(Mid(words.item(j).Characters(i).text, 1, 1))
+                                                                If AccentIsPossible(Code) = True Then
+                                                                    text = text + "&#x301;"
+                                                                End If
+                                                            End If
+                                                        End If
+                                                    End If
                                                 End If
+                                                
                                                 text = text + "</u>"
                                             Else
-                                                Code = AscW(words.Item(j).Characters(i).text)
-                                                text = text + words.Item(j).Characters(i).text
-                                                If Not noAccent And words.Item(j).Characters(i).Font.name = "Times Roman Cyr Acsent" Then
-                                                    text = text + "&#x301"
+                                                If words.item(j).Characters(i).Font.Hidden = 0 And words.item(j).Characters(i).Font.Color <> wdColorWhite Then
+                                                    Code = AscW(Mid(words.item(j).Characters(i).text, 1, 1))
+                                                    text = text + Mid(words.item(j).Characters(i).text, 1, 1)
+                                                    If Not noAccent And words.item(j).Characters(i).Font.name = "Times Roman Cyr Acsent" Then
+                                                        If AccentIsPossible(Code) = True Then
+                                                            text = text + "&#x301;"
+                                                        End If
+                                                    Else
+                                                        If Not noAccent And Len(words.item(j).Characters(i).text) > 1 Then
+                                                            '0x301
+                                                            Code = AscW(Mid(words.item(j).Characters(i).text, 2, 1))
+                                                            If Code = &H301 Then
+                                                                Code = AscW(Mid(words.item(j).Characters(i).text, 1, 1))
+                                                                If AccentIsPossible(Code) = True Then
+                                                                    text = text + "&#x301;"
+                                                                End If
+                                                            End If
+                                                        End If
+                                                    End If
                                                 End If
                                             End If
                                         End If
@@ -618,7 +708,9 @@ Function ConvertText(words As words, start As Integer, finish As Integer, Option
                                 End If
                             End If
                         Else
-                            text = text + words.Item(j).Characters(i).text
+                            If words.item(j).Characters(i).Font.Hidden = 0 And words.item(j).Characters(i).Font.Color <> wdColorWhite Then
+                                text = text + words.item(j).Characters(i).text
+                            End If
                         End If
                     Next i
      '           Else
@@ -627,11 +719,13 @@ Function ConvertText(words As words, start As Integer, finish As Integer, Option
                 length1 = Len(text)
                 text = Trim$(text)
                 length2 = Len(text)
-                If words.Item(j).Italic Then
-                    text = text + "</i>"
-                End If
-                If words.Item(j).Bold Then
-                    text = text + "</b>"
+                If words.item(j).Characters.count >= 1 And words.item(j).Characters.item(1) <> "І" Then
+                    If words.item(j).Italic Then
+                        text = text + "</i>"
+                    End If
+                    If words.item(j).Bold Then
+                        text = text + "</b>"
+                    End If
                 End If
                 If (length1 > length2) Then
                     text = text & " "
@@ -666,7 +760,8 @@ Sub addOrthogr(table As table, objParser As Object)
     prefix = False
     For i = 1 To cp
         If Trim$(tpara.Range.words(1).text) = "‘ормулы" Then
-            If tpara.Range.words.count >= 4 Then
+            'If tpara.Range.words.count >= 4 Then
+            If Trim$(tpara.Range.words(3).text) = "первых" Then
                 prefix = True
             End If
         Else
@@ -784,24 +879,42 @@ Sub addFormula(para As Paragraph, prefix As Boolean, objParser As Object)
     
 End Sub
 
-Function CheckArticle(para As Paragraph, oParser As Object) As Paragraph
+Function CheckArticle(para As Paragraph, oParser As Object, mode As OROSSParserLib.modeName) As Paragraph
     wc = para.Range.words.count
     Dim Article As String
     Dim title As String
     Dim nextPara As Paragraph
     Dim i As Integer
+    Dim j As Integer
+    Dim start As Integer
     Dim noAccent As Boolean
     If wc > 2 Then
-        For i = 1 To wc
-            If Not para.Range.words(i).Bold And Not Trim$(para.Range.words(i)) = "," And Not Trim$(para.Range.words(i)) = "-" And Not Trim$(para.Range.words(i)) = "и" And Not Trim$(para.Range.words(i)) = "Е" Then
+        For start = 1 To wc
+            If Trim$(para.Range.words(start)) <> "" Then
+                Exit For
+            End If
+        Next start
+        For i = start To wc
+            If para.Range.words(i).Bold = 0 And Not Trim$(para.Range.words(i)) = "," And Not Trim$(para.Range.words(i)) = "-" And Not Trim$(para.Range.words(i)) = "и" And Not Trim$(para.Range.words(i)) = "Е" Then
                 noAccent = True
-                title = ConvertText(para.Range.words, 1, i - 1) ', noAccent)
+                delta = 0
+                For j = i - 1 To 1 Step -1
+                    If Len(Trim$(para.Range.words(j).text)) = 1 And Trim$(para.Range.words(j).text) = "(" Then
+                        delta = delta + 1
+                    End If
+                Next j
+                title = ConvertText(para.Range.words, start, i - 1 - delta) ', noAccent)
                 Exit For
             Else
                 If Trim$(para.Range.words(i)) = "и" Then
                     If Not para.Range.words(i + 1).Bold Then
                         noAccent = True
-                        title = ConvertText(para.Range.words, 1, i - 1) ', noAccent)
+                        For j = i - 1 To 1 Step -1
+                            If Len(Trim$(para.Range.words(j).text)) = 1 And Trim$(para.Range.words(j).text) = "(" Then
+                                delta = delta + 1
+                            End If
+                        Next j
+                        title = ConvertText(para.Range.words, start, i - 1 - delta) ', noAccent)
                         Exit For
                     End If
                 End If
@@ -819,7 +932,11 @@ Function CheckArticle(para As Paragraph, oParser As Object) As Paragraph
             End If
             Set para = nextPara
         End If
-        res = oParser.AddArticle(title, Article)
+        If mode = OROSSParserLib.OROSSConvert Then
+            res = oParser.SaveArticle(title, Article)
+        Else
+            res = oParser.AddArticle(title, Article)
+        End If
     Else
         Set para = para.Next()
     End If
@@ -841,7 +958,7 @@ Function CheckText(ByRef para As Paragraph) As String
         Set table = para.Range.Tables(1)
         w = 100 / table.Columns.count
         For i = 1 To table.Columns.count
-            ruleText = ruleText & "<col width=" & Chr(34) & Trim$(str$(w)) & Chr(34) & " >"
+            ruleText = ruleText & "<col width=" & Chr(34) & Trim$(Str$(w)) & Chr(34) & " >"
         Next i
         ruleText = ruleText & "<tr>"
         Set cell = table.cell(1, 1)
@@ -878,16 +995,16 @@ Function CheckText(ByRef para As Paragraph) As String
                 End If
             Loop
             If rowspan > 1 And colspan > 1 Then
-                ruleText = ruleText & "<td rowspan=" & Chr(34) & Trim$(str$(rowspan)) & Chr(34)
-                ruleText = ruleText & " colspan=" & Chr(34) & Trim$(str$(colspan)) & Chr(34) & " >"
+                ruleText = ruleText & "<td rowspan=" & Chr(34) & Trim$(Str$(rowspan)) & Chr(34)
+                ruleText = ruleText & " colspan=" & Chr(34) & Trim$(Str$(colspan)) & Chr(34) & " >"
             Else
                 If rowspan > 1 Then
-                    ruleText = ruleText & "<td rowspan=" & Chr(34) & Trim$(str$(rowspan)) & Chr(34) & ">"
+                    ruleText = ruleText & "<td rowspan=" & Chr(34) & Trim$(Str$(rowspan)) & Chr(34) & ">"
                 Else
                     If colspan > 1 Then
-                        ruleText = ruleText & "<td rowspan=" & Chr(34) & "1" & Chr(34) & " colspan=" & Chr(34) & Trim$(str$(colspan)) & Chr(34) & " >"
+                        ruleText = ruleText & "<td rowspan=" & Chr(34) & "1" & Chr(34) & " colspan=" & Chr(34) & Trim$(Str$(colspan)) & Chr(34) & " >"
                     Else
-                        ruleText = ruleText & "<td rowspan=" & Chr(34) & "1" & Chr(34) & " colspan=" & Chr(34) & "1" & Chr(34) > ""
+                        ruleText = ruleText & "<td rowspan=" & Chr(34) & "1" & Chr(34) & " colspan=" & Chr(34) & "1" & Chr(34) & " >"
                     End If
                 End If
             End If
@@ -912,43 +1029,143 @@ Function CheckText(ByRef para As Paragraph) As String
 End Function
 
 Sub SaveForeign()
-    Dim fsT As Object
-    Set fsT = CreateObject("ADODB.Stream")
-    fsT.Type = 2
-    fsT.Charset = "utf-8"
-    fsT.Open
+    Dim fst As Object
+    Set fst = CreateObject("ADODB.Stream")
+    fst.Type = 2
+    fst.Charset = "utf-8"
+    fst.Open
 
     Set theDoc = Documents.Open("c:\IRYA\with-dash1.doc")
     Dim table As table
-    Set table = ActiveDocument.Tables.Item(1)
+    Set table = ActiveDocument.Tables.item(1)
     cr = table.Rows.count
     For i = 1 To cr
         text = table.cell(i, 1).Range.text
         text = Replace$(text, ChrW(&H7), "")
         text = Replace$(text, ChrW(&HD), "")
         text = Trim$(text)
-        fsT.WriteText (LCase$(text) & vbCrLf)
+        fst.WriteText (LCase$(text) & vbCrLf)
     Next i
     
-    fsT.SaveToFile "c:\IRYA\foreign.txt", 2
-    fsT.Close
+    fst.SaveToFile "c:\IRYA\foreign.txt", 2
+    fst.Close
 
 End Sub
 Function getTextWithFoot(words As words) As String
     text = ""
     For j = 1 To words.count
-        For i = 1 To words.Item(j).Characters.count
+        For i = 1 To words.item(j).Characters.count
             If words(j).Characters(i).Footnotes.count > 0 And Not noFootNote Then
-                text = text & "<sup><a href=" & Chr(34) & "#foot" & Trim$(str$(footNote)) & Chr(34)
-                text = text & " id=" & Chr(34) & "ft" & Trim$(str$(footNote)) & Chr(34) & " >"
-                text = text & "[" & Trim$(str$(footNote)) & "]</a></sup>"
+                text = text & "<sup><a href=" & Chr(34) & "#foot" & Trim$(Str$(footNote)) & Chr(34)
+                text = text & " id=" & Chr(34) & "ft" & Trim$(Str$(footNote)) & Chr(34) & " >"
+                text = text & "[" & Trim$(Str$(footNote)) & "]</a></sup>"
                 footNote = footNote + 1
             Else
-                If words.Item(j).Characters(i).text <> ChrW(&HD) Then
-                    text = text & words.Item(j).Characters(i).text
+                If words.item(j).Characters(i).text <> ChrW(&HD) Then
+                    text = text & words.item(j).Characters(i).text
                 End If
             End If
         Next i
     Next j
     getTextWithFoot = text
 End Function
+Sub GetTitles()
+    Dim objParser As Object
+    Set objParser = New OROSSParser
+    res = objParser.Init(OROSSParserLib.Create)
+    
+    Dim theDoc As Document
+    Dim para As Paragraph
+    
+    Set theDoc = Documents.Open("c:\IRYA\Update\big-nov2016-upd-title.docx")
+'    Set theDoc = Documents.Open("c:\IRYA\errors3.doc")
+    Set para = theDoc.Paragraphs.item(1)
+    cp = theDoc.Paragraphs.count
+    Dim j As Integer
+    For j = 1 To cp
+            If Not para Is Nothing Then
+                If para.Range.Characters.count > 1 Then
+                    wc = para.Range.words.count
+                    Dim Article As String
+                    Dim title As String
+                    Dim nextPara As Paragraph
+                    Dim i As Integer
+                    Dim noAccent As Boolean
+                    If wc > 2 Then
+                        For i = 1 To wc
+                            If Not para.Range.words(i).Bold And Not Trim$(para.Range.words(i)) = "," And Not Trim$(para.Range.words(i)) = "-" And Not Trim$(para.Range.words(i)) = "и" And Not Trim$(para.Range.words(i)) = "Е" Then
+                                noAccent = True
+                                title = ConvertText(para.Range.words, 1, i - 1) ', noAccent)
+                                Exit For
+                            Else
+                                If Trim$(para.Range.words(i)) = "и" Then
+                                    If Not para.Range.words(i + 1).Bold Then
+                                        noAccent = True
+                                        title = ConvertText(para.Range.words, 1, i - 1) ', noAccent)
+                                        Exit For
+                                    End If
+                                End If
+                            End If
+                        Next i
+                        'Article = ConvertText(para.Range.words, 1, 0)
+                        Set nextPara = para.Next()
+                        If Not nextPara Is Nothing Then
+                            If Mid$(Trim$(nextPara.Range.text), 1, 1) = ChrW$(&H25CA) Then '  Or Not nextPara.Range.Words(1).Bold Then
+                                'Article = Article & "</p><p>" & ConvertText(nextPara.Range.words, 1, 0)
+                                Set nextPara = nextPara.Next()
+                            End If
+                            Set para = nextPara
+                        End If
+                        objParser.SaveTitle (title)
+                    Else
+                        Set para = para.Next()
+                    End If
+                Else
+                    Set para = para.Next()
+                End If
+            Else
+                Exit For
+            End If
+    Next j
+End Sub
+Function AccentIsPossible(ch As Integer) As Boolean
+    If ch = 1072 Then      'а
+        AccentIsPossible = True
+        Exit Function
+    End If
+    If ch = 1077 Then      'е
+        AccentIsPossible = True
+        Exit Function
+    End If
+    If ch = 1080 Then 'и
+        AccentIsPossible = True
+        Exit Function
+    End If
+    If ch = 1086 Then 'о
+        AccentIsPossible = True
+        Exit Function
+    End If
+    If ch = 1091 Then 'у
+        AccentIsPossible = True
+        Exit Function
+    End If
+    If ch = 1099 Then 'ы
+        AccentIsPossible = True
+        Exit Function
+    End If
+    If ch = 1101 Then 'э
+        AccentIsPossible = True
+        Exit Function
+    End If
+    If ch = 1102 Then 'ю
+        AccentIsPossible = True
+        Exit Function
+    End If
+    If ch = 1103 Then '€
+        AccentIsPossible = True
+        Exit Function
+    End If
+    AccentIsPossible = False
+
+End Function
+
