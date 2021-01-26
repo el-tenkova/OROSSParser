@@ -37,6 +37,33 @@
     <ClCompile Include="COROSSParserSave.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="COROSSParserCfg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="COROSSParserCOM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="COROSSParserDiacr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="COROSSParserLoad.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="COROSSParserMorphS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="COROSSParserTranslit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="COROSSParserTree.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="COROSSParserUtil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="COROSSParserSoundEx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -55,6 +82,27 @@
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="COROSSParser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="COROSSParserCfg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="COROSSParserCOM.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="COROSSParserDiacr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="COROSSParserMorphS.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="COROSSParserTranslit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="COROSSParserTree.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="COROSSParserSoundEx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

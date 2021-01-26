@@ -36,36 +36,42 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <UseOfAtl>Dynamic</UseOfAtl>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug x64|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <UseOfAtl>Dynamic</UseOfAtl>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <UseOfAtl>Dynamic</UseOfAtl>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug x64|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <UseOfAtl>Static</UseOfAtl>
     <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <UseOfAtl>Dynamic</UseOfAtl>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <UseOfAtl>Dynamic</UseOfAtl>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -209,7 +215,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug x64|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN64;_WINDOWS;_DEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -305,7 +311,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="COROSSParser.cpp" />
+    <ClCompile Include="COROSSParserCfg.cpp" />
+    <ClCompile Include="COROSSParserCOM.cpp" />
+    <ClCompile Include="COROSSParserDiacr.cpp" />
+    <ClCompile Include="COROSSParserLoad.cpp" />
+    <ClCompile Include="COROSSParserMorphS.cpp" />
     <ClCompile Include="COROSSParserSave.cpp" />
+    <ClCompile Include="COROSSParserSoundEx.cpp" />
+    <ClCompile Include="COROSSParserTranslit.cpp" />
+    <ClCompile Include="COROSSParserTree.cpp" />
+    <ClCompile Include="COROSSParserUtil.cpp" />
     <ClCompile Include="dllmain.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug x64|Win32'">false</CompileAsManaged>
@@ -358,6 +373,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="COROSSParser.h" />
+    <ClInclude Include="COROSSParserCfg.h" />
+    <ClInclude Include="COROSSParserCOM.h" />
+    <ClInclude Include="COROSSParserDiacr.h" />
+    <ClInclude Include="COROSSParserMorphS.h" />
+    <ClInclude Include="COROSSParserSoundEx.h" />
+    <ClInclude Include="COROSSParserTranslit.h" />
+    <ClInclude Include="COROSSParserTree.h" />
     <ClInclude Include="dllmain.h" />
     <ClInclude Include="OROSSParser_i.h" />
     <ClInclude Include="Resource.h" />
