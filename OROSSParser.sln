@@ -1,12 +1,16 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30907.101
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OROSSParser", "OROSSParser\OROSSParser.vcxproj", "{137EEA2E-4004-47DC-906B-B35CCE78B275}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OROSSParserPS", "OROSSParser\OROSSParserPS.vcxproj", "{113781AC-4CFD-4186-8B46-CD0CEBEB32DB}"
 	ProjectSection(ProjectDependencies) = postProject
 		{137EEA2E-4004-47DC-906B-B35CCE78B275} = {137EEA2E-4004-47DC-906B-B35CCE78B275}
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OROSSTest", "OROSSTest\OROSSTest.vcxproj", "{72D8202D-FE8E-4061-83E4-A18F6DE67F7B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,8 +40,23 @@ Global
 		{113781AC-4CFD-4186-8B46-CD0CEBEB32DB}.Debug|x64.ActiveCfg = Debug|Win32
 		{113781AC-4CFD-4186-8B46-CD0CEBEB32DB}.Release|Win32.ActiveCfg = Release|Win32
 		{113781AC-4CFD-4186-8B46-CD0CEBEB32DB}.Release|x64.ActiveCfg = Release|Win32
+		{72D8202D-FE8E-4061-83E4-A18F6DE67F7B}.Debug x64|Win32.ActiveCfg = Debug|Win32
+		{72D8202D-FE8E-4061-83E4-A18F6DE67F7B}.Debug x64|Win32.Build.0 = Debug|Win32
+		{72D8202D-FE8E-4061-83E4-A18F6DE67F7B}.Debug x64|x64.ActiveCfg = Debug|x64
+		{72D8202D-FE8E-4061-83E4-A18F6DE67F7B}.Debug x64|x64.Build.0 = Debug|x64
+		{72D8202D-FE8E-4061-83E4-A18F6DE67F7B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{72D8202D-FE8E-4061-83E4-A18F6DE67F7B}.Debug|Win32.Build.0 = Debug|Win32
+		{72D8202D-FE8E-4061-83E4-A18F6DE67F7B}.Debug|x64.ActiveCfg = Debug|x64
+		{72D8202D-FE8E-4061-83E4-A18F6DE67F7B}.Debug|x64.Build.0 = Debug|x64
+		{72D8202D-FE8E-4061-83E4-A18F6DE67F7B}.Release|Win32.ActiveCfg = Release|Win32
+		{72D8202D-FE8E-4061-83E4-A18F6DE67F7B}.Release|Win32.Build.0 = Release|Win32
+		{72D8202D-FE8E-4061-83E4-A18F6DE67F7B}.Release|x64.ActiveCfg = Release|x64
+		{72D8202D-FE8E-4061-83E4-A18F6DE67F7B}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9C21953B-8FFE-4BAD-8225-CB3436900059}
 	EndGlobalSection
 EndGlobal
