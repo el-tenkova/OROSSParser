@@ -1137,7 +1137,7 @@ void COROSSParser::cutTail(std::wstring& str) {
     size_t len = str.length();
     std::wstring strCp(str);
     for (auto i = str.end() - 1; i != str.begin(); --i, idx--) {
-        if ((*i) != L'-' &&  (*i) !=  L'…' && (*i) != L'.') {
+        if ((*i) != L'-' &&  (*i) !=  L'…' && (*i) != L'.' && (*i) != L'*') {
             str = str.substr(0, idx);
             break;
         }

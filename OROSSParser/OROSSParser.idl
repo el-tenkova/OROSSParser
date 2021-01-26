@@ -17,6 +17,7 @@ import "ocidl.idl";
         OROSSConvert,
         PreView,
         WebUpdate,
+        WebUpdateROS,
     }modeName;
 
 
