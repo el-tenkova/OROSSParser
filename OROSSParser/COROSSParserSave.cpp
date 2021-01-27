@@ -2905,6 +2905,9 @@ void COROSSParser::makeABCTable(const std::locale& loc)
             str.append(L",'");
             str.append(a_start);
             str.append(L"','");
+            size_t pos = a_last.rfind(L';');
+            if (pos != std::wstring::npos)
+                a_last = a_last.substr(0, pos);
             str.append(a_last);
             str.append(L"');\n");
             result.write(str.c_str(), str.length());
