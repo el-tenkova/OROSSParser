@@ -436,7 +436,7 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
     tmp.append(search);
 
     search.clear();
-    cm.empty();
+    bool isempty = cm.empty();
     search.append(tmp);
     std::wregex e4(L"\\(\\s*приставка[^\\(\\)]*\\)");
     tmp.clear();
@@ -448,7 +448,7 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
     tmp.append(search);
 
     search.clear();
-    cm.empty();
+    isempty = cm.empty();
     search.append(tmp);
     std::wregex e1(L"\\(\\s*буква[^\\(\\)]*\\)");
     tmp.clear();
@@ -460,7 +460,7 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
     tmp.append(search);
 
     search.clear();
-    cm.empty();
+    isempty = cm.empty();
     search.append(tmp);
     std::wregex e2(L"проверка\\s*\\\\*\\:*");
     tmp.clear();
@@ -477,7 +477,7 @@ std::wstring COROSSParser::prepareForSearch(const std::wstring& ortho)
     tmp.append(search);
 
     search.clear();
-    cm.empty();
+    isempty = cm.empty();
     search.append(tmp);
     std::wregex e3(L"(\\<sup\\>.+\\>)");
     tmp.clear();
@@ -1440,14 +1440,14 @@ void COROSSParser::addToTitleMap(std::wstring& title_l, size_t artId)
         else
         {
             title = ait->second.title;
-            if (title[title.length() - 1] == L'*')
+            if (!title.empty() && title[title.length() - 1] == L'*')
                 title.replace(title.length() - 1, 1, L"");
         }
         std::vector<std::wstring> title_in = split(title, L';');
         for (auto it = tit->second.begin(); it != tit->second.end(); ++it) {
             auto ait1 = articles.find((*it));
             std::wstring title1 = (ait1->second.dic == dicOROSS && !ait1->second.ros_title.empty()) ? ait1->second.ros_title : ait1->second.title;
-            if (title1[title1.length() - 1] == L'*')
+            if (!title1.empty() && title1[title1.length() - 1] == L'*')
                 title1.replace(title1.length() - 1, 1, L"");
             if (ait->second.dic == dicOROSS) {
                 if (inVector(title_in, title1)) {

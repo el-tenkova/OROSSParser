@@ -589,7 +589,7 @@ long COROSSParser::AddOrthogr(const std::wstring& Orthogr, const std::wstring& F
     cf.rtf = toRTF(cf.name);
     cf.search = prepareForSearch(cf.name);
     cf.min_len = getSearchMinLen(cf.search);
-    key.empty();
+    bool isempty = key.empty();
     key.append(cf.name);
     prepareOrthoKey(key);
     if (ot->second.formulas.find(key) == ot->second.formulas.end()) {
