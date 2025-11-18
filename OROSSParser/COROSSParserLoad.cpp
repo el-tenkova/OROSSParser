@@ -973,6 +973,7 @@ void COROSSParser::applyChanges()
                             if (title_l.find(L';') != std::wstring::npos)
                                 title_l = title_l.substr(0, title_l.find(L';'));
                             prepareSearchTitle(title_l);
+                            removeParentheses(title_l);
                             auto tit = titles.find(title_l);
                             if (tit != titles.end()) {
                                 if (tit->second.size() == 1)
@@ -1063,6 +1064,7 @@ void COROSSParser::applyChanges()
                         if (title_l.find(L';') != std::wstring::npos)
                             title_l = title_l.substr(0, title_l.find(L';'));
                         prepareSearchTitle(title_l);
+                        removeParentheses(title_l);
                         auto tit = titles.find(title_l);
                         if (tit != titles.end()) {
                             if (tit->second.size() == 1)
