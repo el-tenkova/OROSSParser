@@ -2237,6 +2237,7 @@ void COROSSParser::addArticlesToIndex() {
                     start = pos + 1;
                     if (start > interval.length())
                         break;
+                    start = findNext(interval, start, ait->second.dic);
                     pos = interval.find(L" ", start);
                 }
 //                if (start == 0 && dit->type == TITLE_WORD)
@@ -2789,6 +2790,7 @@ void COROSSParser::makeChpu()
 
 void COROSSParser::makeABCTable(const std::locale& loc)
 {
+   // return; 
     std::map<wchar_t, std::wstring> abcMap;
     abcMap.insert(std::pair<wchar_t, std::wstring>(L'а', L"a"));
     abcMap.insert(std::pair<wchar_t, std::wstring>(L'б', L"be"));

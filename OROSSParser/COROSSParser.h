@@ -591,6 +591,7 @@ protected:
     void cutTail(std::wstring& str);
     void cutHead(std::wstring& str);
     void replaceSup(std::wstring& str);
+    size_t findNext(std::wstring& interval, size_t start, wchar_t dicType);
 
     size_t getParaNum(const std::wstring& rest);
     std::wstring getRuleNum(const std::wstring& rest);

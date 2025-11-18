@@ -810,7 +810,7 @@ wchar_t COROSSParser::loadOROSSArticle(std::wifstream& arts)
                 ca.index.push_back(cd);
         }
     }
-    if (ca.id != 0) {
+    if ((ca.id != 0) && (mode != COROSSParser::WebUpdateROS)) {
         ca.state = mode != Rebuild ? ARTICLE_STATE_NEUTRAL : ARTICLE_STATE_NEW;
         articles.insert(std::pair<size_t, article>(ca.id, ca));
         std::wstring title_l(ca.title);

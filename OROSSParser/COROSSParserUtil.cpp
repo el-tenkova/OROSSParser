@@ -770,6 +770,8 @@ std::wstring COROSSParser::getSpecMarkedArticle(const std::wstring& art, bool sa
     tags.push_back(L"</p>");
     tags.push_back(L"<sup>");
     tags.push_back(L"</sup>");
+    tags.push_back(L"</a>");
+
     if (!saveaccent)
         tags.push_back(L"&#x301;");
     tags.push_back(L"\u25ca");
@@ -889,11 +891,15 @@ std::vector<std::wstring> COROSSParser::getFullWords(const std::wstring& word, s
         if (idx > 0)
             tmp = tmp.substr(idx);
 
+        bool particle = true;
         if (tmp.length() != 0) {
             idx = tmp.length();
             for (i = tmp.end() - 1; i != tmp.end(); --i, idx--) {
                 if (!(std::ispunct((*i), russian) || std::isdigit((*i), russian)) && (*i) != L'/') {
-                    tmp = tmp.substr(0, idx);
+                    if (!std::isspace(*i))
+                        tmp = tmp.substr(0, idx);
+                    else
+                        particle = false;
                     break;
                 }
             }
@@ -903,7 +909,7 @@ std::vector<std::wstring> COROSSParser::getFullWords(const std::wstring& word, s
         int a = 0;
         a++;
         }*/
-        if (tmp.length() != 0 && tmp.length() != str.length()) {
+        if (particle && tmp.length() != 0 && tmp.length() != str.length()) {
             res.push_back(tmp);
             std::wstring mapped(tmp);
             std::transform(tmp.begin(), tmp.end(), mapped.begin(), diacritics);
@@ -1245,6 +1251,28 @@ void COROSSParser::replaceSup(std::wstring& str)
             pos = str.find((*it_from), pos + 1);
         }
     }
+}
+
+size_t COROSSParser::findNext(std::wstring& interval, size_t start, wchar_t dicType)
+{
+    size_t pos = interval.find(L' ', start);
+    if (dicType == dicROS)
+    {
+        std::wstring str(interval.substr(start, pos - start));
+        size_t link = str.find(L"<a");
+        if (link != std::string::npos)
+        {
+            // skip <a href=...>
+            str = interval.substr(start);
+            std::wregex search(L"\\<a\\s*href=\\\".*\\\"\\>");
+            std::regex_iterator<std::wstring::iterator> rit(str.begin(), str.end(), search);
+            std::regex_iterator<std::wstring::iterator> rend;
+            if (rit != rend) {
+                start += link + (*rit)[0].length();
+            }
+        }
+    }
+    return start;
 }
 
 void COROSSParser::checkForGramms(COROSSGrammaTree& grDic, grammMap& gramms, size_t& grId, artMap::iterator& ait, std::vector<size_t>& art_gramms, const std::vector<std::wstring>& art_words)
