@@ -369,6 +369,9 @@ void COROSSParser::saveROSArticle(std::wofstream& arts, const artMap::iterator& 
     str.append(L"a:\t");
     str.append(std::to_wstring(ait->second.id)); // id
     str.append(L"\n");
+    str.append(L"a_key:\t");
+    str.append(std::to_wstring(ait->second.key)); // key
+    str.append(L"\n");
     str.append(L"a_title:\t");
     str.append(ait->second.title); // title
     str.append(L"\n");
@@ -1320,6 +1323,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
 
     std::wstring str(L"\nCREATE TABLE IF NOT EXISTS articles (\n\
     id int(11) NOT NULL,\n\
+    key int(11) NOT NULL,\n\
     dic int(2) NOT NULL,\n\
     title varchar(256) NOT NULL,\n\
     text TEXT NOT NULL,\n\
@@ -1497,6 +1501,8 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
             str.append(L",\n");
         str.append(L"(");
         str.append(std::to_wstring(ait->second.id));
+        str.append(L",");
+        str.append(std::to_wstring(ait->second.key));
         str.append(L",");
         str.append(std::to_wstring(ait->second.dic));
         str.append(L",'");
@@ -2790,7 +2796,7 @@ void COROSSParser::makeChpu()
 
 void COROSSParser::makeABCTable(const std::locale& loc)
 {
-   // return; 
+    //return; 
     std::map<wchar_t, std::wstring> abcMap;
     abcMap.insert(std::pair<wchar_t, std::wstring>(L'а', L"a"));
     abcMap.insert(std::pair<wchar_t, std::wstring>(L'б', L"be"));

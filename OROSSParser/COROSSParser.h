@@ -75,6 +75,7 @@ struct article {
         titleLemma,
     };
     size_t id;
+    size_t key; // неизменяемый идентификатор статьи
     wchar_t dic;
     std::wstring title;
     std::wstring ros_title;
@@ -96,6 +97,7 @@ struct article {
     //
     void clear() {
         id = 0;
+        key = 0;
         dic = dicOROSS;
         title.clear();
         text.clear();
@@ -391,6 +393,7 @@ public:
         orthoId(1),
         formulaId(1),
         artId(1),
+        maxkey(0),
         wordId(1), //!!!
         bigrId(1),
         trigrId(1),
@@ -478,6 +481,7 @@ protected:
     size_t orthoId;
     size_t formulaId;
     size_t artId;
+    size_t maxkey;
     size_t wordId;
     size_t bigrId;
     size_t trigrId;
