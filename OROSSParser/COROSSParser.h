@@ -85,7 +85,6 @@ struct article {
     std::vector<size_t> formulas;
     std::vector<size_t> orthos;
     std::vector<size_t> comments;
-    std::vector<size_t> addinfo;
     dummyVct index;
     std::vector<size_t> words;
     std::vector<size_t> bigramms;
@@ -469,6 +468,7 @@ protected:
     std::map<std::wstring, size_t> stopDic;
     std::map<std::wstring, size_t> stopLabelDic;
     std::map<wchar_t, wchar_t > symMap;
+    std::map<size_t, size_t> addinfoMap;
 
     //  orthoMap orthos;
     std::wofstream error;

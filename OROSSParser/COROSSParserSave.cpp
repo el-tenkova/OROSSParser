@@ -530,7 +530,7 @@ void COROSSParser::makeSQL()
         makeAccentsTable(russian);
         makeChpu();
         makeArticlesTable(russian);
-        makeAddInfoUpdate();
+        //makeAddInfoUpdate();
     }
 }
 
@@ -2723,12 +2723,15 @@ void COROSSParser::makeAddInfoUpdate()
     }
     std::wstring str(L"");
     for (auto ait = articles.begin(); ait != articles.end(); ++ait) {
-        for (auto it = ait->second.addinfo.begin(); it != ait->second.addinfo.end(); ++it) {
+        size_t key = ait->second.key;
+        auto it = addinfoMap.find(key);
+        if (it != addinfoMap.end())
+        {
             str.clear();
             str.append(L"UPDATE articles_addinfo SET id_article='");
-            str.append(std::to_wstring(ait->first));
+            str.append(std::to_wstring(key));
             str.append(L"' WHERE id=");
-            str.append(std::to_wstring(*(it)));
+            str.append(std::to_wstring(it->second));
             str.append(L";\n");
             files.WriteTo(SQLImportFile::ARTICLES_ADDINFO, str);
         }

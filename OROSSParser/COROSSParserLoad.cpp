@@ -932,7 +932,7 @@ void COROSSParser::loadAddinfo()
         //dic.seekg(3);
         std::wstring str(L"");
         size_t add_id = 0;
-        size_t id = 0;
+        size_t key = 0; // неизменяемый ключ статьи
         while (!dic.eof()) {
             std::getline(dic, str);
             if (str.length() == 0)
@@ -941,11 +941,9 @@ void COROSSParser::loadAddinfo()
             if (parts[0] == L"add_id:") {
                 add_id = std::stol(parts[1]);
             }
-            else if (parts[0] == L"a_id:") {
-                id = std::stol(parts[1]);
-                auto ait = articles.find(id);
-                if (ait != articles.end())
-                   ait->second.addinfo.push_back(add_id);
+            else if (parts[0] == L"a_key:") {
+                key = std::stol(parts[1]);
+                addinfoMap.insert(std::pair<size_t, size_t>(key, add_id));
             }
         }
         dic.close();
