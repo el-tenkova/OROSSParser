@@ -412,7 +412,7 @@ public:
         str_articles_formulas(L"INSERT INTO articles_formulas (id, id_formula) VALUES "),
         str_articles_comments(L"INSERT INTO articles_comments (id, id_comment) VALUES "),
         //     str_articles(L"INSERT INTO articles (id, title, text, rtf, src, comment_id) "), //!!!!
-        str_articles(L"INSERT INTO articles (id, key, dic, title, text, rtf, src, phantom) VALUES "), //!!!!
+        str_articles(L"INSERT INTO articles (id, article_key, dic, title, text, rtf, src, phantom) VALUES "), //!!!!
         str_values(L"    VALUES ("),
         str_sup1(L"<sup>1</sup>"),
         str_sup2(L"<sup>2</sup>"),
