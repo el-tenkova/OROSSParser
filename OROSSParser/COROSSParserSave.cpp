@@ -1326,7 +1326,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
 
     std::wstring str(L"\nCREATE TABLE IF NOT EXISTS articles (\n\
     id int(11) NOT NULL,\n\
-    article_key int(11) NOT NULL,\n\
+    key_article int(11) NOT NULL,\n\
     dic int(2) NOT NULL,\n\
     title varchar(256) NOT NULL,\n\
     text TEXT NOT NULL,\n\
