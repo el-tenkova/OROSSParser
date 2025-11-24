@@ -532,8 +532,8 @@ void COROSSParser::makeSQL()
         makeMistakesTable(russian);
         makeAccentsTable(russian);
         makeChpu();
-        makeArticlesTable(russian);
         makeAddInfoUpdate();
+        makeArticlesTable(russian);
     }
 }
 
