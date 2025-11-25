@@ -2725,20 +2725,19 @@ void COROSSParser::makeAddInfoUpdate()
         return;
     }
     std::wstring str(L"");
-    for (auto ait = articles.begin(); ait != articles.end(); ++ait) {
-        size_t key = ait->second.key;
-        auto it = addinfoMap.find(key);
-        if (it != addinfoMap.end())
-        {
-            size_t id = ait->second.id;
-            str.clear();
-            str.append(L"UPDATE articles_addinfo SET id_article='");
-            str.append(std::to_wstring(id));
-            str.append(L"' WHERE key_article=");
-            str.append(std::to_wstring(key));
-            str.append(L";\n");
-            files.WriteTo(SQLImportFile::ARTICLES_ADDINFO, str);
-        }
+    for (auto it = addinfoMap.begin(); it != addinfoMap.end(); ++it)
+    {
+        auto kit =  key2idMap.find(it->first);
+        if (kit == key2idMap.end())
+            continue;
+        size_t id = kit->second;
+        str.clear();
+        str.append(L"UPDATE articles_addinfo SET id_article='");
+        str.append(std::to_wstring(id));
+        str.append(L"' WHERE key_article=");
+        str.append(std::to_wstring(kit->first));
+        str.append(L";\n");
+        files.WriteTo(SQLImportFile::ARTICLES_ADDINFO, str);
     }
     files.Close(SQLImportFile::ARTICLES_ADDINFO, SQLImportFile::ARTICLES_ADDINFO);
 }

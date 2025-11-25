@@ -920,6 +920,7 @@ void COROSSParser::loadAll()
 //    }
     if (mode == WebUpdate || mode == WebUpdateROS) {
         loadAddinfo();
+        fillKey2IDMap();
         applyChanges();
     }
 }
@@ -951,6 +952,15 @@ void COROSSParser::loadAddinfo()
     }
 }
 
+void COROSSParser::fillKey2IDMap(void)
+{
+    auto it = articles.begin();
+    for (; it != articles.end(); ++it)
+    {
+        key2idMap.insert(std::pair<size_t, size_t>(it->second.key, it->first));
+    }
+}
+
 void COROSSParser::applyChanges()
 {
     std::wifstream dic(config["changes"], std::wifstream::binary);
@@ -963,6 +973,7 @@ void COROSSParser::applyChanges()
 
         std::cout << "applyChanges" << std::endl;
         size_t id = 0;
+        size_t key = 0;
         wchar_t dictype = dicOROSS;
         while (!dic.eof()) {
             std::getline(dic, str);
@@ -1037,9 +1048,15 @@ void COROSSParser::applyChanges()
                 text.clear();
                 act = Nothing;
             }
-            if (parts[0] == L"a:") {
-                id = std::stol(parts[1]);
-                std::cout << id << std::endl;
+            if (parts[0] == L"a_key:") {
+                // в файле с изменениями будет записан неизменяемый ключ статьи
+                key = std::stol(parts[1]);
+                auto it = key2idMap.find(key);
+                std::cout << "article key = " << key << std::endl;
+                if (it == key2idMap.end())
+                    std::cout << "article not found" << std::endl;
+                else
+                    id = it->first;
             }
             else if (parts[0] == L"a_text:") {
                 text = parts[1];

@@ -469,6 +469,7 @@ protected:
     std::map<std::wstring, size_t> stopLabelDic;
     std::map<wchar_t, wchar_t > symMap;
     std::map<size_t, size_t> addinfoMap;
+    std::map<size_t, size_t> key2idMap;
 
     //  orthoMap orthos;
     std::wofstream error;
@@ -535,6 +536,7 @@ protected:
     void loadAll();
     void applyChanges();
 	void loadAddinfo();
+    void fillKey2IDMap();
     wchar_t loadOROSSArticle(std::wifstream& arts);
     wchar_t loadROSArticle(std::wifstream& ros);
     void fillROSArticle(const std::wstring& str, article& ca);
