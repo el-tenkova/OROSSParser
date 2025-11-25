@@ -2842,6 +2842,9 @@ void COROSSParser::makeABCTable(const std::locale& loc)
         if (tit->first[0] == abcMap.begin()->first)
             break;
     }
+    size_t page_cnt = std::stoi(config["page_cnt"]);
+    if (page_cnt == 0)
+        page_cnt = 300;
     for (auto abcit = abcMap.begin(); abcit != abcMap.end(); ++abcit) {
         if (tit->first[0] != abcit->first)
             continue;
@@ -2877,7 +2880,7 @@ void COROSSParser::makeABCTable(const std::locale& loc)
                 count++;
             }
             a_last = articles.find(idx)->second.title;
-            if (count > 300) {
+            if (count > page_cnt) {
                 str.clear();
                 str.append(L"INSERT INTO abc_");
                 str.append(abcit->second);
@@ -2897,7 +2900,7 @@ void COROSSParser::makeABCTable(const std::locale& loc)
                 result.write(str.c_str(), str.length());
             }
             tit++;
-            if (count > 300 && tit != titles.end()) {
+            if (count > page_cnt && tit != titles.end()) {
                 start = *(tit->second.begin());
                 count = 0;
                 idx = start;
