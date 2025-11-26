@@ -687,6 +687,8 @@ long COROSSParser::AddArticle(size_t key_article, const std::wstring& Title, con
             title_l = ros_title;
         prepareSearchTitle(title_l);
         addToTitleMap(title_l, artId);
+        if (key2idMap.find(key_article) == key2idMap.end())
+            key2idMap.insert(std::pair<size_t, size_t>(key_article, artId));
         artId++;
     }
     return 0;

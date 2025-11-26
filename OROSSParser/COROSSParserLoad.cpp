@@ -1054,7 +1054,7 @@ void COROSSParser::applyChanges()
                 auto it = key2idMap.find(key);
                 std::cout << "article key = " << key << std::endl;
                 if (it == key2idMap.end())
-                    std::cout << "article not found" << std::endl;
+                    id = key;
                 else
                     id = it->first;
             }
