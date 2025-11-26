@@ -877,7 +877,7 @@ void COROSSParser::loadOROSS(const std::string& dict) {
                     prepareTitle(title_e);
                     error << L"accent!!!" << title_e << std::endl;
                 }
-                AddArticle(maxkey++, title, text, std::wstring(L""));
+                AddArticle(++maxkey, title, text, std::wstring(L""));
                 idx++;
             }
 //            if (idx == 20)
@@ -1033,14 +1033,14 @@ void COROSSParser::applyChanges()
                     else if (act == NewArt) {
                         artId++;
                         if (dictype == dicROS) {
-                            article ca = { artId, maxkey++, dictype, L"", L"", text, text, L"" };
+                            article ca = { artId, ++maxkey, dictype, L"", L"", text, text, L"" };
                             ca.state = ARTICLE_STATE_NEW;
                             fillROSArticle(text, ca);
                         }
                         else {// OROSS
                             size_t titleLen = orossTitle(text);
                             std::wstring title = text.substr(0, titleLen);
-                            AddArticle(maxkey++, title, text, std::wstring(L""));
+                            AddArticle(++maxkey, title, text, std::wstring(L""));
                         }
                     }
                 }
@@ -1056,7 +1056,7 @@ void COROSSParser::applyChanges()
                 if (it == key2idMap.end())
                     id = key;
                 else
-                    id = it->first;
+                    id = it->second;
             }
             else if (parts[0] == L"a_text:") {
                 text = parts[1];
@@ -1131,14 +1131,14 @@ void COROSSParser::applyChanges()
                 else if (act == NewArt) {
                     artId++;
                     if (dictype == dicROS) {
-                        article ca = { artId, maxkey++, dictype, L"", L"", text, text, L"" };
+                        article ca = { artId, ++maxkey, dictype, L"", L"", text, text, L"" };
                         ca.state = ARTICLE_STATE_NEW;
                         fillROSArticle(text, ca);
                     }
                     else {// OROSS
                         size_t titleLen = orossTitle(text);
                         std::wstring title = text.substr(0, titleLen);
-                        AddArticle(maxkey++, title, text, std::wstring(L""));
+                        AddArticle(++maxkey, title, text, std::wstring(L""));
                     }
                 }
             }

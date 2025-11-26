@@ -2874,10 +2874,15 @@ void COROSSParser::makeABCTable(const std::locale& loc)
         std::wstring a_start = articles.find(start)->second.title; //tit->first;
         std::wstring a_last = a_start; //tit->first;
         while (tit != titles.end() && tit->first[0] == abcit->first) {
+            size_t count_prev = count;
             for (auto it = tit->second.begin(); it != tit->second.end(); ++it) {
                 idx = (*it);
+                if (articles.find(idx) == articles.end())
+                    continue;
                 count++;
             }
+            if (count_prev == count)
+                continue;
             a_last = articles.find(idx)->second.title;
             if (count > page_cnt) {
                 str.clear();

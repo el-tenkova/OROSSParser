@@ -307,7 +307,7 @@ long COROSSParser::PreViewArticle()
         }
         size_t titleLen = orossTitle(article);
         std::wstring title = article.substr(0, titleLen);
-        AddArticle(maxkey++, title, article, std::wstring(L""));
+        AddArticle(++maxkey, title, article, std::wstring(L""));
         auto ait = articles.begin();
         processArticle(ait->second);
         std::cout << config["pre_out"] << std::endl;
