@@ -307,7 +307,7 @@ long COROSSParser::PreViewArticle()
         }
         size_t titleLen = orossTitle(article);
         std::wstring title = article.substr(0, titleLen);
-        AddArticle(title, article, std::wstring(L""));
+        AddArticle(maxkey++, title, article, std::wstring(L""));
         auto ait = articles.begin();
         processArticle(ait->second);
         std::cout << config["pre_out"] << std::endl;
@@ -608,7 +608,7 @@ long COROSSParser::AddOrthogr(const std::wstring& Orthogr, const std::wstring& F
 }
 
 
-long COROSSParser::AddArticle(const std::wstring& Title, const std::wstring& Article, const std::wstring& ros_title)
+long COROSSParser::AddArticle(size_t key_article, const std::wstring& Title, const std::wstring& Article, const std::wstring& ros_title)
 {
     std::wstring art(Article);
     correctText(art);
@@ -665,7 +665,7 @@ long COROSSParser::AddArticle(const std::wstring& Title, const std::wstring& Art
         }
     }
     if (mode == Create || mode == Rebuild || found == false) {
-        article ca = { artId, maxkey++, dicOROSS, title, L"", art, art, L"" }; //toRTF(art) };
+        article ca = { artId, key_article, dicOROSS, title, L"", art, art, L"" }; //toRTF(art) };
 
         ca.state = ARTICLE_STATE_NEW;
 

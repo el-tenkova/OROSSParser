@@ -731,7 +731,7 @@ wchar_t COROSSParser::loadOROSSArticle(std::wifstream& arts)
             {
                 std::wstring title(ca.title);
                 std::wstring src(ca.src);
-                AddArticle(title, src, std::wstring(L""));
+                AddArticle(ca.key, title, src, std::wstring(L""));
              }
             std::wstring title_l(ca.title);
             if (ca.dic == dicOROSS && !ca.ros_title.empty()) {
@@ -877,7 +877,7 @@ void COROSSParser::loadOROSS(const std::string& dict) {
                     prepareTitle(title_e);
                     error << L"accent!!!" << title_e << std::endl;
                 }
-                AddArticle(title, text, std::wstring(L""));
+                AddArticle(maxkey++, title, text, std::wstring(L""));
                 idx++;
             }
 //            if (idx == 20)
@@ -1026,7 +1026,7 @@ void COROSSParser::applyChanges()
                             else {// OROSS
                                 size_t titleLen = orossTitle(text);
                                 std::wstring title = text.substr(0, titleLen);
-                                AddArticle(title, text, std::wstring(L""));
+                                AddArticle(key, title, text, std::wstring(L""));
                             }
                         }
                     }
@@ -1040,7 +1040,7 @@ void COROSSParser::applyChanges()
                         else {// OROSS
                             size_t titleLen = orossTitle(text);
                             std::wstring title = text.substr(0, titleLen);
-                            AddArticle(title, text, std::wstring(L""));
+                            AddArticle(maxkey++, title, text, std::wstring(L""));
                         }
                     }
                 }
@@ -1124,7 +1124,7 @@ void COROSSParser::applyChanges()
                         else {// OROSS
                             size_t titleLen = orossTitle(text);
                             std::wstring title = text.substr(0, titleLen);
-                            AddArticle(title, text, ros_title);
+                            AddArticle(key, title, text, ros_title);
                         }
                     }
                 }
@@ -1138,7 +1138,7 @@ void COROSSParser::applyChanges()
                     else {// OROSS
                         size_t titleLen = orossTitle(text);
                         std::wstring title = text.substr(0, titleLen);
-                        AddArticle(title, text, std::wstring(L""));
+                        AddArticle(maxkey++, title, text, std::wstring(L""));
                     }
                 }
             }
