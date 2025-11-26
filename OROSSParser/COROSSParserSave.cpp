@@ -2882,7 +2882,10 @@ void COROSSParser::makeABCTable(const std::locale& loc)
                 count++;
             }
             if (count_prev == count)
+            {
+                tit++;
                 continue;
+            }
             a_last = articles.find(idx)->second.title;
             if (count > page_cnt) {
                 str.clear();
