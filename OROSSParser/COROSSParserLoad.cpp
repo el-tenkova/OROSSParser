@@ -954,6 +954,7 @@ void COROSSParser::loadAddinfo()
 
 void COROSSParser::fillKey2IDMap(void)
 {
+    key2idMap.clear();
     auto it = articles.begin();
     for (; it != articles.end(); ++it)
     {

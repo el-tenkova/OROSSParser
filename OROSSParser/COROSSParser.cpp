@@ -788,6 +788,7 @@ void COROSSParser::processArticles() {
     else if(mode == WebUpdate || mode == WebUpdateROS) {
         countArticles();
     }
+    fillKey2IDMap();
 }
 
 void COROSSParser::processArticle(article& ca) {
