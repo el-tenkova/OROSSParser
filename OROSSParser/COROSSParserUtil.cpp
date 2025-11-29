@@ -953,7 +953,7 @@ std::vector<std::wstring> COROSSParser::getWordsForIndex(const std::wstring& wor
     for (auto kit = keys.begin(); kit != keys.end(); ++kit) {
         cutHead(*kit);
         std::wstring item(*kit);
-        pos = item.find(L"-");
+        pos = item.find_first_of(L"-\u2013");
         size_t prev = 0;
         if (pos != std::wstring::npos) {
             item = getPureWord(item);
@@ -988,10 +988,10 @@ std::vector<std::wstring> COROSSParser::getWordsForIndex(const std::wstring& wor
                 }
             }
             if (split) {
-                pos = item.find(L"-");
+                pos = item.find_first_of(L"-\u2013");
                 while (pos != std::wstring::npos) {
                     item[pos] = L' ';
-                    pos = item.find(L"-", pos + 1);
+                    pos = item.find_first_of(L"-\u2013");
                 }
                 std::wistringstream iss(item.c_str());
                 std::vector<std::wstring> parts;
@@ -1157,7 +1157,18 @@ void COROSSParser::cutTail(std::wstring& str) {
             break;
         }
         if (idx > 1 && idx != len) // cut ending digits (f.e. <sup>1</sup>)
-            str = str.substr(0, idx);
+        {
+            bool digits_only = true;
+            for (auto i = str.begin(); i != str.end(); ++i) {
+                if (std::isalpha(*i, russian))
+                {
+                    digits_only = false;
+                    break;
+                }
+            }
+            if (!digits_only)
+                str = str.substr(0, idx);
+        }
     }
 }
 
@@ -1264,7 +1275,7 @@ size_t COROSSParser::findNext(std::wstring& interval, size_t start, wchar_t dicT
         {
             // skip <a href=...>
             str = interval.substr(start);
-            std::wregex search(L"\\<a\\s*href=\\\".*\\\"\\>");
+            std::wregex search(L"\\<a\\s*href=\\\".*?\\>");
             std::regex_iterator<std::wstring::iterator> rit(str.begin(), str.end(), search);
             std::regex_iterator<std::wstring::iterator> rend;
             if (rit != rend) {
