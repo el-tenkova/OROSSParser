@@ -2608,8 +2608,8 @@ void COROSSParser::processAccents() {
     std::string acSignUtf8("&#x301;");
     std::wstring_convert<std::codecvt_utf8<wchar_t>> conv1;
     for (auto wit = words.begin(); wit != words.end(); ++wit) {
-        if (morph.IsLemma(wit->first) == false)
-            continue;
+        //if (morph.IsLemma(wit->first) == false)
+        //    continue;
         for (auto ait = wit->second.arts.begin(); ait != wit->second.arts.end(); ++ait) {
                 auto it = articles.find(ait->id);
             if (it != articles.end()) {
@@ -2626,6 +2626,8 @@ void COROSSParser::processAccents() {
                 acc = getSpecMarkedArticle(acc, true);
                 size_t accpos = acc.find(acSign);
                 bool noaccent = accpos == std::wstring::npos ? true : false;
+                if (noaccent)
+                    continue;
                 size_t pos = accpos;
                 if (!noaccent) {
                     while (pos != std::wstring::npos) {
@@ -2802,7 +2804,7 @@ void COROSSParser::makeChpu()
 
 void COROSSParser::makeABCTable(const std::locale& loc)
 {
-    //return; 
+    //return;
     std::map<wchar_t, std::wstring> abcMap;
     abcMap.insert(std::pair<wchar_t, std::wstring>(L'а', L"a"));
     abcMap.insert(std::pair<wchar_t, std::wstring>(L'б', L"be"));
