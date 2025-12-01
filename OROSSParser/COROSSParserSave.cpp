@@ -2843,7 +2843,7 @@ void COROSSParser::makeABCTable(const std::locale& loc)
         if (tit->first[0] == abcMap.begin()->first)
             break;
     }
-    size_t page_cnt = std::stoi(config["page_cnt"]);
+    size_t page_cnt = config["page_cnt"].empty() ? 0 : std::stoi(config["page_cnt"]);
     if (page_cnt == 0)
         page_cnt = 300;
     for (auto abcit = abcMap.begin(); abcit != abcMap.end(); ++abcit) {
