@@ -82,7 +82,7 @@ long COROSSParser::Init(modeName Mode)
     rtfReplacements.push_back(L"<sup>");
     rtfReplacements.push_back(L"\\\\super");
     rtfReplacements.push_back(L"</sup>");
-    rtfReplacements.push_back(L"\\\\nosubsuper");
+    rtfReplacements.push_back(L"\\\\nosupersub");
 
     tagsTitle.push_back(L"<span class=\"title\" >");
     tagsTitle.push_back(L"</span>");
@@ -188,7 +188,7 @@ long COROSSParser::Init(modeName Mode, const std::string& cfg)
     rtfReplacements.push_back(L"<sup>");
     rtfReplacements.push_back(L"\\\\super");
     rtfReplacements.push_back(L"</sup>");
-    rtfReplacements.push_back(L"\\\\nosubsuper");
+    rtfReplacements.push_back(L"\\\\nosupersub");
 
     tagsTitle.push_back(L"<span class=\"title\" >");
     tagsTitle.push_back(L"</span>");
