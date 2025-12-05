@@ -59,6 +59,15 @@ long COROSSParser::Init(modeName Mode)
     tagsAccents.push_back(L"\u0438\u0301");//и?
     tagsAccents.push_back(L"\u0438&#x301;");
 
+    tagsHTMLSymbols.push_back(L"&sup1;");
+    tagsHTMLSymbols.push_back(L"<sup>1</sup>");
+    tagsHTMLSymbols.push_back(L"&sup2;");
+    tagsHTMLSymbols.push_back(L"<sup>2</sup>");
+    tagsHTMLSymbols.push_back(L"&sup3;");
+    tagsHTMLSymbols.push_back(L"<sup>3</sup>");
+    tagsHTMLSymbols.push_back(L"&shy;");
+    tagsHTMLSymbols.push_back(L"");
+
     rtfReplacements.push_back(L"<b>");
     rtfReplacements.push_back(L"\\\\b");
     rtfReplacements.push_back(L"</b>");
@@ -164,6 +173,15 @@ long COROSSParser::Init(modeName Mode, const std::string& cfg)
     tagsAccents.push_back(L"\u044B&#x301;");
     tagsAccents.push_back(L"\u0438\u0301");//и?
     tagsAccents.push_back(L"\u0438&#x301;");
+
+    tagsHTMLSymbols.push_back(L"&sup1;");
+    tagsHTMLSymbols.push_back(L"<sup>1</sup>");
+    tagsHTMLSymbols.push_back(L"&sup2;");
+    tagsHTMLSymbols.push_back(L"<sup>2</sup>");
+    tagsHTMLSymbols.push_back(L"&sup3;");
+    tagsHTMLSymbols.push_back(L"<sup>3</sup>");
+    tagsHTMLSymbols.push_back(L"&shy;");
+    tagsHTMLSymbols.push_back(L"");
 
     rtfReplacements.push_back(L"<b>");
     rtfReplacements.push_back(L"\\\\b");

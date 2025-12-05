@@ -501,6 +501,7 @@ protected:
     std::vector<std::wstring> tagsAccents;
     std::vector<std::wstring> tagsTitle;
     std::vector<std::wstring> tagsRuleParts;
+    std::vector<std::wstring> tagsHTMLSymbols;
     //// tmp
     std::map<size_t, size_t> wordIds;
     std::map<std::wstring, size_t> realTitles;

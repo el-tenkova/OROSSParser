@@ -678,6 +678,17 @@ std::wstring COROSSParser::getRestForPara(const std::wstring& Rest, const size_t
 std::wstring COROSSParser::toRTF(const std::wstring& article) {
     std::wstring str(L"");
     std::wstring art(article);
+
+    // заменить или убрать символы html (&supN;, &shy;)
+    std::vector<std::wstring>::iterator it = tagsHTMLSymbols.begin();
+    for (it; it != tagsHTMLSymbols.end(); it += 2) {
+        size_t pos = art.find(*it);
+        while (pos != std::wstring::npos) {
+            art.replace(pos, (*it).length(), *(it + 1));
+            pos = art.find(*it, pos + 1);
+        }
+    }
+
     size_t pos = art.find(L"&#x301;");
     while (pos != std::wstring::npos) {
         art.insert(pos - 1, L"<f1>");
@@ -708,7 +719,7 @@ std::wstring COROSSParser::toRTF(const std::wstring& article) {
             pos = art.find(L'<', i);
         }
     }
-    std::vector<std::wstring>::iterator it = rtfReplacements.begin();
+    it = rtfReplacements.begin();
     for (it; it != rtfReplacements.end(); it += 2) {
         pos = str.find(*it);
         while (pos != std::wstring::npos) {

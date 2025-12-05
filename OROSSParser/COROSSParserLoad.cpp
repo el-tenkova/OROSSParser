@@ -343,6 +343,15 @@ void COROSSParser::fillROSArticle(const std::wstring& a, article& ca)
 {
     std::wstring str(a);
     {
+        std::vector<std::wstring>::iterator it = tagsHTMLSymbols.begin();
+        for (it; it != tagsHTMLSymbols.end(); it += 2) {
+            size_t pos = str.find(*it);
+            while (pos != std::wstring::npos) {
+                str.replace(pos, (*it).length(), *(it + 1));
+                pos = str.find(*it, pos + 1);
+            }
+        }
+
         std::wregex search(L"\\<b\\>(\\<i\\>)*\\-*\\u2013*\\u2014*(\\</i\\>)*\\</b\\>");
 
         std::regex_iterator<std::wstring::iterator> rit(str.begin(), str.end(), search);
