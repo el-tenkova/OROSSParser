@@ -688,7 +688,45 @@ std::wstring COROSSParser::toRTF(const std::wstring& article) {
             pos = art.find(*it, pos + 1);
         }
     }
-
+    // ссылка в статье
+    std::vector<std::wstring> hrefvct;
+    std::map<std::size_t, std::size_t> replmap;
+    size_t link = art.find(L"<a");
+    if (link != std::string::npos)
+    {
+        std::wregex search(L"<a\\s+href=\"(.+?)\">");
+        std::regex_iterator<std::wstring::iterator> rit(art.begin(), art.end(), search);
+        std::regex_iterator<std::wstring::iterator> rend;
+        while (rit != rend) {
+            size_t start = (*rit).position(0);
+            size_t len = (*rit)[0].length();
+            if (rit->size() == 2)
+            {
+                size_t href_l = (*rit)[1].length();
+                std::wstring href(art.substr((*rit).position(1), (*rit)[1].length()));
+                size_t hrefpos = href.find(L"\"");
+                href = href.substr(0, hrefpos);
+                hrefvct.push_back(href);
+            }
+            replmap.insert(std::pair<size_t, size_t>(start, len));
+            ++rit;
+        }
+        if (replmap.size())
+        {
+            std::wstring art1;
+            auto it = replmap.begin();
+            size_t start = 0;
+            for (; it != replmap.end(); ++it)
+            {
+                art1.append(art.substr(start, it->first - start));
+                art1.append(L"<a>");
+                start = it->first + it->second;
+            }
+            if (start < art.length())
+                art1.append(art.substr(start));
+            art = art1;
+        }
+    }
     size_t pos = art.find(L"&#x301;");
     while (pos != std::wstring::npos) {
         art.insert(pos - 1, L"<f1>");
@@ -718,6 +756,17 @@ std::wstring COROSSParser::toRTF(const std::wstring& article) {
             }
             pos = art.find(L'<', i);
         }
+    }
+    // проставить ссылки на дополнительную информацию
+    it = hrefvct.begin();
+    pos = str.find(L"<a>");
+    for (; it != hrefvct.end(); ++it)
+    {
+        std::wstring repl(L"{\\\\field{\\\\*\\\\fldinst HYPERLINK \"");
+        repl.append(*it);
+        repl.append(L"\"}{\\\\fldrslt\\\\cf1");
+        str.replace(pos, wcslen(L"<a>"), repl);
+        pos = str.find(L"<a>", pos);
     }
     it = rtfReplacements.begin();
     for (it; it != rtfReplacements.end(); it += 2) {
