@@ -1340,6 +1340,18 @@ size_t COROSSParser::findNext(std::wstring& interval, size_t start, wchar_t dicT
             std::regex_iterator<std::wstring::iterator> rend;
             if (rit != rend) {
                 start += link + (*rit)[0].length();
+                // check dic index_link
+                link = interval.find(L"</a>", start);
+                std::wstring linktxt(interval.substr(start, link - start));
+                auto l = indexLinkDic.begin();
+                for (l; l != indexLinkDic.end(); ++l)
+                {
+                    pos = linktxt.find(l->first);
+                    if (pos != std::wstring::npos)
+                        break;
+                }
+                if (l == indexLinkDic.end())
+                    start = link + wcslen(L"</a");
             }
         }
     }

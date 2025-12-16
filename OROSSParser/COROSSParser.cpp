@@ -244,6 +244,7 @@ long COROSSParser::Init(modeName Mode, const std::string& cfg)
         return res;
     stopDic = loadStopDic(config["stop"]);
     stopLabelDic = loadStopDic(config["stop_l"]);
+    indexLinkDic = loadStopDic(config["index_link"]);
     std::vector<std::string> grDics;
     grDics.push_back(config["bigramms"]);
     grDics.push_back(config["trigramms"]);

@@ -467,6 +467,7 @@ protected:
     linkMap links;
     std::map<std::wstring, size_t> stopDic;
     std::map<std::wstring, size_t> stopLabelDic;
+    std::map<std::wstring, size_t> indexLinkDic;
     std::map<wchar_t, wchar_t > symMap;
     std::map<size_t, size_t> addinfoMap;
     std::map<size_t, size_t> key2idMap;
