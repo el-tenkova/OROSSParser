@@ -274,8 +274,8 @@ long COROSSParser::Terminate()
  //   if (mode == Rebuild)
     {
   //  if (mode != Create && mode != Update) {
-        presaveArticles(SAVE_SEARCH);
-        saveData(SAVE_SEARCH);
+        presaveArticles(LOAD_SEARCH); // SAVE_SEARCH);
+        saveData(LOAD_SEARCH); // SAVE_SEARCH);
         makeSQL();
     }
 //    saveData(SAVE_SEARCH);
