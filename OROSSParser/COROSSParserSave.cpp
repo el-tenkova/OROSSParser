@@ -1708,7 +1708,7 @@ void COROSSParser::makeMistakesTable(const std::locale& loc) {
 void COROSSParser::presaveArticles(bool saveSearch) {
 
     processIndex(saveSearch);
-    if (mode != ROSOnly)
+    if ((mode != ROSOnly) && (mode != WebUpdateROS))
         processComments();
     wordId = 1;
     auto wit = words.begin();
@@ -2804,7 +2804,7 @@ void COROSSParser::makeChpu()
 
 void COROSSParser::makeABCTable(const std::locale& loc)
 {
-    //return;
+    return;
     std::map<wchar_t, std::wstring> abcMap;
     abcMap.insert(std::pair<wchar_t, std::wstring>(L'а', L"a"));
     abcMap.insert(std::pair<wchar_t, std::wstring>(L'б', L"be"));
