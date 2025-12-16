@@ -1,8 +1,8 @@
 ﻿#ifndef _GRAMMA_TREE_H_
 #define _GRAMMA_TREE_H_
 
+#include "stdafx.h"
 #ifdef _WINDOWS
-    #include "stdafx.h"
     #include <assert.h>
     #include <direct.h>
 #endif

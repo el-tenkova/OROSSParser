@@ -1,5 +1,5 @@
-﻿#ifdef _WINDOWS
-    #include "stdafx.h"
+﻿#include "stdafx.h"
+#ifdef _WINDOWS
     #include <assert.h>
     #include <direct.h>
 #endif

@@ -110,7 +110,7 @@ STDMETHODIMP COROSSParserCOM::AddOrthogr( BSTR Orthogr, BSTR Formula, BSTR Examp
 
 STDMETHODIMP COROSSParserCOM::AddArticle( BSTR Title, BSTR Article, /*[out, retval]*/ long *hRes )
 {
-    *hRes = pureParser.AddArticle(Title, Article, std::wstring(L""));
+    *hRes = pureParser.AddArticle(-1, Title, Article, std::wstring(L""));
     return *hRes;
 }
 

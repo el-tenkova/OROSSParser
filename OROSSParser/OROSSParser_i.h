@@ -3,12 +3,12 @@
 /* this ALWAYS GENERATED file contains the definitions for the interfaces */
 
 
- /* File created by MIDL compiler version 8.00.0603 */
-/* at Sun Feb 12 11:22:46 2017
+ /* File created by MIDL compiler version 8.01.0628 */
+/* at Tue Jan 19 06:14:07 2038
  */
 /* Compiler settings for OROSSParser.idl:
-    Oicf, W1, Zp8, env=Win64 (32b run), target_arch=AMD64 8.00.0603 
-    protocol : dce , ms_ext, c_ext, robust
+    Oicf, W1, Zp8, env=Win64 (32b run), target_arch=AMD64 8.01.0628 
+    protocol : all , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
     VC __declspec() decoration level: 
          __declspec(uuid()), __declspec(selectany), __declspec(novtable)
@@ -16,12 +16,11 @@
 */
 /* @@MIDL_FILE_HEADING(  ) */
 
-#pragma warning( disable: 4049 )  /* more than 64k source lines */
 
 
 /* verify that the <rpcndr.h> version is high enough to compile this file*/
 #ifndef __REQUIRED_RPCNDR_H_VERSION__
-#define __REQUIRED_RPCNDR_H_VERSION__ 475
+#define __REQUIRED_RPCNDR_H_VERSION__ 500
 #endif
 
 #include "rpc.h"
@@ -29,7 +28,7 @@
 
 #ifndef __RPCNDR_H_VERSION__
 #error this stub requires an updated version of <rpcndr.h>
-#endif // __RPCNDR_H_VERSION__
+#endif /* __RPCNDR_H_VERSION__ */
 
 #ifndef COM_NO_WINDOWS_H
 #include "windows.h"
@@ -41,6 +40,14 @@
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1020)
 #pragma once
+#endif
+
+#ifndef DECLSPEC_XFGVIRT
+#if defined(_CONTROL_FLOW_GUARD_XFG)
+#define DECLSPEC_XFGVIRT(base, func) __declspec(xfg_virtual(base, func))
+#else
+#define DECLSPEC_XFGVIRT(base, func)
+#endif
 #endif
 
 /* Forward Declarations */ 
@@ -83,7 +90,11 @@ enum __MIDL___MIDL_itf_OROSSParser_0000_0000_0001
         Update	= ( Create + 1 ) ,
         Rebuild	= ( Update + 1 ) ,
         AddROS	= ( Rebuild + 1 ) ,
-        ROSOnly	= ( AddROS + 1 ) 
+        ROSOnly	= ( AddROS + 1 ) ,
+        OROSSConvert	= ( ROSOnly + 1 ) ,
+        PreView	= ( OROSSConvert + 1 ) ,
+        WebUpdate	= ( PreView + 1 ) ,
+        WebUpdateROS	= ( WebUpdate + 1 ) 
     } 	modeName;
 
 
@@ -172,12 +183,24 @@ EXTERN_C const IID IID_IOROSSParser;
             BSTR Dic,
             /* [retval][out] */ long *hRes) = 0;
         
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ReadOROSS( 
+            BSTR Dic,
+            /* [retval][out] */ long *hRes) = 0;
+        
         virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE LoadWords( 
             BSTR Dic,
             /* [retval][out] */ long *hRes) = 0;
         
         virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE SaveTitle( 
             BSTR Title,
+            /* [retval][out] */ long *hRes) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE SaveArticle( 
+            BSTR Title,
+            BSTR Article,
+            /* [retval][out] */ long *hRes) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE PreViewArticle( 
             /* [retval][out] */ long *hRes) = 0;
         
     };
@@ -189,28 +212,34 @@ EXTERN_C const IID IID_IOROSSParser;
     {
         BEGIN_INTERFACE
         
+        DECLSPEC_XFGVIRT(IUnknown, QueryInterface)
         HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
             IOROSSParser * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
             _COM_Outptr_  void **ppvObject);
         
+        DECLSPEC_XFGVIRT(IUnknown, AddRef)
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             IOROSSParser * This);
         
+        DECLSPEC_XFGVIRT(IUnknown, Release)
         ULONG ( STDMETHODCALLTYPE *Release )( 
             IOROSSParser * This);
         
+        DECLSPEC_XFGVIRT(IDispatch, GetTypeInfoCount)
         HRESULT ( STDMETHODCALLTYPE *GetTypeInfoCount )( 
             IOROSSParser * This,
             /* [out] */ UINT *pctinfo);
         
+        DECLSPEC_XFGVIRT(IDispatch, GetTypeInfo)
         HRESULT ( STDMETHODCALLTYPE *GetTypeInfo )( 
             IOROSSParser * This,
             /* [in] */ UINT iTInfo,
             /* [in] */ LCID lcid,
             /* [out] */ ITypeInfo **ppTInfo);
         
+        DECLSPEC_XFGVIRT(IDispatch, GetIDsOfNames)
         HRESULT ( STDMETHODCALLTYPE *GetIDsOfNames )( 
             IOROSSParser * This,
             /* [in] */ REFIID riid,
@@ -219,6 +248,7 @@ EXTERN_C const IID IID_IOROSSParser;
             /* [in] */ LCID lcid,
             /* [size_is][out] */ DISPID *rgDispId);
         
+        DECLSPEC_XFGVIRT(IDispatch, Invoke)
         /* [local] */ HRESULT ( STDMETHODCALLTYPE *Invoke )( 
             IOROSSParser * This,
             /* [annotation][in] */ 
@@ -238,48 +268,57 @@ EXTERN_C const IID IID_IOROSSParser;
             /* [annotation][out] */ 
             _Out_opt_  UINT *puArgErr);
         
+        DECLSPEC_XFGVIRT(IOROSSParser, Init)
         /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *Init )( 
             IOROSSParser * This,
             modeName name,
             BSTR config,
             /* [retval][out] */ long *hRes);
         
+        DECLSPEC_XFGVIRT(IOROSSParser, Terminate)
         /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *Terminate )( 
             IOROSSParser * This,
             /* [retval][out] */ long *hRes);
         
+        DECLSPEC_XFGVIRT(IOROSSParser, AddPart)
         /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *AddPart )( 
             IOROSSParser * This,
             BSTR Name,
             /* [retval][out] */ long *hRes);
         
+        DECLSPEC_XFGVIRT(IOROSSParser, AddTile)
         /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *AddTile )( 
             IOROSSParser * This,
             BSTR Name,
             /* [retval][out] */ long *hRes);
         
+        DECLSPEC_XFGVIRT(IOROSSParser, AppendTile)
         /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *AppendTile )( 
             IOROSSParser * This,
             BSTR Str,
             /* [retval][out] */ long *hRes);
         
+        DECLSPEC_XFGVIRT(IOROSSParser, AddPara)
         /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *AddPara )( 
             IOROSSParser * This,
             long Num,
             BSTR Para,
             /* [retval][out] */ long *hRes);
         
+        DECLSPEC_XFGVIRT(IOROSSParser, AddExamplesToPara)
         /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *AddExamplesToPara )( 
             IOROSSParser * This,
             BSTR Examples,
             /* [retval][out] */ long *hRes);
         
+        DECLSPEC_XFGVIRT(IOROSSParser, AddRule)
         /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *AddRule )( 
             IOROSSParser * This,
             BSTR Num,
             BSTR Rule,
             /* [retval][out] */ long *hRes);
         
+        DECLSPEC_XFGVIRT(IOROSSParser, AddOrthogr)
         /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *AddOrthogr )( 
             IOROSSParser * This,
             BSTR Orthogr,
@@ -290,42 +329,67 @@ EXTERN_C const IID IID_IOROSSParser;
             long IsPrefix,
             /* [retval][out] */ long *hRes);
         
+        DECLSPEC_XFGVIRT(IOROSSParser, AddArticle)
         /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *AddArticle )( 
             IOROSSParser * This,
             BSTR Title,
             BSTR Article,
             /* [retval][out] */ long *hRes);
         
+        DECLSPEC_XFGVIRT(IOROSSParser, AddInfoToRule)
         /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *AddInfoToRule )( 
             IOROSSParser * This,
             BSTR Info,
             /* [retval][out] */ long *hRes);
         
+        DECLSPEC_XFGVIRT(IOROSSParser, AddRuleTitle)
         /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *AddRuleTitle )( 
             IOROSSParser * This,
             BSTR Num,
             BSTR Title,
             /* [retval][out] */ long *hRes);
         
+        DECLSPEC_XFGVIRT(IOROSSParser, AddFootNote)
         /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *AddFootNote )( 
             IOROSSParser * This,
             long ID,
             BSTR Text,
             /* [retval][out] */ long *hRes);
         
+        DECLSPEC_XFGVIRT(IOROSSParser, LoadArticles)
         /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *LoadArticles )( 
             IOROSSParser * This,
             BSTR Dic,
             /* [retval][out] */ long *hRes);
         
+        DECLSPEC_XFGVIRT(IOROSSParser, ReadOROSS)
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *ReadOROSS )( 
+            IOROSSParser * This,
+            BSTR Dic,
+            /* [retval][out] */ long *hRes);
+        
+        DECLSPEC_XFGVIRT(IOROSSParser, LoadWords)
         /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *LoadWords )( 
             IOROSSParser * This,
             BSTR Dic,
             /* [retval][out] */ long *hRes);
         
+        DECLSPEC_XFGVIRT(IOROSSParser, SaveTitle)
         /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *SaveTitle )( 
             IOROSSParser * This,
             BSTR Title,
+            /* [retval][out] */ long *hRes);
+        
+        DECLSPEC_XFGVIRT(IOROSSParser, SaveArticle)
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *SaveArticle )( 
+            IOROSSParser * This,
+            BSTR Title,
+            BSTR Article,
+            /* [retval][out] */ long *hRes);
+        
+        DECLSPEC_XFGVIRT(IOROSSParser, PreViewArticle)
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *PreViewArticle )( 
+            IOROSSParser * This,
             /* [retval][out] */ long *hRes);
         
         END_INTERFACE
@@ -406,11 +470,20 @@ EXTERN_C const IID IID_IOROSSParser;
 #define IOROSSParser_LoadArticles(This,Dic,hRes)	\
     ( (This)->lpVtbl -> LoadArticles(This,Dic,hRes) ) 
 
+#define IOROSSParser_ReadOROSS(This,Dic,hRes)	\
+    ( (This)->lpVtbl -> ReadOROSS(This,Dic,hRes) ) 
+
 #define IOROSSParser_LoadWords(This,Dic,hRes)	\
     ( (This)->lpVtbl -> LoadWords(This,Dic,hRes) ) 
 
 #define IOROSSParser_SaveTitle(This,Title,hRes)	\
     ( (This)->lpVtbl -> SaveTitle(This,Title,hRes) ) 
+
+#define IOROSSParser_SaveArticle(This,Title,Article,hRes)	\
+    ( (This)->lpVtbl -> SaveArticle(This,Title,Article,hRes) ) 
+
+#define IOROSSParser_PreViewArticle(This,hRes)	\
+    ( (This)->lpVtbl -> PreViewArticle(This,hRes) ) 
 
 #endif /* COBJMACROS */
 
@@ -448,6 +521,11 @@ unsigned long             __RPC_USER  BSTR_UserSize(     unsigned long *, unsign
 unsigned char * __RPC_USER  BSTR_UserMarshal(  unsigned long *, unsigned char *, BSTR * ); 
 unsigned char * __RPC_USER  BSTR_UserUnmarshal(unsigned long *, unsigned char *, BSTR * ); 
 void                      __RPC_USER  BSTR_UserFree(     unsigned long *, BSTR * ); 
+
+unsigned long             __RPC_USER  BSTR_UserSize64(     unsigned long *, unsigned long            , BSTR * ); 
+unsigned char * __RPC_USER  BSTR_UserMarshal64(  unsigned long *, unsigned char *, BSTR * ); 
+unsigned char * __RPC_USER  BSTR_UserUnmarshal64(unsigned long *, unsigned char *, BSTR * ); 
+void                      __RPC_USER  BSTR_UserFree64(     unsigned long *, BSTR * ); 
 
 /* end of Additional Prototypes */
 

@@ -2,6 +2,7 @@
 // or project specific include files that are used frequently,
 // but are changed infrequently
 
+#ifdef _WINDOWS
 #pragma once
 
 #ifndef STRICT
@@ -23,3 +24,4 @@
 #include <atlbase.h>
 #include <atlcom.h>
 #include <atlctl.h>
+#endif

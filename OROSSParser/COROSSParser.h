@@ -1,8 +1,8 @@
 ﻿#ifndef __OROSSPARSERPURE_H_
 #define __OROSSPARSERPURE_H_
 
+#include "stdafx.h"
 #ifdef _WINDOWS
-    #include "stdafx.h"
     #define RUS_LOCALE "Russian"
 #else
     #define RUS_LOCALE "ru_RU.UTF-8"

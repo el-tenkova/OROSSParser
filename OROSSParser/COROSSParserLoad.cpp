@@ -1,6 +1,4 @@
-﻿#ifdef _WINDOWS
-    #include "stdafx.h"
-#endif
+﻿#include "stdafx.h"
 
 #include <locale>
 #include <fstream>

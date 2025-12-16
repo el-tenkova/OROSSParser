@@ -1,4 +1,5 @@
-﻿#include "COROSSParserTree.h"
+﻿#include "stdafx.h"
+#include "COROSSParserTree.h"
 
 void COROSSGrammaTree::load(const std::string path, const std::map<std::wstring, size_t>& stopLabelDic, const std::locale& russian)
 {
