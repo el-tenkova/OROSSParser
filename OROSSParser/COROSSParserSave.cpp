@@ -2609,8 +2609,9 @@ void COROSSParser::processAccents() {
         //if (morph.IsLemma(wit->first) == false)
         //    continue;
         for (auto ait = wit->second.arts.begin(); ait != wit->second.arts.end(); ++ait) {
-                auto it = articles.find(ait->id);
+            auto it = articles.find(ait->id);
             if (it != articles.end()) {
+                //size_t is_title = ait->isTitle;
                 article ca = it->second;
                 std::string tmp;
                 std::string u8str = conv1.to_bytes(ca.text);
@@ -2836,14 +2837,23 @@ void COROSSParser::makeABCTable(const std::locale& loc)
     abcMap.insert(std::pair<wchar_t, std::wstring>(L'ю', L"yu"));
     abcMap.insert(std::pair<wchar_t, std::wstring>(L'я', L"ya"));
 
+    bool stop = false;
     auto tit = titles.begin();
     for (tit; tit != titles.end(); ++tit) {
-        if (tit->first[0] == abcMap.begin()->first)
+        for (auto abcit = abcMap.begin(); abcit != abcMap.end(); ++abcit) {
+            if (tit->first[0] == abcit->first)
+            {
+                stop = true;
+                break;
+            }
+        }
+        if (stop)
             break;
     }
     size_t page_cnt = config["page_cnt"].empty() ? 0 : std::stoi(config["page_cnt"]);
     if (page_cnt == 0)
         page_cnt = 300;
+
     for (auto abcit = abcMap.begin(); abcit != abcMap.end(); ++abcit) {
         if (tit->first[0] != abcit->first)
             continue;
