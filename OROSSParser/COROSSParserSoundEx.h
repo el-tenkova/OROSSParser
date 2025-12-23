@@ -2,6 +2,7 @@
 #define __SOUND_EX_MAP__
 
 #include <map>
+#include <string>
 
 class COROSSSoundEx
 {
@@ -14,6 +15,7 @@ public:
         auto sit = symMap.find(c);
         return (sit != symMap.end() ? true : false);
     }
+    bool hasOneVowel(std::wstring& str, size_t& pos);
 };
 
 #endif

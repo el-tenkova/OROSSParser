@@ -2601,6 +2601,7 @@ void COROSSParser::processMistakes() {
 }
 
 void COROSSParser::processAccents() {
+    COROSSSoundEx soundEx;
     size_t accId = 1;
     std::wstring acSign(L"&#x301;");
     std::string acSignUtf8("&#x301;");
@@ -2611,7 +2612,6 @@ void COROSSParser::processAccents() {
         for (auto ait = wit->second.arts.begin(); ait != wit->second.arts.end(); ++ait) {
             auto it = articles.find(ait->id);
             if (it != articles.end()) {
-                //size_t is_title = ait->isTitle;
                 article ca = it->second;
                 std::string tmp;
                 std::string u8str = conv1.to_bytes(ca.text);
@@ -2625,8 +2625,25 @@ void COROSSParser::processAccents() {
                 acc = getSpecMarkedArticle(acc, true);
                 size_t accpos = acc.find(acSign);
                 bool noaccent = accpos == std::wstring::npos ? true : false;
-                if (noaccent)
-                    continue;
+                if (noaccent && ait->isTitle == titleWord)
+                {
+                    size_t vowel_pos = std::wstring::npos;
+                    if (!soundEx.hasOneVowel(acc, vowel_pos))
+                        continue;
+                    if (vowel_pos == acc.length() - 1)
+                    {
+                        acc.append(acSign);
+                    }
+                    else
+                    {
+                        std::wstring tmp(acc.substr(0, vowel_pos + 1));
+                        tmp.append(acSign);
+                        tmp.append(acc.substr(vowel_pos + 1));
+                        acc = tmp;
+                    }
+                    noaccent = false;
+                    accpos = vowel_pos + 1;
+                }
                 size_t pos = accpos;
                 if (!noaccent) {
                     while (pos != std::wstring::npos) {
