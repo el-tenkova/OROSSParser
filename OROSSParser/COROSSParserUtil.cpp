@@ -727,9 +727,9 @@ std::wstring COROSSParser::toRTF(const std::wstring& article) {
     }
     size_t pos = art.find(L"&#x301;");
     while (pos != std::wstring::npos) {
-        art.insert(pos - 1, L"<f1>");
+        art.insert(pos, L"\u0301");
         pos = art.find(L"&#x301;");
-        art.replace(pos, wcslen(L"&#x301;"), L"<f0>");
+        art.replace(pos, wcslen(L"&#x301;"), L"");
         pos = art.find(L"&#x301;", pos);
     }
     pos = art.find(L'<');
