@@ -446,6 +446,7 @@ public:
     // web routine
     long PreViewArticle();
 
+    static std::vector<std::wstring> split(const std::wstring& str, const wchar_t delim);
 
 protected:
     modeName mode;
@@ -621,7 +622,6 @@ protected:
     void checkForTrigramms(artMap::iterator& ait, const std::vector<std::wstring>& art_words);
     void checkForTetragramms(artMap::iterator& ait, const std::vector<std::wstring>& art_words);
 
-    std::vector<std::wstring> split(const std::wstring& str, const wchar_t delim);
     size_t shiftLeft(const std::wstring& afull, size_t start);
     size_t shiftLeftUtf(const std::wstring& afull, size_t start);
     std::wstring toRTF(const std::wstring& article);

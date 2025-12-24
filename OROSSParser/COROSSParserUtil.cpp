@@ -933,9 +933,10 @@ std::vector<std::wstring> COROSSParser::getFullWords(const std::wstring& word, s
     if (title == true && str.find(L' ') == std::wstring::npos &&
         str.find(L'-') == std::wstring::npos &&
         !morph.IsLemma(getPureWord(str))) {
-        std::wstring lemma = morph.GetLemma(getPureWord(str));
-        if (lemma.length() > 0) {
-            res.push_back(lemma);
+        std::vector<std::wstring> vct = morph.GetLemmataVct(getPureWord(str));
+        for (auto lit = vct.begin(); lit != vct.end(); ++lit)
+        {
+            res.push_back(*lit);
         }
     }
     if (tmp.length() != 0) {

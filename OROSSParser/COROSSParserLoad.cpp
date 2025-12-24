@@ -467,10 +467,11 @@ void COROSSParser::fillROSArticle(const std::wstring& a, article& ca)
                 ca.t_type = article::titleType::titleSya;
             }
             if (!sya && morph.IsLemma(title_l) == false){
-                std::wstring l = morph.GetLemma(title_l);
-                if (l.length() > 0) {
+                std::vector<std::wstring> vct = morph.GetLemmataVct(title_l);
+                for (auto lit = vct.begin(); lit != vct.end(); ++lit)
+                {
                     ca.title.append(L";");
-                    ca.title.append(l);
+                    ca.title.append(*lit);
                     ca.t_type = article::titleType::titleLemma;
                 }
             }

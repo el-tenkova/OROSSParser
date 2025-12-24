@@ -10,7 +10,7 @@
 #include <sstream>
 
 #ifndef _ORFO
-
+#include "COROSSParser.h"
 #include "COROSSParserMorphS.h"
 
 //#define FOREIGN_LIST "c:\\IRYA\\OROSSParser\\Data\\foreign.txt"
@@ -62,8 +62,10 @@ void COROSSParserMorph::Load(const std::string& foreignFile, const std::string& 
                 continue;
             std::wstring form = str.substr(0, pos);
             std::wstring lemma = str.substr(pos + 1);
-            if (lemmataMap.find(str) == lemmataMap.end()) {
-                lemmataMap.insert(std::pair<std::wstring, std::wstring>(form, lemma));
+            std::vector<std::wstring> parts = COROSSParser::split(lemma, L',');
+            auto lit = lemmataMap.find(str);
+            if (lit == lemmataMap.end()) {
+                lemmataMap.insert(std::pair<std::wstring, std::vector<std::wstring>>(form, parts));
             }
         }
         lemmata.close();
@@ -95,11 +97,19 @@ bool COROSSParserMorph::IsLemma(const std::wstring& word)
     return false;
 }
 
-std::wstring COROSSParserMorph::GetLemma(const std::wstring& word)
+std::vector<std::wstring> COROSSParserMorph::GetLemmataVct(const std::wstring& word)
+{
+    auto lit = lemmataMap.find(word);
+    if (lit == lemmataMap.end())
+        return std::vector<std::wstring>();
+    return lit->second;
+}
+
+std::wstring COROSSParserMorph::GetLemma(const std::wstring& word, size_t idx)
 {
     auto lit = lemmataMap.find(word);
     if (lit != lemmataMap.end())
-        return lit->second;
+        return lit->second[idx];
     else
         return std::wstring(L"");
 }
