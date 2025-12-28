@@ -523,6 +523,7 @@ void COROSSParser::makeSQL()
         std::cout << "make ABC" << std::endl;
      //   if (mode == ROSOnly || mode == WebUpdateROS)
         makeABCTable(russian);
+        //makeStatisticsTable(russian);
         makeWordsTable(russian);
         makeBigrammsTable(russian);
         makeTrigrammsTable(russian);
@@ -1311,7 +1312,86 @@ void COROSSParser::makeTetragrammsTable(const std::locale& loc)
     files.Close(SQLImportFile::TETRAGRAMMS, SQLImportFile::TETRAGRAMMS_ARTICLES);
     tetragramms.clear();
 }
+/*void COROSSParser::makeStatisticsTable(const std::locale& loc)
+{
+    std::map<size_t, artIdVct> titles;
+    auto wit = words.begin();
+    for (wit; wit != words.end(); ++wit)
+    {
+        auto ait = wit->second.arts.begin();
+        for (ait; ait != wit->second.arts.end(); ++ait)
+        {
+            if (ait->isTitle == fullTitle)
+            {
+                auto it = titles.find(ait->id);
+                if (it == titles.end())
+                {
+                    artIdVct vct;
+                    vct.push_back(*ait);
+                    titles.insert(std::pair<size_t, artIdVct>(ait->id, vct));
+                }
+                else
+                {
+                    auto pit = it->second.begin();
+                    bool done = 0;
+                    for (pit; pit != it->second.end();)
+                    {
+                        if ((ait->start == pit->start) && (ait->len <= pit->len))
+                        {
+                            done = true;
+                            break;
+                        }
+                        else if ((ait->start == pit->start) && (ait->len > pit->len))
+                        {
+                            pit->len = ait->len;
+                            done = true;
+                        }
+                        else if ((ait->start < pit->start) && (ait->start + ait->len >= pit->start + pit->len))
+                        {
+                            pit = it->second.erase(pit);
+                            continue;
+                        }
+                        else if ((ait->start > pit->start) && (ait->start + ait->len <= pit->start + pit->len))
+                        {
+                            done = true;
+                            break;
+                        }
+                        ++pit;
+                    }
+                    if (!done)
+                        it->second.push_back(*ait);
+                }
+            }
+        }
+    }
+    std::ofstream stat_words = std::ofstream(config["stat_words"], std::wofstream::binary);
+    if (stat_words.is_open()) {
+        //writeBOM(stat_words);
+        stat_words.imbue(loc);
+    }
+    std::string delim("--------------------------------------------------------\n");
+    auto it = titles.begin();
+    for (it; it != titles.end(); ++it)
+    {
+        auto ait = articles.find(it->first);
+        if (ait == articles.end())
+            continue;
+        std::wstring_convert<std::codecvt_utf8<wchar_t>> conv1;
+        std::string u8str = conv1.to_bytes(ait->second.text);
+        size_t pos = u8str.find('[');
+        auto vit = it->second.begin();
 
+        stat_words.write(delim.c_str(), delim.length());
+        for (vit; vit != it->second.end(); ++vit)
+        {
+            if (vit->start > pos)
+                continue;
+            std::string sbstr = u8str.substr(vit->start, vit->len);
+            sbstr.append("\n");
+            stat_words.write(sbstr.c_str(), sbstr.length());
+        }
+    }
+}*/
 void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& result)
 {
     size_t n = 1;

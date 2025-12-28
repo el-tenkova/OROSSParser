@@ -35,6 +35,15 @@ void COROSSDiacritics::load(const std::string& symbols, const std::locale& russi
     }
 }
 
+bool COROSSDiacritics::islat(wchar_t c)
+{
+    if (c >= L'a' && c <= L'z')
+        return true;
+    if (c >= L'A' && c <= L'Z')
+        return true;
+    return false;
+}
+
 std::vector<std::wstring> COROSSDiacritics::split(const std::wstring& str, const wchar_t delim)
 {
     std::vector<std::wstring> res;

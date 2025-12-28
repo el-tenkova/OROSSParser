@@ -8,6 +8,7 @@
 class COROSSDiacritics
 {
     std::map<wchar_t, wchar_t> symMap;
+
 public:
     COROSSDiacritics() {};
     ~COROSSDiacritics() {};
@@ -17,6 +18,7 @@ public:
         return (sit != symMap.end() ? sit->second : c);
     }
     void load(const std::string& symbols, const std::locale& russian);
+    static bool islat(wchar_t c);
 private:
     std::vector<std::wstring> split(const std::wstring& str, const wchar_t delim);
 };

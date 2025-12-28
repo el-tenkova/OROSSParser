@@ -153,6 +153,8 @@ void COROSSParser::prepareTitle(std::wstring& title, bool saveaccent)
     tags.push_back(L"</p>");
     tags.push_back(L"<sup>");
     tags.push_back(L"</sup>");
+    //tags.push_back(L"</span>");
+    //tags.push_back(L"<span class=\"title\" >");
     /*    tags.push_back(L" ");
     tags.push_back(L".");
     tags.push_back(L"-");
@@ -1362,6 +1364,37 @@ size_t COROSSParser::findNext(std::wstring& interval, size_t start, wchar_t dicT
         }
     }
     return start;
+}
+
+size_t COROSSParser::findTitleEnd(std::wstring& interval, size_t start, wchar_t dicType, const std::locale& loc)
+{
+    static COROSSDiacritics diacr;
+    const std::wstring b_e(L"</b>");
+    const std::wstring b_s(L"<b>");
+    size_t pos_e = interval.find(b_e, start);
+    if (dicType == dicROS)
+    {
+        if (pos_e != std::wstring::npos)
+        {
+            // check interval between </b> and <b>, it may contain punctuations only
+            size_t pos_s = interval.find(b_s, pos_e + b_e.length());
+            while (pos_s != std::wstring::npos)
+            {
+                for (size_t i = pos_e + b_e.length(); i < pos_s; i++)
+                {
+                    if (std::isalpha(interval[i], loc) && !diacr.islat(interval[i]))
+                    {
+                        return pos_e;
+                    }
+                }
+                pos_e = interval.find(b_e, pos_s + b_s.length());
+                pos_s = interval.find(b_s, pos_e + b_e.length());
+                if (pos_s == std::wstring::npos)
+                    break;
+            }
+        }
+    }
+    return pos_e;
 }
 
 void COROSSParser::checkForGramms(COROSSGrammaTree& grDic, grammMap& gramms, size_t& grId, artMap::iterator& ait, std::vector<size_t>& art_gramms, const std::vector<std::wstring>& art_words)

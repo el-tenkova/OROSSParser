@@ -43,6 +43,7 @@ const wchar_t formulaExampleWord = L'6';
 const wchar_t footnoteWord = L'7';
 const wchar_t orthogrWord = L'8';
 const wchar_t ruleTitleWord = L'9';
+//const wchar_t fullTitle = L'10';
 
 struct dummy {
     size_t start;
@@ -566,6 +567,7 @@ protected:
     void makeAddInfoUpdate();
     void makeChpu();
     void makeABCTable(const std::locale& loc);
+    void makeStatisticsTable(const std::locale& loc);
 
     void processComments();
     void processIndex(bool saveSearch = false);
@@ -601,7 +603,7 @@ protected:
     void cutHead(std::wstring& str);
     void replaceSup(std::wstring& str);
     size_t findNext(std::wstring& interval, size_t start, wchar_t dicType);
-
+    size_t findTitleEnd(std::wstring& interval, size_t start, wchar_t dicType, const std::locale& loc);
     size_t getParaNum(const std::wstring& rest);
     std::wstring getRuleNum(const std::wstring& rest);
     void getPara(const size_t& id_art, const std::wstring& article, const std::wstring& pure, std::vector<size_t>& paraVct, substMap& substs);
