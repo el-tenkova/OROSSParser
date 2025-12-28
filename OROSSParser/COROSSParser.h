@@ -592,8 +592,8 @@ protected:
     std::wstring getPureArticle(const std::wstring& art, bool full = false);
     std::wstring getSpecMarkedArticle(const std::wstring& art, bool saveaccent = false);
     std::wstring getPureWord(const std::wstring& word);
-    std::vector<std::wstring> getWordsForIndex(const std::wstring& word, size_t& offset, size_t &len, bool title = false);
-    std::vector<std::wstring> getFullWords(const std::wstring& word, size_t& offset, size_t &len, bool title = false);
+    std::vector<std::wstring> getWordsForIndex(const std::wstring& word, size_t& offset, size_t &len, size_t key_article, bool title = false);
+    std::vector<std::wstring> getFullWords(const std::wstring& word, size_t& offset, size_t &len, size_t key_article, bool title = false);
     bool isEqualToTitle(const std::wstring& word, const std::wstring& title);
     std::vector<std::wstring> addWordToIndex(artMap::iterator ait, const std::wstring& key, const size_t& pos, const size_t& start, const size_t& utf_len, const wchar_t type, const size_t& group, const size_t& number);
     std::vector<std::wstring> addTitleToIndex(artMap::iterator ait, const dummyVct::iterator& dit);

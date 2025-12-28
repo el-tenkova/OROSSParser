@@ -14,7 +14,7 @@
 class COROSSParserMorph {
 
     std::map<std::wstring, size_t> foreignMap;
-    std::map<std::wstring, std::vector<std::wstring>> lemmataMap;
+    std::map<std::wstring, std::map<std::wstring, size_t>> lemmataMap;
 
 public:
     COROSSParserMorph();
@@ -25,8 +25,7 @@ public:
     void Terminate();
     bool Check(const std::wstring& word);
     bool Search(const std::wstring& word);
-    std::vector<std::wstring> GetLemmataVct(const std::wstring& word);
-    std::wstring GetLemma(const std::wstring& word, size_t idx = 0);
+    std::map<std::wstring, size_t> GetLemmataMap(const std::wstring& word);
     bool IsLemma(const std::wstring& word);
     std::wstring GetPlurNom() {};
 };

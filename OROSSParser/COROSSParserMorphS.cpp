@@ -65,7 +65,20 @@ void COROSSParserMorph::Load(const std::string& foreignFile, const std::string& 
             std::vector<std::wstring> parts = COROSSParser::split(lemma, L',');
             auto lit = lemmataMap.find(str);
             if (lit == lemmataMap.end()) {
-                lemmataMap.insert(std::pair<std::wstring, std::vector<std::wstring>>(form, parts));
+                std::map<std::wstring, size_t> map;
+                for (auto pit = parts.begin(); pit != parts.end(); ++pit)
+                {
+                    size_t pos = pit->find(L':');
+                    if (pos == std::wstring::npos)
+                        map.insert(std::pair<std::wstring, size_t>(*pit, 0));
+                    else
+                    {
+                        std::wstring form(pit->substr(0, pos));
+                        size_t key = std::stol(pit->substr(pos + 1));
+                        map.insert(std::pair<std::wstring, size_t>(form, key));
+                    }
+                }
+                lemmataMap.insert(std::pair<std::wstring, std::map<std::wstring, size_t>>(form, map));
             }
         }
         lemmata.close();
@@ -97,21 +110,12 @@ bool COROSSParserMorph::IsLemma(const std::wstring& word)
     return false;
 }
 
-std::vector<std::wstring> COROSSParserMorph::GetLemmataVct(const std::wstring& word)
+std::map<std::wstring, size_t> COROSSParserMorph::GetLemmataMap(const std::wstring& word)
 {
     auto lit = lemmataMap.find(word);
     if (lit == lemmataMap.end())
-        return std::vector<std::wstring>();
+        return std::map<std::wstring, size_t>();
     return lit->second;
-}
-
-std::wstring COROSSParserMorph::GetLemma(const std::wstring& word, size_t idx)
-{
-    auto lit = lemmataMap.find(word);
-    if (lit != lemmataMap.end())
-        return lit->second[idx];
-    else
-        return std::wstring(L"");
 }
 
 void COROSSParserMorph::Load()

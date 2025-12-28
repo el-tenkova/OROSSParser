@@ -881,7 +881,7 @@ std::wstring COROSSParser::getPureWord(const std::wstring& word) {
     return pure;
 }
 
-std::vector<std::wstring> COROSSParser::getFullWords(const std::wstring& word, size_t& offset, size_t &len, bool title) {
+std::vector<std::wstring> COROSSParser::getFullWords(const std::wstring& word, size_t& offset, size_t &len, size_t key_article, bool title) {
 
     std::vector<std::wstring> res;
     std::wstring str(word);
@@ -942,10 +942,12 @@ std::vector<std::wstring> COROSSParser::getFullWords(const std::wstring& word, s
     if (title == true && str.find(L' ') == std::wstring::npos &&
         str.find(L'-') == std::wstring::npos &&
         !morph.IsLemma(getPureWord(str))) {
-        std::vector<std::wstring> vct = morph.GetLemmataVct(getPureWord(str));
-        for (auto lit = vct.begin(); lit != vct.end(); ++lit)
+        std::map<std::wstring, size_t> map = morph.GetLemmataMap(getPureWord(str));
+        for (auto lit = map.begin(); lit != map.end(); ++lit)
         {
-            res.push_back(*lit);
+            if ((lit->second != 0) && (lit->second != key_article))
+                continue;
+            res.push_back(lit->first);
         }
     }
     if (tmp.length() != 0) {
@@ -989,11 +991,11 @@ std::vector<std::wstring> COROSSParser::getFullWords(const std::wstring& word, s
     return res;
 }
 
-std::vector<std::wstring> COROSSParser::getWordsForIndex(const std::wstring& word, size_t& offset, size_t &len, bool title) {
+std::vector<std::wstring> COROSSParser::getWordsForIndex(const std::wstring& word, size_t& offset, size_t &len, size_t key_article, bool title) {
 
     //if (title)
     //    return res;
-    std::vector<std::wstring> res = getFullWords(word, offset, len, title);
+    std::vector<std::wstring> res = getFullWords(word, offset, len, key_article, title);
     if (res.size() == 0)
         return res;
 

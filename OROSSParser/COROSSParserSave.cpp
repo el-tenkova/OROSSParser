@@ -2013,7 +2013,7 @@ std::vector<std::wstring> COROSSParser::addWordToIndex(artMap::iterator ait,
     std::wstring accent(L"&#x301;");
 
     key = getSpecMarkedArticle(key);
-    std::vector<std::wstring> vw = getWordsForIndex(key, offset, len, type == titleWord);
+    std::vector<std::wstring> vw = getWordsForIndex(key, offset, len, ait->second.key, type == titleWord);
     if (offset >= under_b.length() &&
         interval.substr(start + offset - under_b.length(), under_b.length()) == under_b) {
         offset -= under_b.length();
@@ -2115,7 +2115,7 @@ std::vector<std::wstring> COROSSParser::addTitleToIndex(artMap::iterator ait, co
 
     key = getSpecMarkedArticle(key);
 
-    std::vector<std::wstring> vw = getFullWords(key, offset, len);
+    std::vector<std::wstring> vw = getFullWords(key, offset, len, ait->second.key);
 
     if (offset >= under_b.length() &&
         interval.substr(offset - under_b.length(), under_b.length()) == under_b) {
@@ -2204,7 +2204,7 @@ std::vector<std::wstring> COROSSParser::addWordToTutorialIndex(const size_t& id,
     std::wstring bold(L"<b>");
 
 //    key = getSpecMarkedArticle(key);
-    std::vector<std::wstring> vw = getWordsForIndex(key, offset, len, false);
+    std::vector<std::wstring> vw = getWordsForIndex(key, offset, len, -1, false);
     if (offset >= under_b.length() &&
         interval.substr(start + offset - under_b.length(), under_b.length()) == under_b) {
         offset -= under_b.length();
