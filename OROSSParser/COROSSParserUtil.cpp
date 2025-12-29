@@ -939,8 +939,10 @@ std::vector<std::wstring> COROSSParser::getFullWords(const std::wstring& word, s
     if (str != mapped) {
         res.push_back(mapped);
     }
+    // There are articles in OROSS which contain '-' to show parts of word (dlin-niy)
+    // todo: check this code with OROSS dic
     if (title == true && str.find(L' ') == std::wstring::npos &&
-        str.find(L'-') == std::wstring::npos &&
+        //str.find(L'-') == std::wstring::npos &&
         !morph.IsLemma(getPureWord(str))) {
         std::map<std::wstring, size_t> map = morph.GetLemmataMap(getPureWord(str));
         for (auto lit = map.begin(); lit != map.end(); ++lit)
