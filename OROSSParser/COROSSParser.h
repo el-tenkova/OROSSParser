@@ -43,7 +43,7 @@ const wchar_t formulaExampleWord = L'6';
 const wchar_t footnoteWord = L'7';
 const wchar_t orthogrWord = L'8';
 const wchar_t ruleTitleWord = L'9';
-//const wchar_t fullTitle = L'10';
+const wchar_t fullTitle = L'A';
 
 struct dummy {
     size_t start;

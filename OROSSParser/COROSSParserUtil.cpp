@@ -153,8 +153,8 @@ void COROSSParser::prepareTitle(std::wstring& title, bool saveaccent)
     tags.push_back(L"</p>");
     tags.push_back(L"<sup>");
     tags.push_back(L"</sup>");
-    //tags.push_back(L"</span>");
-    //tags.push_back(L"<span class=\"title\" >");
+    tags.push_back(L"</span>");
+    tags.push_back(L"<span class=\"title\" >");
     /*    tags.push_back(L" ");
     tags.push_back(L".");
     tags.push_back(L"-");
@@ -887,7 +887,7 @@ std::vector<std::wstring> COROSSParser::getFullWords(const std::wstring& word, s
     std::wstring str(word);
     offset = 0;
     len = word.length();
-    std::wregex e(L"\\([^\\(\\)]+\\)");
+    std::wregex e(L"\\s*\\([^\\(\\)]+\\)");
 
     std::regex_iterator<std::wstring::iterator> rit(str.begin(), str.end(), e);
     std::regex_iterator<std::wstring::iterator> rend;

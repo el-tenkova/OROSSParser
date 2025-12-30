@@ -435,9 +435,24 @@ void COROSSParser::fillROSArticle(const std::wstring& a, article& ca)
     syavect.push_back(L"(сь)");
     syavect.push_back(L"(те)");
     std::wstring title;
+    std::wstring title_full, title_srch_full;
+    size_t title_start = pos;
+    size_t title_len = 0;
     while (pos != std::wstring::npos) {
+        size_t pos_title_end = findTitleEnd(str, pos + 1, dicROS, russian);
         size_t pos1 = str.find(L"</b>", pos + 1);
-        if (pos1 != std::wstring::npos) {
+        bool addfull = pos_title_end > pos1;
+        if (title_full.length() == 0)
+        {
+            title_full = str.substr(pos, pos_title_end - pos);
+            title_len = pos_title_end - pos + 4;
+            replaceSup(title_full);
+            prepareTitle(title_full);
+            title_srch_full = std::wstring(title_full);
+            prepareSearchTitle(title_srch_full);
+            removeParentheses(title_srch_full);
+        }
+        while ((pos1 != std::wstring::npos) && (pos1 <= pos_title_end)) {
             std::wstring title_l = str.substr(pos, pos1 - pos);
             replaceSup(title_l);
             prepareTitle(title_l);
@@ -452,7 +467,7 @@ void COROSSParser::fillROSArticle(const std::wstring& a, article& ca)
             }
 //                title_l.replace(pos_sya, 4, L"";
             if (ca.title.length() == 0) {
-                ca.title = title_l;
+                ca.title = title_l.length() >= title_full.length() ? title_l : title_full;
             }
             else {
                 ca.title.append(L";");
@@ -495,17 +510,23 @@ void COROSSParser::fillROSArticle(const std::wstring& a, article& ca)
                     ca.index.push_back(cd);
                 }
             }
+            pos = str.find(tagsTitle[0], pos1);
+            if (pos != std::wstring::npos) {
+                pos += tagsTitle[0].length();
+            }
+            else
+                break;
+            pos1 = str.find(L"</b>", pos + 1);
         }
-        pos = str.find(tagsTitle[0], pos1);
-        if (pos != std::wstring::npos) {
-            pos += tagsTitle[0].length();
-        }
+        if (addfull)
+            ca.index.push_back({ title_start, title_len, fullTitle });
+
     }
     if (ca.index.size() > 0 && (*(ca.index.end() - 1)).start + (*(ca.index.end() - 1)).len < str.length()) {
         ca.index.push_back({ (*(ca.index.end() - 1)).start + (*(ca.index.end() - 1)).len, std::wstring::npos, articleWord });
     }
     articles.insert(std::pair<size_t, article>(ca.id, ca));
-    addToTitleMap(title, ca.id);
+    addToTitleMap(title_srch_full, ca.id);
 }
 
 
