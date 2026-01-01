@@ -1375,17 +1375,36 @@ void COROSSParser::makeStatisticsTable(const std::locale& loc)
             prepareTitle(sbstr);
             if (titles.find(sbstr) == titles.end())
             {
-                titles.insert(std::pair<std::wstring, size_t>(sbstr, 1));
                 if (ait->second.t_type == article::titleType::titleSya)
                 {
+                    titles.insert(std::pair<std::wstring, size_t>(sbstr, 1));
                     writeSyaToStatistics(stat_words, count, conv1, sbstr);
                 }
                 else if (sbstr.find(L'(') != std::wstring::npos)
                 {
-                    writeArtWithParenthesesToStatistics(stat_words, count, conv1, sbstr);
+                    std::vector<std::wstring> vct = makeArtWithParenthesesTitles(sbstr);
+                    auto it = vct.begin();
+                    for (it; it != vct.end(); ++it)
+                    {
+                        if (titles.find(*it) != titles.end())
+                        {
+                            std::string u8str = conv1.to_bytes(*it);
+                            u8str.append("\n");
+                            stat_words.write(u8str.c_str(), u8str.length());
+                            continue;
+                        }
+                        titles.insert(std::pair<std::wstring, size_t>(*it, 1));
+                        std::string cnt = std::to_string(++count);
+                        cnt.append(" : ");
+                        stat_words.write(cnt.c_str(), cnt.length());
+                        std::string u8str = conv1.to_bytes((*it).c_str());
+                        u8str.append("\n");
+                        stat_words.write(u8str.c_str(), u8str.length());
+                    }
                 }
                 else
                 {
+                    titles.insert(std::pair<std::wstring, size_t>(sbstr, 1));
                     std::string cnt = std::to_string(++count);
                     cnt.append(" : ");
                     stat_words.write(cnt.c_str(), cnt.length());

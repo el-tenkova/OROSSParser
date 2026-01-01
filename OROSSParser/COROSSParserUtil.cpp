@@ -1704,7 +1704,7 @@ void COROSSParser::writeSyaToStatistics(std::ofstream& stat_words, size_t& count
     u8str.append("\n");
     stat_words.write(u8str.c_str(), u8str.length());
 }
-void COROSSParser::writeArtWithParenthesesToStatistics(std::ofstream& stat_words, size_t& count, std::wstring_convert<std::codecvt_utf8<wchar_t>>& conv1, std::wstring title)
+std::vector<std::wstring> COROSSParser::makeArtWithParenthesesTitles(std::wstring title)
 {
     std::wregex e(L"\\s*\\([^\\(\\)]+\\)");
 
@@ -1744,14 +1744,5 @@ void COROSSParser::writeArtWithParenthesesToStatistics(std::ofstream& stat_words
         }
         ++rit;
     }
-    auto it = res.begin();
-    for (it; it != res.end(); ++it)
-    {
-        std::string cnt = std::to_string(++count);
-        cnt.append(" : ");
-        stat_words.write(cnt.c_str(), cnt.length());
-        std::string u8str = conv1.to_bytes((*it).c_str());
-        u8str.append("\n");
-        stat_words.write(u8str.c_str(), u8str.length());
-    }
+    return res;
 }
