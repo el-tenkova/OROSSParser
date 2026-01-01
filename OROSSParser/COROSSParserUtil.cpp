@@ -1687,3 +1687,71 @@ void COROSSParser::checkComplexTitle(article& ca)
         ca.title = nt;
     }
 }
+void COROSSParser::writeSyaToStatistics(std::ofstream& stat_words, size_t& count, std::wstring_convert<std::codecvt_utf8<wchar_t>>& conv1, std::wstring title)
+{
+    std::wstring bezsya = title.substr(0, title.rfind(L'('));
+    removeParentheses(title);
+    std::string cnt = std::to_string(++count);
+    cnt.append(" : ");
+    stat_words.write(cnt.c_str(), cnt.length());
+    std::string u8str = conv1.to_bytes(title.c_str());
+    u8str.append("\n");
+    stat_words.write(u8str.c_str(), u8str.length());
+    cnt = std::to_string(++count);
+    cnt.append(" : ");
+    stat_words.write(cnt.c_str(), cnt.length());
+    u8str = conv1.to_bytes(bezsya);
+    u8str.append("\n");
+    stat_words.write(u8str.c_str(), u8str.length());
+}
+void COROSSParser::writeArtWithParenthesesToStatistics(std::ofstream& stat_words, size_t& count, std::wstring_convert<std::codecvt_utf8<wchar_t>>& conv1, std::wstring title)
+{
+    std::wregex e(L"\\s*\\([^\\(\\)]+\\)");
+
+    std::regex_iterator<std::wstring::iterator> rit(title.begin(), title.end(), e);
+    std::regex_iterator<std::wstring::iterator> rend;
+    std::vector <std::wstring> res;
+    while (rit != rend) {
+        std::wstring var;
+        var.append((*rit).prefix());
+        std::wstring var1;
+        var1.append((*rit).prefix());
+        var1.append((*rit).str());
+        if ((*rit).suffix().length() && ((*rit).suffix().str().find(L'(') == std::wstring::npos))
+        {
+            var.append((*rit).suffix());
+            var1.append((*rit).suffix());
+        }
+        if (res.size() == 0)
+        {
+            res.push_back(var);
+            res.push_back(var1);
+        }
+        else
+        {
+            std::vector<std::wstring> tmpvct;
+            auto it = res.begin();
+            for (it; it != res.end(); ++it)
+            {
+                std::wstring add(*it);
+                add.append(var);
+                tmpvct.push_back(add);
+                std::wstring add1(*it);
+                add1.append(var1);
+                tmpvct.push_back(add1);
+            }
+            res = tmpvct;
+        }
+        ++rit;
+    }
+    auto it = res.begin();
+    for (it; it != res.end(); ++it)
+    {
+        std::string cnt = std::to_string(++count);
+        cnt.append(" : ");
+        stat_words.write(cnt.c_str(), cnt.length());
+        std::string u8str = conv1.to_bytes((*it).c_str());
+        u8str.append("\n");
+        stat_words.write(u8str.c_str(), u8str.length());
+    }
+}

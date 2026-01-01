@@ -604,6 +604,10 @@ protected:
     void replaceSup(std::wstring& str);
     size_t findNext(std::wstring& interval, size_t start, wchar_t dicType);
     size_t findTitleEnd(std::wstring& interval, size_t start, wchar_t dicType, const std::locale& loc);
+    void writeSyaToStatistics(std::ofstream& stat_words, size_t& count, std::wstring_convert<std::codecvt_utf8<wchar_t>>& conv1, std::wstring title);
+    void writeArtWithParenthesesToStatistics(std::ofstream& stat_words, size_t& count, std::wstring_convert<std::codecvt_utf8<wchar_t>>& conv1, std::wstring title);
+
+
     size_t getParaNum(const std::wstring& rest);
     std::wstring getRuleNum(const std::wstring& rest);
     void getPara(const size_t& id_art, const std::wstring& article, const std::wstring& pure, std::vector<size_t>& paraVct, substMap& substs);

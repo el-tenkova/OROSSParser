@@ -1376,12 +1376,23 @@ void COROSSParser::makeStatisticsTable(const std::locale& loc)
             if (titles.find(sbstr) == titles.end())
             {
                 titles.insert(std::pair<std::wstring, size_t>(sbstr, 1));
-                std::string cnt = std::to_string(++count);
-                cnt.append(" : ");
-                stat_words.write(cnt.c_str(), cnt.length());
-                std::string u8str = conv1.to_bytes(sbstr);
-                u8str.append("\n");
-                stat_words.write(u8str.c_str(), u8str.length());
+                if (ait->second.t_type == article::titleType::titleSya)
+                {
+                    writeSyaToStatistics(stat_words, count, conv1, sbstr);
+                }
+                else if (sbstr.find(L'(') != std::wstring::npos)
+                {
+                    writeArtWithParenthesesToStatistics(stat_words, count, conv1, sbstr);
+                }
+                else
+                {
+                    std::string cnt = std::to_string(++count);
+                    cnt.append(" : ");
+                    stat_words.write(cnt.c_str(), cnt.length());
+                    std::string u8str = conv1.to_bytes(sbstr);
+                    u8str.append("\n");
+                    stat_words.write(u8str.c_str(), u8str.length());
+                }
             }
             else
             {
