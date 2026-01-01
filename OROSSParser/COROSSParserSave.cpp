@@ -1314,17 +1314,26 @@ void COROSSParser::makeTetragrammsTable(const std::locale& loc)
 }
 void COROSSParser::makeStatisticsTable(const std::locale& loc)
 {
+    size_t count = 0;
+    std::ofstream stat_words = std::ofstream(config["stat_words"], std::wofstream::binary);
+    if (stat_words.is_open()) {
+        //writeBOM(stat_words);
+        stat_words.imbue(loc);
+    }
     std::map<std::wstring, size_t> titles;
     std::wstring_convert<std::codecvt_utf8<wchar_t>> conv1;
     auto ait = articles.begin();
     for (ait; ait != articles.end(); ++ait)
     {
+        size_t pos = ait->second.text.find('[');
         dummyVct vct;
         auto dit = ait->second.index.begin();
         for (dit; dit != ait->second.index.end(); ++dit)
         {
             if ((dit->type == titleWord) || (dit->type == fullTitle))
             {
+                if (dit->start > pos)
+                    continue;
                 bool done = 0;
                 auto pit = vct.begin();
                 for (pit; pit != vct.end();)
@@ -1355,29 +1364,33 @@ void COROSSParser::makeStatisticsTable(const std::locale& loc)
                     vct.push_back(*dit);
             }
         }
-        size_t pos = ait->second.text.find('[');
         auto vit = vct.begin();
+        std::string str("--------------------------------------\nkey:");
+        str.append(std::to_string(ait->second.key));
+        str.append("\n");
+        stat_words.write(str.c_str(), str.length());
         for (vit; vit != vct.end(); ++vit)
         {
-            if (vit->start > pos)
-                continue;
             std::wstring sbstr = ait->second.text.substr(vit->start, vit->len);
             prepareTitle(sbstr);
             if (titles.find(sbstr) == titles.end())
+            {
                 titles.insert(std::pair<std::wstring, size_t>(sbstr, 1));
+                std::string cnt = std::to_string(++count);
+                cnt.append(" : ");
+                stat_words.write(cnt.c_str(), cnt.length());
+                std::string u8str = conv1.to_bytes(sbstr);
+                u8str.append("\n");
+                stat_words.write(u8str.c_str(), u8str.length());
+            }
+            else
+            {
+                std::string u8str = conv1.to_bytes(sbstr);
+                u8str.append("\n");
+                stat_words.write(u8str.c_str(), u8str.length());
+            }
+
         }
-    }
-    std::ofstream stat_words = std::ofstream(config["stat_words"], std::wofstream::binary);
-    if (stat_words.is_open()) {
-        //writeBOM(stat_words);
-        stat_words.imbue(loc);
-    }
-    auto it = titles.begin();
-    for (it; it != titles.end(); ++it)
-    {
-        std::string u8str = conv1.to_bytes(it->first);
-        u8str.append("\n");
-        stat_words.write(u8str.c_str(), u8str.length());
     }
 }
 
