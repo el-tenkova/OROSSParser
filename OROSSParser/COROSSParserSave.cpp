@@ -2839,7 +2839,18 @@ void COROSSParser::processAccents() {
                         accId++;
                     }
                     else {
-                        acit->second.arts.push_back(*ait);
+                        auto it = acit->second.arts.begin();
+                        bool add = true;
+                        for (it; it != acit->second.arts.end(); ++it)
+                        {
+                            if ((it->id == ait->id) && (it->start == ait->start) && (it->len == ait->len))
+                            {
+                                add = false;
+                                break;
+                            }
+                        }
+                        if (add)
+                            acit->second.arts.push_back(*ait);
                     }
                 }
             }
