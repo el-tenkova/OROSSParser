@@ -1315,6 +1315,7 @@ void COROSSParser::makeTetragrammsTable(const std::locale& loc)
 void COROSSParser::makeStatisticsTable(const std::locale& loc)
 {
     size_t count = 0;
+    size_t count_sya = 0;
     std::ofstream stat_words = std::ofstream(config["stat_words"], std::wofstream::binary);
     if (stat_words.is_open()) {
         //writeBOM(stat_words);
@@ -1377,6 +1378,7 @@ void COROSSParser::makeStatisticsTable(const std::locale& loc)
             {
                 if (ait->second.t_type == article::titleType::titleSya)
                 {
+                    count_sya += 1;
                     titles.insert(std::pair<std::wstring, size_t>(sbstr, 1));
                     writeSyaToStatistics(stat_words, count, conv1, sbstr);
                 }
@@ -1432,14 +1434,17 @@ void COROSSParser::makeStatisticsTable(const std::locale& loc)
     std::wstring str(L"\nCREATE TABLE IF NOT EXISTS statistics (\n\
     id int(11) NOT NULL,\n\
     black_words int(11) NOT NULL,\n\
+    black_words_sya int(11) NOT NULL,\n\
     articles int(11) NOT NULL,\n\
     words int(11) NOT NULL,\n\
     PRIMARY KEY (id) \n\
     );\n\n");
     
     str.append(L"INSERT INTO statistics");
-    str.append(L"s (id, black_words, articles, words) VALUES(1,");
+    str.append(L"s (id, black_words, black_words_sya, articles, words) VALUES(1,");
     str.append(std::to_wstring(count));
+    str.append(L",");
+    str.append(std::to_wstring(count_sya));
     str.append(L",");
     str.append(std::to_wstring(articles.size()));
     str.append(L",");
