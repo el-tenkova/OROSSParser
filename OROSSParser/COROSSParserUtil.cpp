@@ -895,9 +895,12 @@ std::vector<std::wstring> COROSSParser::getFullWords(const std::wstring& word, s
     //    size_t pref = 0;
     std::wstring tmp;
     std::wstring suff;
+    bool particle = true;
     while (rit != rend) {
         tmp.append((*rit).prefix());
         suff = (*rit).suffix();
+        if (rit->str().find(L' ') != std::wstring::npos)
+            particle = false;
         //        pref += (*rit).prefix().length() + (*rit).str().length();
         ++rit;
     }
@@ -963,15 +966,11 @@ std::vector<std::wstring> COROSSParser::getFullWords(const std::wstring& word, s
         if (idx > 0)
             tmp = tmp.substr(idx);
 
-        bool particle = true;
         if (tmp.length() != 0) {
             idx = tmp.length();
             for (i = tmp.end() - 1; i != tmp.end(); --i, idx--) {
                 if (!(std::ispunct((*i), russian) || std::isdigit((*i), russian)) && (*i) != L'/') {
-                    if (!std::isspace(*i))
-                        tmp = tmp.substr(0, idx);
-                    else
-                        particle = false;
+                    tmp = tmp.substr(0, idx);
                     break;
                 }
             }
