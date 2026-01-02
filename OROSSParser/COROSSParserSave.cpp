@@ -1441,7 +1441,7 @@ void COROSSParser::makeStatisticsTable(const std::locale& loc)
     );\n\n");
     
     str.append(L"INSERT INTO statistics");
-    str.append(L"s (id, black_words, black_words_sya, articles, words) VALUES(1,");
+    str.append(L" (id, black_words, black_words_sya, articles, words) VALUES(1,");
     str.append(std::to_wstring(count));
     str.append(L",");
     str.append(std::to_wstring(count_sya));
