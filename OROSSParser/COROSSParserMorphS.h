@@ -27,7 +27,7 @@ public:
     bool Search(const std::wstring& word);
     std::map<std::wstring, size_t> GetLemmataMap(const std::wstring& word);
     bool IsLemma(const std::wstring& word);
-    std::wstring GetPlurNom() {};
+    //std::wstring GetPlurNom() {};
 };
 #endif // _ORFO
 #endif // __OROSSPARSERMORPH_H_
