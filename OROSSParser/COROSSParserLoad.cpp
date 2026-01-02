@@ -385,6 +385,11 @@ void COROSSParser::fillROSArticle(const std::wstring& a, article& ca)
         str.replace(pos, 8, L"");
         pos = str.find(L"<b>)</b>", pos + 1);
     }
+    pos = str.find(L",</b>");
+    while (pos != std::wstring::npos) {
+        str.replace(pos, 5, L"</b>,");
+        pos = str.find(L",</b>", pos + 1);
+    }
     {
         std::wregex search(L"\\</b\\>\\s+([\\-|\\u2013|\\u2014]\\s)*\\<b\\>");
 
