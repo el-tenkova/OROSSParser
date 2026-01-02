@@ -443,6 +443,7 @@ void COROSSParser::fillROSArticle(const std::wstring& a, article& ca)
     std::wstring title_full, title_srch_full;
     size_t title_start = pos;
     size_t title_len = 0;
+    dummyVct vctFull;
     while (pos != std::wstring::npos) {
         size_t pos_title_end = findTitleEnd(str, pos + 1, dicROS, russian);
         size_t pos1 = str.find(L"</b>", pos + 1);
@@ -524,12 +525,15 @@ void COROSSParser::fillROSArticle(const std::wstring& a, article& ca)
             pos1 = str.find(L"</b>", pos + 1);
         }
         if (addfull)
-            ca.index.push_back({ title_start, title_len, fullTitle });
-
+            vctFull.push_back({ title_start, title_len, fullTitle });
     }
     if (ca.index.size() > 0 && (*(ca.index.end() - 1)).start + (*(ca.index.end() - 1)).len < str.length()) {
         ca.index.push_back({ (*(ca.index.end() - 1)).start + (*(ca.index.end() - 1)).len, std::wstring::npos, articleWord });
     }
+    auto it = vctFull.begin();
+    for (it; it != vctFull.end(); ++it)
+        ca.index.push_back(*it);
+
     articles.insert(std::pair<size_t, article>(ca.id, ca));
     addToTitleMap(title_srch_full, ca.id);
 }

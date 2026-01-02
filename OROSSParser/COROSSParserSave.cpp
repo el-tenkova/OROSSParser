@@ -2075,7 +2075,7 @@ std::vector<std::wstring> COROSSParser::addWordToIndex(artMap::iterator ait,
     std::wstring accent(L"&#x301;");
 
     key = getSpecMarkedArticle(key);
-    std::vector<std::wstring> vw = getWordsForIndex(key, offset, len, ait->second.key, (type == titleWord || type == fullTitle));
+    std::vector<std::wstring> vw = getWordsForIndex(key, offset, len, ait->second.key, type == titleWord);
     if (offset >= under_b.length() &&
         interval.substr(start + offset - under_b.length(), under_b.length()) == under_b) {
         offset -= under_b.length();
