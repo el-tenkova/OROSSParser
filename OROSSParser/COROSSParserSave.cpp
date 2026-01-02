@@ -1422,6 +1422,31 @@ void COROSSParser::makeStatisticsTable(const std::locale& loc)
 
         }
     }
+    size_t n = 1;
+    if (!files.OpenToWrite(SQLImportFile::STATISTICS, SQLImportFile::STATISTICS, config["output"], loc))
+    {
+        files.Close(SQLImportFile::STATISTICS, SQLImportFile::STATISTICS);
+        return;
+    }
+
+    std::wstring str(L"\nCREATE TABLE IF NOT EXISTS statistics (\n\
+    id int(11) NOT NULL,\n\
+    black_words int(11) NOT NULL,\n\
+    articles int(11) NOT NULL,\n\
+    words int(11) NOT NULL,\n\
+    PRIMARY KEY (id) \n\
+    );\n\n");
+    
+    str.append(L"INSERT INTO statistics");
+    str.append(L"s (id, black_words, articles, words) VALUES(1,");
+    str.append(std::to_wstring(count));
+    str.append(L",");
+    str.append(std::to_wstring(articles.size()));
+    str.append(L",");
+    str.append(std::to_wstring(words.size()));
+    str.append(L");\n");
+    files.WriteTo(SQLImportFile::STATISTICS, str);
+    files.Close(SQLImportFile::STATISTICS, SQLImportFile::STATISTICS);
 }
 
 void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& result)
@@ -3108,6 +3133,8 @@ SQLImportFile::SQLImportFile(void)
     files.insert(std::pair<int, FileToWrite>(WORDS, FileToWrite("import_words")));
     files.insert(std::pair<int, FileToWrite>(WORDS_ARTICLES, FileToWrite("import_words_a")));
     files.insert(std::pair<int, FileToWrite>(WORDS_TUTORIAL, FileToWrite("import_words_t")));
+
+    files.insert(std::pair<int, FileToWrite>(STATISTICS, FileToWrite("import_statistics")));
 }
 int SQLImportFile::OpenToWrite(int begin, int end, const std::string& output, const std::locale& loc)
 {

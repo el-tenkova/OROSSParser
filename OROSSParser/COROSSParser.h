@@ -307,6 +307,8 @@ public:
         WORDS_ARTICLES,
         WORDS_TUTORIAL,
         //
+        STATISTICS,
+        //
         FILES_NUM,
     };
 protected:
