@@ -1432,16 +1432,17 @@ void COROSSParser::makeStatisticsTable(const std::locale& loc)
     }
 
     std::wstring str(L"\nCREATE TABLE IF NOT EXISTS statistics (\n\
-    id int(11) NOT NULL,\n\
+    id int(11) NOT NULL AUTO_INCREMENT,\n\
     black_words int(11) NOT NULL,\n\
     black_words_sya int(11) NOT NULL,\n\
     articles int(11) NOT NULL,\n\
     words int(11) NOT NULL,\n\
+    date date NOT NULL,\n\
     PRIMARY KEY (id) \n\
     );\n\n");
     
     str.append(L"INSERT INTO statistics");
-    str.append(L" (id, black_words, black_words_sya, articles, words) VALUES(1,");
+    str.append(L" (black_words, black_words_sya, articles, words, date) VALUES(");
     str.append(std::to_wstring(count));
     str.append(L",");
     str.append(std::to_wstring(count_sya));
@@ -1449,7 +1450,7 @@ void COROSSParser::makeStatisticsTable(const std::locale& loc)
     str.append(std::to_wstring(articles.size()));
     str.append(L",");
     str.append(std::to_wstring(words.size()));
-    str.append(L");\n");
+    str.append(L",CURRENT_DATE);\n");
     files.WriteTo(SQLImportFile::STATISTICS, str);
     files.Close(SQLImportFile::STATISTICS, SQLImportFile::STATISTICS);
 }
