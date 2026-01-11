@@ -274,8 +274,8 @@ long COROSSParser::Terminate()
  //   if (mode == Rebuild)
     {
   //  if (mode != Create && mode != Update) {
-        presaveArticles(SAVE_SEARCH); // SAVE_SEARCH);
-        saveData(SAVE_SEARCH); // SAVE_SEARCH);
+        presaveArticles(LOAD_SEARCH); // SAVE_SEARCH);
+        saveData(LOAD_SEARCH); // SAVE_SEARCH);
         makeSQL();
     }
 //    saveData(SAVE_SEARCH);
@@ -426,7 +426,20 @@ long COROSSParser::AddPara(const long& Num, const std::wstring& Name)
         paraId = Num;
     }
     else {
-        curPara->second.title.append(Name);
+        if (curPara->second.name.empty())
+            curPara->second.name.append(Name);
+        else
+            curPara->second.title.append(Name);
+        auto it = curTile->second.paras.begin();
+        for (it; it != curTile->second.paras.end(); ++it)
+        {
+            if (*it == Num)
+                break;
+        }
+        if (it == curTile->second.paras.end())
+        {
+            curTile->second.paras.push_back(Num);
+        }
     }
     /*    else {
     if (curPara->second.name.length() > wcslen(Name)) {
@@ -625,9 +638,16 @@ long COROSSParser::AddOrthogr(const std::wstring& Orthogr, const std::wstring& F
     bool isempty = key.empty();
     key.append(cf.name);
     prepareOrthoKey(key);
-    if (ot->second.formulas.find(key) == ot->second.formulas.end()) {
+    auto ft = ot->second.formulas.find(key);
+    if (ft == ot->second.formulas.end()) {
         ot->second.formulas.insert(std::pair<std::wstring, formula>(key, cf));
         formulaId++;
+    }
+    else
+    {
+        ft->second.rtf.append(cf.rtf);
+        ft->second.example.append(cf.example);
+        ft->second.rest.append(cf.rest);
     }
     /*    if (wcslen(Rest) > 0) {
     restMap::iterator rit = curPara->second.links.find(Rest);
