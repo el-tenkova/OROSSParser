@@ -67,6 +67,8 @@ void COROSSParser::loadSearchData(bool loadSearch)
                     curPara->second.orthos.insert(std::pair<std::wstring, orthogr>(parts[2], co));
                     orthoMap::iterator it = curPara->second.orthos.find(parts[2]);
                     it->second.min_len = getSearchMinLen(it->second.search);
+                    if (oId >= orthoId)
+                        orthoId = oId + 1;
                 }
             }
         }
@@ -98,6 +100,8 @@ void COROSSParser::loadSearchData(bool loadSearch)
                         }
                     }
                 }
+                if (fId >= formulaId)
+                    formulaId = fId + 1;
             }
         }
         formulas.close();
