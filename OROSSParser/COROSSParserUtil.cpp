@@ -70,9 +70,7 @@ std::wstring COROSSParser::prepareRest(const std::wstring& Rest)
             switch (i) {
                 case 0: { // paragraph
                     num = std::stoi(a);
-                    result.append(L"<a class=\"accordion-toggle paragraph\" art_id=\"");
-                    result.append(std::to_wstring(artId));
-                    result.append(L"\" para_id=\"");
+                    result.append(L"<a class=\"accordion-toggle paragraph\" art_key=\"1\" para_id=\"");
                     result.append(std::to_wstring(num));
                     result.append(L"\" href=\"#paras_");
                     result.append(std::to_wstring(num));
@@ -113,9 +111,7 @@ std::wstring COROSSParser::prepareRest(const std::wstring& Rest)
                         if (rule_id == 0)
                             result.append(a, 0, count);
                         else {
-                            result.append(L"<a class=\"accordion-toggle act_rule\" art_id=\"");
-                            result.append(std::to_wstring(artId));
-                            result.append(L"\" rule_id=\"");
+                            result.append(L"<a class=\"accordion-toggle act_rule\" art_key=\"1\" rule_id=\"");
                             result.append(std::to_wstring(rule_id));
                             result.append(L"\" href=\"#rules_");
                             result.append(std::to_wstring(rule_id));
@@ -1290,8 +1286,8 @@ void COROSSParser::replaceArtId(article& a, std::wstring& article, const size_t&
                 to.append(L"rules");
                 break;
             case 3:
-                from.append(L"art_id=\"");
-                to.append(L"art_id=\"");
+                from.append(L"art_key=\"");
+                to.append(L"art_key=\"");
                 break;
         }
         from.append(std::to_wstring(curId));
