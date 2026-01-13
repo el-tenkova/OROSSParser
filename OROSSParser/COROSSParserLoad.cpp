@@ -870,14 +870,25 @@ wchar_t COROSSParser::loadOROSSArticle(std::wifstream& arts)
                 ca.index.push_back(cd);
         }
     }
-    if ((ca.id != 0) && (mode != COROSSParser::WebUpdateROS)) {
-        ca.state = mode != Rebuild ? ARTICLE_STATE_NEUTRAL : ARTICLE_STATE_NEW;
+
+    // last article
+    if (mode != Rebuild)
         articles.insert(std::pair<size_t, article>(ca.id, ca));
-        std::wstring title_l(ca.title);
-        prepareSearchTitle(title_l);
-        addToTitleMap(title_l, ca.id);
-        artId = ca.id;
+    else
+    {
+        std::wstring title(ca.title);
+        std::wstring src(ca.src);
+        AddArticle(ca.key, title, src, std::wstring(L""));
     }
+    std::wstring title_l(ca.title);
+    if (ca.dic == dicOROSS && !ca.ros_title.empty()) {
+        title_l = ca.ros_title;
+        removeParentheses(title_l);
+        if (realTitles.find(ca.title) == realTitles.end())
+            realTitles.insert(std::pair<std::wstring, size_t>(ca.title, 1));
+    }
+    prepareSearchTitle(title_l);
+    addToTitleMap(title_l, ca.id);
     return dicROS;
 }
 void COROSSParser::loadOROSS(const std::string& dict) {
