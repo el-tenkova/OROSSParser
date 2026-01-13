@@ -274,8 +274,8 @@ long COROSSParser::Terminate()
  //   if (mode == Rebuild)
     {
   //  if (mode != Create && mode != Update) {
-        presaveArticles(SAVE_SEARCH); // SAVE_SEARCH);
-        saveData(SAVE_SEARCH); // SAVE_SEARCH);
+        presaveArticles(LOAD_SEARCH); // SAVE_SEARCH);
+        saveData(LOAD_SEARCH); // SAVE_SEARCH);
         makeSQL();
     }
 //    saveData(SAVE_SEARCH);
@@ -1085,12 +1085,12 @@ void COROSSParser::getPara(const size_t& key_art, const std::wstring& article, c
         for (svit; svit != sit->second.end(); ++svit) {
             size_t pos = svit->substitution.find(L"#rules_");
             while (pos != std::wstring::npos) {
-                svit->substitution.insert(pos + 6, std::to_wstring(id_art));
+                svit->substitution.insert(pos + 6, std::to_wstring(key_art));
                 pos = svit->substitution.find(L"#rules_", pos + 6);
             }
             pos = svit->substitution.find(L"#paras_");
             while (pos != std::wstring::npos) {
-                svit->substitution.insert(pos + 6, std::to_wstring(id_art));
+                svit->substitution.insert(pos + 6, std::to_wstring(key_art));
                 pos = svit->substitution.find(L"#paras_", pos + 6);
             }
         }
