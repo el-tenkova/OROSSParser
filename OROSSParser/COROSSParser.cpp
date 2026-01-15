@@ -817,7 +817,8 @@ void COROSSParser::processArticles() {
             }
         }
     }
-    if (mode != Rebuild) {
+    //if (mode != Rebuild)
+    {
         articles.clear();
         articles = sorted;
     }
@@ -858,14 +859,14 @@ void COROSSParser::processArticle(article& ca) {
     pure = getPureArticle(ca.text);
 
     substMap substs;
-    getPara(ca.key, a, pure, paraVct, substs);
+    getPara(ca.id, a, pure, paraVct, substs);
 
     if (ca.text.length() == 0) {
         ca.text = a;
     }
 
     size_t pure_len = getPureWord(getSpecMarkedArticle(ca.src)).length(); //getPureLen(ca.src); //pure);
-    getOrthos(ca.key, ca.text /*html*/, pure, pure_len, paraVct, ca.orthos, substs);
+    getOrthos(ca.id, ca.text /*html*/, pure, pure_len, paraVct, ca.orthos, substs);
     getFormulas(ca.text /*html */, pure, pure_len, paraVct, ca.orthos, ca.formulas, substs, ca.index);
 
 
@@ -991,7 +992,7 @@ std::wstring COROSSParser::getPureArticle(const std::wstring& art, bool full)
     return pure;
 }
 
-void COROSSParser::getPara(const size_t& key_art, const std::wstring& article, const std::wstring& pure, std::vector<size_t>& paraVct, substMap& substs)
+void COROSSParser::getPara(const size_t& id_art, const std::wstring& article, const std::wstring& pure, std::vector<size_t>& paraVct, substMap& substs)
 {
     std::wstring html(L"");
     std::wstring a(pure);//article);
@@ -1032,9 +1033,9 @@ void COROSSParser::getPara(const size_t& key_art, const std::wstring& article, c
         }
         if (link.length() > 0) {
             subst cs = { PARA_SUBST, parait->second.id, len /*m.str().length()*/, link, 1 };
-            std::wstring art_id_1(L"art_key=\"1\"");
+            std::wstring art_id_1(L"art_id=\"1\"");
             size_t pos = cs.substitution.find(art_id_1);
-            std::wstring art_id = L"art_key=\"" + std::to_wstring(key_art) + L"\"";
+            std::wstring art_id = L"art_id=\"" + std::to_wstring(id_art) + L"\"";
             while (pos != std::wstring::npos) {
                 cs.substitution.replace(pos, art_id_1.length(), art_id);
                 pos = cs.substitution.find(art_id_1, pos + 1);
@@ -1085,12 +1086,12 @@ void COROSSParser::getPara(const size_t& key_art, const std::wstring& article, c
         for (svit; svit != sit->second.end(); ++svit) {
             size_t pos = svit->substitution.find(L"#rules_");
             while (pos != std::wstring::npos) {
-                svit->substitution.insert(pos + 6, std::to_wstring(key_art));
+                svit->substitution.insert(pos + 6, std::to_wstring(id_art));
                 pos = svit->substitution.find(L"#rules_", pos + 6);
             }
             pos = svit->substitution.find(L"#paras_");
             while (pos != std::wstring::npos) {
-                svit->substitution.insert(pos + 6, std::to_wstring(key_art));
+                svit->substitution.insert(pos + 6, std::to_wstring(id_art));
                 pos = svit->substitution.find(L"#paras_", pos + 6);
             }
         }
@@ -1104,7 +1105,7 @@ void COROSSParser::getPara(const size_t& key_art, const std::wstring& article, c
     //    return html;
 }
 
-void COROSSParser::getOrthos(const size_t& key_art, const std::wstring& article, const std::wstring& pure, const size_t& src_len, const std::vector<size_t>& paraVct, std::vector<size_t>& orthos, substMap& substs)
+void COROSSParser::getOrthos(const size_t& id_art, const std::wstring& article, const std::wstring& pure, const size_t& src_len, const std::vector<size_t>& paraVct, std::vector<size_t>& orthos, substMap& substs)
 {
     std::wstring a(pure);
     std::wstring afull(article);
@@ -1130,12 +1131,12 @@ void COROSSParser::getOrthos(const size_t& key_art, const std::wstring& article,
                 if (oit->second.active != 0) {
                     size_t shift = shiftLeft(afull, cm.prefix().length());
                     subst cs = { ORTHO_SUBST, oit->second.id, cm.str().length() + shift, L"", 0 };
-                    cs.substitution.append(L"<a class=\"accordion-toggle orthogramm\" art_key=\"");
-                    cs.substitution.append(std::to_wstring(key_art));
+                    cs.substitution.append(L"<a class=\"accordion-toggle orthogramm\" art_id=\"");
+                    cs.substitution.append(std::to_wstring(id_art));
                     cs.substitution.append(L"\" ortho_id=\"");
                     cs.substitution.append(std::to_wstring(oit->second.id));
                     cs.substitution.append(L"\" href=\"#formulas");
-                    cs.substitution.append(std::to_wstring(key_art));
+                    cs.substitution.append(std::to_wstring(id_art));
                     cs.substitution.append(L"_");
                     cs.substitution.append(std::to_wstring(oit->second.id));
                     cs.substitution.append(L"\" data-parent=\"#accordionOrthos\" data-toggle=\"collapse\" style=\"text-transform:none\" >");
