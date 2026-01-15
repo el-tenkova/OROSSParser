@@ -39,11 +39,6 @@ void COROSSParser::loadSearchData(bool loadSearch)
                     paras.insert(std::pair<size_t, para>((size_t)Num, cp));
                     curPara = paras.find(Num);
                 }
-                pararest pr = {parts[2], parts[3]};
-                curPara->second.links.insert(std::pair<std::wstring, pararest>(parts[1], pr));
-                restMap::iterator it = curPara->second.links.find(parts[1]);
-                it->second.min_len = getSearchMinLen(it->second.search);
-
             }
         }
         rest.close();
