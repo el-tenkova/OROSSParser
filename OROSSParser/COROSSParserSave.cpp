@@ -1973,12 +1973,12 @@ void COROSSParser::processComments() {
                                 }
                                 if (cit == it->second.comments.end())
                                     it->second.comments.push_back(a.id);
-                                std::wstring subst(L"<a class =\"accordion-toggle comment\" art_key=\"");
+                                std::wstring subst(L"<a class =\"accordion-toggle comment\" art_id=\"");
                                 subst.append(std::to_wstring(it->second.id));
                                 subst.append(L"\" comment_id=\"");
-                                subst.append(std::to_wstring(a.key));
+                                subst.append(std::to_wstring(a.id));
                                 subst.append(L"\" href =\"#comment");
-                                subst.append(std::to_wstring(it->second.key));
+                                subst.append(std::to_wstring(it->second.id));
                                 subst.append(L"_");
                                 subst.append(std::to_wstring(a.id));
                                 subst.append(L"\" data-parent=\"#accordionComments\" data-toggle=\"collapse\" style=\"text-transform:none\" >");
