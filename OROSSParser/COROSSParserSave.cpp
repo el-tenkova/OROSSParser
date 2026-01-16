@@ -2000,7 +2000,7 @@ void COROSSParser::processComments() {
                                     it->second.comments.push_back(a.key);
                                 std::wstring subst(L"<a class =\"accordion-toggle comment\" art_key=\"");
                                 subst.append(std::to_wstring(it->second.key));
-                                subst.append(L"\" comment_id=\"");
+                                subst.append(L"\" comment_key=\"");
                                 subst.append(std::to_wstring(a.key));
                                 subst.append(L"\" href =\"#comment");
                                 subst.append(std::to_wstring(it->second.key));
