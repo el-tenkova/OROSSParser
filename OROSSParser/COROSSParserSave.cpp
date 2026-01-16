@@ -1481,6 +1481,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
     str.clear();
     str.append(L"\nCREATE TABLE IF NOT EXISTS articles_formulas (\n\
     id int(11) NOT NULL,\n\
+    key_article int(11) NOT NULL,\n\
     id_formula int(11) NOT NULL,\n\
     PRIMARY KEY (id, id_formula) \n\
     );\n\n");
@@ -1489,6 +1490,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
     str.clear();
     str.append(L"\nCREATE TABLE IF NOT EXISTS articles_orthos (\n\
     id int(11) NOT NULL,\n\
+    key_article int(11) NOT NULL,\n\
     id_ortho int(11) NOT NULL,\n\
     PRIMARY KEY (id, id_ortho) \n\
     );\n\n");
@@ -1497,6 +1499,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
     str.clear();
     str.append(L"\nCREATE TABLE IF NOT EXISTS articles_paras (\n\
     id int(11) NOT NULL,\n\
+    key_article int(11) NOT NULL,\n\
     id_para int(11) NOT NULL,\n\
     PRIMARY KEY (id, id_para) \n\
     );\n\n");
@@ -1505,6 +1508,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
     str.clear();
     str.append(L"\nCREATE TABLE IF NOT EXISTS articles_rules (\n\
     id int(11) NOT NULL,\n\
+    key_article int(11) NOT NULL,\n\
     id_rule int(11) NOT NULL,\n\
     PRIMARY KEY (id, id_rule) \n\
     );\n\n");
@@ -1513,6 +1517,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
     str.clear();
     str.append(L"\nCREATE TABLE IF NOT EXISTS articles_comments (\n\
     id int(11) NOT NULL,\n\
+    key_article int(11) NOT NULL,\n\
     id_comment int(11) NOT NULL,\n\
     PRIMARY KEY (id, id_comment) \n\
     );\n\n");
@@ -1574,7 +1579,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
             str.clear();
             str.append(L"INSERT INTO articles_");
             str.append(pattern);
-            str.append(L"s (id, id_");
+            str.append(L"s (id,key_article,id_");
             str.append(pattern);
             str.append(L") VALUES\n");
             files.WriteTo(idx, str);
@@ -1585,6 +1590,8 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
                     str.append(L",\n");
                 str.append(L"(");
                 str.append(std::to_wstring(ait->second.id));
+                str.append(L",");
+                str.append(std::to_wstring(ait->second.key));
                 str.append(L",");
                 str.append(std::to_wstring(*it));
                 str.append(L")");
@@ -1597,7 +1604,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
         if (ait->second.formulas.size() > 0)
         {
             str.clear();
-            str.append(L"INSERT INTO articles_formulas (id, id_formula) VALUES ");
+            str.append(L"INSERT INTO articles_formulas (id, key_article, id_formula) VALUES ");
             str.append(L"\n");
             files.WriteTo(SQLImportFile::ARTICLES_FORMULAS, str);
             std::vector<size_t>::iterator fit = ait->second.formulas.begin();
@@ -1608,6 +1615,8 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
                     str.append(L",\n");
                 str.append(L"(");
                 str.append(std::to_wstring(ait->second.id));
+                str.append(L",");
+                str.append(std::to_wstring(ait->second.key));
                 str.append(L",");
                 str.append(std::to_wstring(*fit));
                 str.append(L")");
@@ -1631,6 +1640,8 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
                     str.append(L",\n");
                 str.append(L"(");
                 str.append(std::to_wstring(ait->second.id));
+                str.append(L",");
+                str.append(std::to_wstring(ait->second.key));
                 str.append(L",");
                 str.append(std::to_wstring(*cit));
                 str.append(L")");
@@ -1849,8 +1860,8 @@ void COROSSParser::makeMistakesTable(const std::locale& loc) {
 void COROSSParser::presaveArticles(bool saveSearch) {
 
     processIndex(saveSearch);
-    if ((mode != ROSOnly) && (mode != WebUpdateROS))
-        processComments();
+    //if ((mode != ROSOnly) && (mode != WebUpdateROS))
+    //    processComments();
     wordId = 1;
     auto wit = words.begin();
     for (wit; wit != words.end(); ++wit) {
@@ -1973,8 +1984,8 @@ void COROSSParser::processComments() {
                                 }
                                 if (cit == it->second.comments.end())
                                     it->second.comments.push_back(a.id);
-                                std::wstring subst(L"<a class =\"accordion-toggle comment\" art_id=\"");
-                                subst.append(std::to_wstring(it->second.id));
+                                std::wstring subst(L"<a class =\"accordion-toggle comment\" art_key=\"");
+                                subst.append(std::to_wstring(it->second.key));
                                 subst.append(L"\" comment_id=\"");
                                 subst.append(std::to_wstring(a.id));
                                 subst.append(L"\" href =\"#comment");
