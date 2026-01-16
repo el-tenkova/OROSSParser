@@ -772,22 +772,25 @@ wchar_t COROSSParser::loadOROSSArticle(std::wifstream& arts)
         if (parts[0] == L"a_dic:") {
             // add article
             if (mode != Rebuild)
+            {
                 articles.insert(std::pair<size_t, article>(ca.id, ca));
+                std::wstring title_l(ca.title);
+                if (ca.dic == dicOROSS && !ca.ros_title.empty()) {
+                    title_l = ca.ros_title;
+                    removeParentheses(title_l);
+                    if (realTitles.find(ca.title) == realTitles.end())
+                        realTitles.insert(std::pair<std::wstring, size_t>(ca.title, 1));
+                }
+                prepareSearchTitle(title_l);
+                cutHead(title_l);
+                addToTitleMap(title_l, ca.id);
+            }
             else
             {
                 std::wstring title(ca.title);
                 std::wstring src(ca.src);
                 AddArticle(ca.key, title, src, std::wstring(L""));
              }
-/*            std::wstring title_l(ca.title);
-            if (ca.dic == dicOROSS && !ca.ros_title.empty()) {
-                title_l = ca.ros_title;
-                removeParentheses(title_l);
-                if (realTitles.find(ca.title) == realTitles.end())
-                    realTitles.insert(std::pair<std::wstring, size_t>(ca.title, 1));
-            }
-            prepareSearchTitle(title_l);
-            addToTitleMap(title_l, ca.id);*/
             if (parts[1] == L"50")
                 return dicOROSS;
             return dicROS;
