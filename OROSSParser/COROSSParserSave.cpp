@@ -1860,8 +1860,8 @@ void COROSSParser::makeMistakesTable(const std::locale& loc) {
 void COROSSParser::presaveArticles(bool saveSearch) {
 
     processIndex(saveSearch);
-    //if ((mode != ROSOnly) && (mode != WebUpdateROS))
-    //    processComments();
+    if ((mode != ROSOnly) && (mode != WebUpdateROS))
+        processComments();
     wordId = 1;
     auto wit = words.begin();
     for (wit; wit != words.end(); ++wit) {
@@ -1901,7 +1901,7 @@ void COROSSParser::processComments() {
 //    std::wregex search(smotri);
 
     for (it; it != articles.end(); ++it) {
-        if (it->second.state == ARTICLE_STATE_TO_DELETE)
+        if ((it->second.state == ARTICLE_STATE_TO_DELETE) || (it->second.state == ARTICLE_STATE_NEUTRAL))
             continue;
         if (it->second.text.find(L"См.") == std::wstring::npos &&
             it->second.text.find(L"см.") == std::wstring::npos &&
@@ -1987,11 +1987,11 @@ void COROSSParser::processComments() {
                                 std::wstring subst(L"<a class =\"accordion-toggle comment\" art_key=\"");
                                 subst.append(std::to_wstring(it->second.key));
                                 subst.append(L"\" comment_id=\"");
-                                subst.append(std::to_wstring(a.id));
+                                subst.append(std::to_wstring(a.key));
                                 subst.append(L"\" href =\"#comment");
-                                subst.append(std::to_wstring(it->second.id));
+                                subst.append(std::to_wstring(it->second.key));
                                 subst.append(L"_");
-                                subst.append(std::to_wstring(a.id));
+                                subst.append(std::to_wstring(a.key));
                                 subst.append(L"\" data-parent=\"#accordionComments\" data-toggle=\"collapse\" style=\"text-transform:none\" >");
                                 // check for d)
                                 if (it->second.text[end - 1] == L' ') {
