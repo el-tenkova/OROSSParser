@@ -270,11 +270,11 @@ long COROSSParser::Init(modeName Mode, const std::string& cfg)
 long COROSSParser::Terminate()
 {
     processArticles();
-    saveDic();
  //   if (mode == Rebuild)
     {
   //  if (mode != Create && mode != Update) {
         presaveArticles(SAVE_SEARCH); // SAVE_SEARCH);
+        saveDic();
         saveData(SAVE_SEARCH); // SAVE_SEARCH);
         makeSQL();
     }
