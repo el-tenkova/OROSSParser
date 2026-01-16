@@ -444,16 +444,8 @@ void COROSSParser::saveOROSSArticle(std::wofstream& arts, const artMap::iterator
         str.clear();
         str.append(L"a_c:\t");
         for (auto cit = ait->second.comments.begin(); cit != ait->second.comments.end(); ++cit) {
-            size_t art_id = *cit;
-            auto kit = key2idMap.begin();
-            for (kit; kit != key2idMap.end(); ++kit)
-            {
-                if (kit->second == (*cit))
-                {
-                    str.append(std::to_wstring((kit->first)));
-                    str.append(L",");
-                }
-            }
+            str.append(std::to_wstring(*cit)); // key
+            str.append(L",");
         }
         str[str.length() - 1] = L'\n';
         arts.write(str.c_str(), str.length());
