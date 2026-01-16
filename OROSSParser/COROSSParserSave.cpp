@@ -3027,6 +3027,8 @@ void COROSSParser::makeABCTable(const std::locale& loc)
     if (page_cnt == 0)
         page_cnt = 300;
 
+    std::cout << "make ABC: page_cnt = " << page_cnt << std::endl;
+
     for (auto abcit = abcMap.begin(); abcit != abcMap.end(); ++abcit) {
         if (tit->first[0] != abcit->first)
             continue;
@@ -3082,6 +3084,7 @@ void COROSSParser::makeABCTable(const std::locale& loc)
                 str.append(a_last);
                 str.append(L"');\n");
                 result.write(str.c_str(), str.length());
+                std::cout << "make ABC: id_first id_last " << start << idx << std::endl;
             }
             tit++;
             if (count > page_cnt && tit != titles.end()) {
