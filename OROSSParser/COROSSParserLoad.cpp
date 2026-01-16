@@ -865,6 +865,14 @@ wchar_t COROSSParser::loadOROSSArticle(std::wifstream& arts)
                 }
             }
         }
+        else if (parts[0] == L"a_c:") {
+            if (mode != Rebuild) {
+                std::vector<std::wstring> comments = split(parts[1], L',');
+                for (auto it = comments.begin(); it != comments.end(); ++it) {
+                    ca.comments.push_back(std::stol(*it));
+                }
+            }
+        }
         else if (parts[0] == L"a_d:") {
             dummy cd;
             std::vector<std::wstring> p = split(parts[1], L',');

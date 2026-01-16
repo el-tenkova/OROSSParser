@@ -439,6 +439,25 @@ void COROSSParser::saveOROSSArticle(std::wofstream& arts, const artMap::iterator
         str[str.length() - 1] = L'\n';
         arts.write(str.c_str(), str.length());
     }
+    // comments
+    if (ait->second.comments.size() != 0) {
+        str.clear();
+        str.append(L"a_c:\t");
+        for (auto cit = ait->second.comments.begin(); cit != ait->second.comments.end(); ++cit) {
+            size_t art_id = *cit;
+            auto kit = key2idMap.begin();
+            for (kit; kit != key2idMap.end(); ++kit)
+            {
+                if (kit->second == (*cit))
+                {
+                    str.append(std::to_wstring((kit->first)));
+                    str.append(L",");
+                }
+            }
+        }
+        str[str.length() - 1] = L'\n';
+        arts.write(str.c_str(), str.length());
+    }
     // dummy
     if (ait->second.index.size() != 0) {
         // one line for each dummy
@@ -1519,6 +1538,7 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
     id int(11) NOT NULL,\n\
     key_article int(11) NOT NULL,\n\
     id_comment int(11) NOT NULL,\n\
+    key_comment int(11) NOT NULL,\n\
     PRIMARY KEY (id, id_comment) \n\
     );\n\n");
     files.WriteTo(SQLImportFile::ARTICLES_COMMENTS, str);
@@ -1642,6 +1662,8 @@ void COROSSParser::makeArticlesTable(const std::locale& loc)//std::wofstream& re
                 str.append(std::to_wstring(ait->second.id));
                 str.append(L",");
                 str.append(std::to_wstring(ait->second.key));
+                str.append(L",");
+                str.append(std::to_wstring(key2idMap.find(*cit)->second));
                 str.append(L",");
                 str.append(std::to_wstring(*cit));
                 str.append(L")");
@@ -1979,11 +2001,11 @@ void COROSSParser::processComments() {
                             if (a.id != it->second.id && isEqualToTitle(word, a.title) == true && a.dic == it->second.dic) {
                                 std::vector<size_t>::iterator cit = it->second.comments.begin();
                                 for (cit; cit != it->second.comments.end(); ++cit) {
-                                    if ((*cit) == a.id)
+                                    if ((*cit) == a.key)
                                         break;
                                 }
                                 if (cit == it->second.comments.end())
-                                    it->second.comments.push_back(a.id);
+                                    it->second.comments.push_back(a.key);
                                 std::wstring subst(L"<a class =\"accordion-toggle comment\" art_key=\"");
                                 subst.append(std::to_wstring(it->second.key));
                                 subst.append(L"\" comment_id=\"");

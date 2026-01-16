@@ -413,7 +413,7 @@ public:
         str_tetragramms_articles(L"INSERT INTO tetragramms_articles (id, id_article, start, len, title, segment, number) VALUES "),
         str_articles_orthos(L"INSERT INTO articles_orthos (id, id_ortho) VALUES "),
         str_articles_formulas(L"INSERT INTO articles_formulas (id, id_formula) VALUES "),
-        str_articles_comments(L"INSERT INTO articles_comments (id, id_comment) VALUES "),
+        str_articles_comments(L"INSERT INTO articles_comments (id, key_article, id_comment, key_comment) VALUES "),
         //     str_articles(L"INSERT INTO articles (id, title, text, rtf, src, comment_id) "), //!!!!
         str_articles(L"INSERT INTO articles (id, key_article, dic, title, text, rtf, src, phantom) VALUES "), //!!!!
         str_values(L"    VALUES ("),
