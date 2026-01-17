@@ -3125,6 +3125,7 @@ void COROSSParser::makeABCTable(const std::locale& loc)
             }
         }
         if (tit == titles.end() || count > 0) {
+            a_last = articles.find(idx)->second.title;
             str.clear();
             str.append(L"INSERT INTO abc_");
             str.append(abcit->second);
