@@ -2678,14 +2678,33 @@ void COROSSParser::shiftWords(artMap::iterator& ait, const size_t& begin, const 
 }
 void COROSSParser::shiftDummy(artMap::iterator& ait, const size_t& begin, const size_t& shift1, const size_t& end, const size_t& shift2) {
     dummyVct::iterator dit = ait->second.index.begin();
+    bool add = false;
+    size_t start = 0, len = 0;
+    dummyVct::iterator insert_after = dit;
     for (dit; dit != ait->second.index.end(); ++dit) {
         if (dit->start > begin)
             dit->start += shift1 + shift2;
         else
             if ((dit->start < begin) && ((dit->start + dit->len > begin) || (dit->len == -1)))
             {
+                // for comments: three parts
+                start = dit->start;
+                len = dit->len;
                 dit->len = begin - dit->start;
+                add = true;
+                insert_after = dit;
             }
+    }
+    if (add)
+    {
+        dummy d;
+        d.start = begin + shift1;
+        d.len = end - begin;
+        d.type = articleWord;
+        auto it = ait->second.index.insert(insert_after + 1, d);
+        d.start = begin + shift1 + (end - begin) + shift2;
+        d.len = len == -1 ? -1 : len - (end - begin) - (begin - start);
+        ait->second.index.insert(it + 1, d);
     }
 }
 
