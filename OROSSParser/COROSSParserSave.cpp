@@ -2682,7 +2682,7 @@ void COROSSParser::shiftDummy(artMap::iterator& ait, const size_t& begin, const 
         if (dit->start > begin)
             dit->start += shift1 + shift2;
         else
-            if ((dit->start < begin) && (dit->start + dit->len > begin))
+            if ((dit->start < begin) && ((dit->start + dit->len > begin) || (dit->len == -1)))
             {
                 dit->len = begin - dit->start;
             }
