@@ -643,6 +643,7 @@ protected:
     bool IsActiveOrtho(size_t formula_id);
     size_t getUtfLen(const std::wstring& str, const size_t&start, const size_t& len);
     void shiftWords(artMap::iterator& ait, const size_t& begin, const size_t& shift1, const size_t& end, const size_t& shift2);
+    void shiftDummy(artMap::iterator& ait, const size_t& begin, const size_t& shift1, const size_t& end, const size_t& shift2);
     void replaceArtId(article& a, std::wstring& article, const size_t& curId, const size_t newId);
     bool isStopLabel(const std::wstring& key, const std::wstring interval, const size_t start, const wchar_t type);
     void writeBOM(std::wofstream& stream);

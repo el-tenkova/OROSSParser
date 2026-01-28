@@ -2022,6 +2022,7 @@ void COROSSParser::processComments() {
                                 size_t utf_begin = getUtfLen(it->second.text, 0, begin);
                                 size_t utf_end = getUtfLen(it->second.text, 0, end);
                                 shiftWords(it, utf_begin, subst.length(), utf_end, 5);
+                                shiftDummy(it, begin, subst.length(), end, 5);
                                 it->second.text.insert(begin, subst);
                                 pref_len += subst.length();
                                 end += subst.length();
@@ -2383,7 +2384,6 @@ void COROSSParser::addArticlesToIndex() {
         for (; ait != articles.end(); ++ait) {
             if (ait->second.state == ARTICLE_STATE_TO_DELETE)
                 continue;
-
             arts.write(L"-----------------------", wcslen(L"-----------------------"));
             arts.write(caret.c_str(), caret.length());
             std::vector<std::wstring> art_words;
@@ -2674,6 +2674,18 @@ void COROSSParser::shiftWords(artMap::iterator& ait, const size_t& begin, const 
                         it->start += shift1;
             }
         }
+    }
+}
+void COROSSParser::shiftDummy(artMap::iterator& ait, const size_t& begin, const size_t& shift1, const size_t& end, const size_t& shift2) {
+    dummyVct::iterator dit = ait->second.index.begin();
+    for (dit; dit != ait->second.index.end(); ++dit) {
+        if (dit->start > begin)
+            dit->start += shift1 + shift2;
+        else
+            if ((dit->start < begin) && (dit->start + dit->len > begin))
+            {
+                dit->len = begin - dit->start;
+            }
     }
 }
 
