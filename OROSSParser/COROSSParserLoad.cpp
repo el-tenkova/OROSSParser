@@ -109,37 +109,40 @@ void COROSSParser::loadSearchData(bool loadSearch)
         formulas.close();
     }
     if (tutorial.is_open()) {
-        tutorial.imbue(russian);
-        tutorial.seekg(3);
-        std::wstring key;
-        while (!tutorial.eof()) {
-            std::wstring str(L"");
-            std::getline(tutorial, str);
-            if (str.length() == 0)
-                continue;
-            std::vector<std::wstring> parts = split(str, L'\t');
-            if (parts[0] == L"w:") {
-                key = parts[1];
-                wordId = std::stol(parts[parts.size() - 1]);
-                word cw = { wordId };
-                words.insert(std::pair<std::wstring, word>(key, cw));
-                if (wordId == 2997) {
-                    wordId++;
-                }
-                error.write(L"Load tutorial index:", wcslen(L"Load tutorial index:"));
-                error.write(key.c_str(), key.length());
-                error.write(L"\n", wcslen(L"\n"));
+        if (mode != Create)
+        {
+            tutorial.imbue(russian);
+            tutorial.seekg(3);
+            std::wstring key;
+            while (!tutorial.eof()) {
+                std::wstring str(L"");
+                std::getline(tutorial, str);
+                if (str.length() == 0)
+                    continue;
+                std::vector<std::wstring> parts = split(str, L'\t');
+                if (parts[0] == L"w:") {
+                    key = parts[1];
+                    wordId = std::stol(parts[parts.size() - 1]);
+                    word cw = { wordId };
+                    words.insert(std::pair<std::wstring, word>(key, cw));
+                    if (wordId == 2997) {
+                        wordId++;
+                    }
+                    error.write(L"Load tutorial index:", wcslen(L"Load tutorial index:"));
+                    error.write(key.c_str(), key.length());
+                    error.write(L"\n", wcslen(L"\n"));
 
-            }
-            else if (parts[0] == L"w_t:") {
-                auto wit = words.find(key);
-                if (wit != words.end()) {
-                    tutorial_place cp = { (size_t)std::stol(parts[2]),
-                                          (size_t)std::stol(parts[3]),
-                                          (size_t)std::stol(parts[4]),
-                                          (size_t)std::stol(parts[5]),
-                                          parts[6][0] };
-                    wit->second.rules.push_back(cp);
+                }
+                else if (parts[0] == L"w_t:") {
+                    auto wit = words.find(key);
+                    if (wit != words.end()) {
+                        tutorial_place cp = { (size_t)std::stol(parts[2]),
+                                              (size_t)std::stol(parts[3]),
+                                              (size_t)std::stol(parts[4]),
+                                              (size_t)std::stol(parts[5]),
+                                              parts[6][0] };
+                        wit->second.rules.push_back(cp);
+                    }
                 }
             }
         }
@@ -886,7 +889,13 @@ wchar_t COROSSParser::loadOROSSArticle(std::wifstream& arts)
 
     // last article
     if (mode != Rebuild)
+    {
         articles.insert(std::pair<size_t, article>(ca.id, ca));
+        std::wstring title_l(ca.title);
+        prepareSearchTitle(title_l);
+        cutHead(title_l);
+        addToTitleMap(title_l, ca.id);
+    }
     else
     {
         std::wstring title(ca.title);
