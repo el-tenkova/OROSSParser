@@ -890,7 +890,7 @@ void COROSSParser::processArticle(article& ca) {
                 if (sit->first >= len) {
                     if (html.length() == 0 && sit->first > ca.titleLen)
                         ca.index.push_back({ ca.titleLen, sit->first - ca.titleLen, articleWord });
-                    else
+                    else if (html.length() > 0)
                         ca.index.push_back({ html.length(), sit->first - len, articleWord });
                     html.append(a.substr(len, sit->first - len));
                     size_t hlen = html.length();
