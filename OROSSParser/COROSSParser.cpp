@@ -653,6 +653,9 @@ long COROSSParser::AddOrthogr(const std::wstring& Orthogr, const std::wstring& F
             ft->second.example.append(cf.example);
         if (ft->second.rest.empty())
             ft->second.rest.append(cf.rest);
+        size_t rule_id = getRuleId(num, rule);
+        if (ft->second.rule == 0)
+            ft->second.rule = rule_id;
     }
     /*    if (wcslen(Rest) > 0) {
     restMap::iterator rit = curPara->second.links.find(Rest);
