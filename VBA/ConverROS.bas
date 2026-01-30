@@ -1,4 +1,49 @@
 Attribute VB_Name = "ConvertROS"
+Sub ConvertOROSSArts()
+   
+    Dim fst As Object
+    Set fst = CreateObject("ADODB.Stream")
+    fst.Type = 2
+    fst.Charset = "utf-8"
+    fst.Open
+    Set theDoc = ActiveDocument
+    Dim para As Paragraph
+    Dim nextPara As Paragraph
+    Set para = theDoc.Paragraphs.Item(1)
+    cp = theDoc.Paragraphs.count
+    
+    fst.WriteText ("INSERT INTO `oross`.`changes` (`id`, `key_article`, `title`, `text`, `src`, `dic`, `action`, `status`, `chd`, `username`) VALUES ")
+    For i = 1 To cp
+        Dim str As String
+        If Not para Is Nothing Then
+            If para.Range.Characters.count > 1 Then
+                str = GetROSArticle(para)
+                Set nextPara = para.Next()
+                If Not nextPara Is Nothing Then
+                    If Mid$(Trim$(nextPara.Range.text), 1, 1) = ChrW$(&H25CA) Then '  Or Not nextPara.Range.Words(1).Bold Then
+                        str = str & "</p><p>" & ConvertText(nextPara.Range.words, 1, 0)
+                    Set para = nextPara
+                    End If
+                End If
+
+                If i > 1 Then
+                    fst.WriteText (",")
+                End If
+                fst.WriteText (" (NULL")
+                fst.WriteText (", " & "'" & "255" & "', '', ")
+                fst.WriteText ("'" & str & "'")
+                fst.WriteText (", '', '50', '4', '1', CURRENT_DATE(), 'Бешенкова Е.В.')")
+            End If
+        Set para = para.Next()
+        Else
+            Exit For
+        End If
+    Next i
+    fst.WriteText (";")
+    NameFST = ActiveDocument.Path & "\" & Mid$(ActiveDocument.name, 1, InStrRev(ActiveDocument.name, ".")) & "sql"
+    fst.SaveToFile NameFST, 2
+    fst.Close
+End Sub
 Sub ConvertROS()
    
     Dim fst As Object
@@ -44,6 +89,7 @@ Function GetROSArticle(para As Paragraph) As String
     End If
     GetROSArticle = Article
 End Function
+
 Function DoReplacements(text As String) As String
 
     text = Replace(text, "<b><i>" & ChrW$(&HD) & ChrW$(&H7) & "</i></b>", "")
