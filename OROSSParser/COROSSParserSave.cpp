@@ -1415,7 +1415,6 @@ void COROSSParser::makeStatisticsTable(const std::locale& loc)
                         std::string cnt = std::to_string(++count);
                         cnt.append(" : ");
                         stat_words.write(cnt.c_str(), cnt.length());
-                        stat_words.write(_ot_.c_str(), _ot_.length());
                         std::string u8str = conv1.to_bytes((*it).c_str());
                         u8str.append("\n");
                         stat_words.write(u8str.c_str(), u8str.length());
