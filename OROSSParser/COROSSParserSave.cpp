@@ -1326,6 +1326,7 @@ void COROSSParser::makeTetragrammsTable(const std::locale& loc)
 void COROSSParser::makeStatisticsTable(const std::locale& loc)
 {
     std::string _ot_(" OT ");
+    std::string _k_(" K ");
     size_t count = 0;
     size_t count_sya = 0;
     std::ofstream stat_words = std::ofstream(config["stat_words"], std::wofstream::binary);
@@ -1440,13 +1441,20 @@ void COROSSParser::makeStatisticsTable(const std::locale& loc)
 
         }
         std::wstring otstr(L"(<i>от</i> ");
+        std::wstring kstr(L"(<i>к</i> ");
         size_t ot = ait->second.text.find(otstr);
+        bool b_ot = true;
+        if (ot == std::wstring::npos)
+        {
+            ot = ait->second.text.find(kstr);
+            b_ot = false;
+        }
         if (ot != std::wstring::npos)
         {
             size_t pos = ait->second.text.find(L'[');
             if (ot < pos)
             {
-                ot += otstr.length();
+                ot += b_ot ? otstr.length() : kstr.length();
                 size_t ot_end = ait->second.text.find(L')', ot);
                 if (ot < ot_end)
                 {
@@ -1466,7 +1474,10 @@ void COROSSParser::makeStatisticsTable(const std::locale& loc)
                                 std::string cnt = std::to_string(++count);
                                 cnt.append(" : ");
                                 stat_words.write(cnt.c_str(), cnt.length());
-                                stat_words.write(_ot_.c_str(), _ot_.length());
+                                if (b_ot)
+                                    stat_words.write(_ot_.c_str(), _ot_.length());
+                                else
+                                    stat_words.write(_k_.c_str(), _k_.length());
                                 std::string u8str = conv1.to_bytes(part);
                                 u8str.append("\n");
                                 stat_words.write(u8str.c_str(), u8str.length());
@@ -1488,7 +1499,10 @@ void COROSSParser::makeStatisticsTable(const std::locale& loc)
                                 std::string cnt = std::to_string(++count);
                                 cnt.append(" : ");
                                 stat_words.write(cnt.c_str(), cnt.length());
-                                stat_words.write(_ot_.c_str(), _ot_.length());
+                                if (b_ot)
+                                    stat_words.write(_ot_.c_str(), _ot_.length());
+                                else
+                                    stat_words.write(_k_.c_str(), _k_.length());
                                 std::string u8str = conv1.to_bytes(part);
                                 u8str.append("\n");
                                 stat_words.write(u8str.c_str(), u8str.length());
