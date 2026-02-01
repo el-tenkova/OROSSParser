@@ -1334,6 +1334,11 @@ void COROSSParser::makeStatisticsTable(const std::locale& loc)
         //writeBOM(stat_words);
         stat_words.imbue(loc);
     }
+    std::ofstream kot_words = std::ofstream(config["k_ot_words"], std::wofstream::binary);
+    if (kot_words.is_open()) {
+        //writeBOM(stat_words);
+        kot_words.imbue(loc);
+    }
     std::map<std::wstring, size_t> titles;
     std::wstring_convert<std::codecvt_utf8<wchar_t>> conv1;
     auto ait = articles.begin();
@@ -1459,7 +1464,7 @@ void COROSSParser::makeStatisticsTable(const std::locale& loc)
                 if (ot < ot_end)
                 {
                     pos = findSemicolon(ait->second.text, ot);
-                    while (pos != std::wstring::npos)
+                    while ((pos != std::wstring::npos) && (pos < ot_end))
                     {
                         std::wstring part = ait->second.text.substr(ot, pos - ot);
                         ot = pos + 1;
@@ -1481,6 +1486,7 @@ void COROSSParser::makeStatisticsTable(const std::locale& loc)
                                 std::string u8str = conv1.to_bytes(part);
                                 u8str.append("\n");
                                 stat_words.write(u8str.c_str(), u8str.length());
+                                kot_words.write(u8str.c_str(), u8str.length());
                             }
                         }
                         pos = findSemicolon(ait->second.text, ot);
@@ -1506,6 +1512,7 @@ void COROSSParser::makeStatisticsTable(const std::locale& loc)
                                 std::string u8str = conv1.to_bytes(part);
                                 u8str.append("\n");
                                 stat_words.write(u8str.c_str(), u8str.length());
+                                kot_words.write(u8str.c_str(), u8str.length());
                             }
                         }
                     }

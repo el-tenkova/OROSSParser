@@ -48,6 +48,7 @@ void COROSSParserCfg::load(const std::string& cfgFile)
     configMap["page_cnt"] = "";
     configMap["index_link"] = "";
     configMap["stat_words"] = "";
+    configMap["k_ot_words"] = "";
 
     std::cout << "qqq" << std::endl;
     for (auto it = configMap.begin(); it != configMap.end(); ++it) {
