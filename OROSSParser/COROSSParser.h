@@ -607,7 +607,7 @@ protected:
     size_t findNext(std::wstring& interval, size_t start, wchar_t dicType);
     size_t findTitleEnd(std::wstring& interval, size_t start, wchar_t dicType, const std::locale& loc);
     size_t findSemicolon(std::wstring& interval, size_t off);
-    void writeSyaToStatistics(std::ofstream& stat_words, size_t& count, std::wstring_convert<std::codecvt_utf8<wchar_t>>& conv1, std::wstring title);
+    void writeSyaToStatistics(std::map<std::wstring, size_t>& titles, std::ofstream& stat_words, size_t& count, std::wstring_convert<std::codecvt_utf8<wchar_t>>& conv1, std::wstring title);
     std::vector<std::wstring> makeArtWithParenthesesTitles(std::wstring title);
 
     size_t getParaNum(const std::wstring& rest);

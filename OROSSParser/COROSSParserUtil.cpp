@@ -1699,19 +1699,29 @@ void COROSSParser::checkComplexTitle(article& ca)
         ca.title = nt;
     }
 }
-void COROSSParser::writeSyaToStatistics(std::ofstream& stat_words, size_t& count, std::wstring_convert<std::codecvt_utf8<wchar_t>>& conv1, std::wstring title)
+void COROSSParser::writeSyaToStatistics(std::map<std::wstring, size_t>& titles, std::ofstream& stat_words, size_t& count, std::wstring_convert<std::codecvt_utf8<wchar_t>>& conv1, std::wstring title)
 {
     std::wstring bezsya = title.substr(0, title.rfind(L'('));
     removeParentheses(title);
-    std::string cnt = std::to_string(++count);
-    cnt.append(" : ");
-    stat_words.write(cnt.c_str(), cnt.length());
+    if (titles.find(title) == titles.end())
+    {
+        titles.insert(std::pair<std::wstring, size_t>(title, 1));
+        std::string cnt = std::to_string(++count);
+        cnt.append(" : ");
+        stat_words.write(cnt.c_str(), cnt.length());
+    }
+    prepareTitle(title);
     std::string u8str = conv1.to_bytes(title.c_str());
     u8str.append("\n");
     stat_words.write(u8str.c_str(), u8str.length());
-    cnt = std::to_string(++count);
-    cnt.append(" : ");
-    stat_words.write(cnt.c_str(), cnt.length());
+    if (titles.find(bezsya) == titles.end())
+    {
+        titles.insert(std::pair<std::wstring, size_t>(bezsya, 1));
+        std::string cnt = std::to_string(++count);
+        cnt.append(" : ");
+        stat_words.write(cnt.c_str(), cnt.length());
+    }
+    prepareTitle(bezsya);
     u8str = conv1.to_bytes(bezsya);
     u8str.append("\n");
     stat_words.write(u8str.c_str(), u8str.length());

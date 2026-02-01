@@ -1401,8 +1401,7 @@ void COROSSParser::makeStatisticsTable(const std::locale& loc)
                 if (ait->second.t_type == article::titleType::titleSya)
                 {
                     count_sya += 1;
-                    titles.insert(std::pair<std::wstring, size_t>(key, 1));
-                    writeSyaToStatistics(stat_words, count, conv1, sbstr);
+                    writeSyaToStatistics(titles, stat_words, count, conv1, key);
                 }
                 else if (sbstr.find(L'(') != std::wstring::npos || sbstr.find(L')') != std::wstring::npos)
                 {
