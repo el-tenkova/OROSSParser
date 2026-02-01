@@ -184,9 +184,12 @@ void COROSSParser::prepareTitle(std::wstring& title, bool saveaccent)
         }
         title = title.substr(0, idx);
     }
-    size_t pos = title.rfind(L';');
-    if (pos != std::wstring::npos)
-        title = title.substr(0, pos);
+    if (!saveaccent)
+    {
+        size_t pos = title.rfind(L';');
+        if (pos != std::wstring::npos)
+            title = title.substr(0, pos);
+    }
 }
 
 void COROSSParser::prepareSearchTitle(std::wstring &title) {
