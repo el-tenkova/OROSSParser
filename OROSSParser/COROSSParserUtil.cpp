@@ -1486,6 +1486,20 @@ void COROSSParser::checkForGramms(COROSSGrammaTree& grDic, grammMap& gramms, siz
     }
 }
 
+size_t COROSSParser::findSemicolon(std::wstring& interval, size_t off)
+{
+    static std::wstring acSign(L"&#x301;");
+    size_t pos = interval.find(L';', off);
+    while (pos != std::wstring::npos)
+    {
+        if (pos >= acSign.length() && (interval.compare(pos - (acSign.length() - 1), acSign.length(), acSign) == 0))
+            pos = interval.find(L';', pos + 1);
+        else
+            break;
+    }
+    return pos;
+}
+
 void COROSSParser::checkForBigramms(artMap::iterator& ait, const std::vector<std::wstring>& art_words)
 {
     checkForGramms(bigrDic, bigramms, bigrId, ait, ait->second.bigramms, art_words);

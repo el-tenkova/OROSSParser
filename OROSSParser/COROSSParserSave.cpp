@@ -1325,6 +1325,7 @@ void COROSSParser::makeTetragrammsTable(const std::locale& loc)
 }
 void COROSSParser::makeStatisticsTable(const std::locale& loc)
 {
+    std::string _ot_(" OT ");
     size_t count = 0;
     size_t count_sya = 0;
     std::ofstream stat_words = std::ofstream(config["stat_words"], std::wofstream::binary);
@@ -1414,6 +1415,7 @@ void COROSSParser::makeStatisticsTable(const std::locale& loc)
                         std::string cnt = std::to_string(++count);
                         cnt.append(" : ");
                         stat_words.write(cnt.c_str(), cnt.length());
+                        stat_words.write(_ot_.c_str(), _ot_.length());
                         std::string u8str = conv1.to_bytes((*it).c_str());
                         u8str.append("\n");
                         stat_words.write(u8str.c_str(), u8str.length());
@@ -1437,6 +1439,65 @@ void COROSSParser::makeStatisticsTable(const std::locale& loc)
                 stat_words.write(u8str.c_str(), u8str.length());
             }
 
+        }
+        std::wstring otstr(L"(<i>от</i> ");
+        size_t ot = ait->second.text.find(otstr);
+        if (ot != std::wstring::npos)
+        {
+            size_t pos = ait->second.text.find(L'[');
+            if (ot < pos)
+            {
+                ot += otstr.length();
+                size_t ot_end = ait->second.text.find(L')', ot);
+                if (ot < ot_end)
+                {
+                    pos = findSemicolon(ait->second.text, ot);
+                    while (pos != std::wstring::npos)
+                    {
+                        std::wstring part = ait->second.text.substr(ot, pos - ot);
+                        ot = pos + 1;
+                        std::wstring key(part);
+                        prepareTitle(key, true);
+                        prepareTitle(part);
+                        if (part.length() > 0)
+                        {
+                            if (titles.find(key) == titles.end())
+                            {
+                                titles.insert(std::pair<std::wstring, size_t>(key, 1));
+                                std::string cnt = std::to_string(++count);
+                                cnt.append(" : ");
+                                stat_words.write(cnt.c_str(), cnt.length());
+                                stat_words.write(_ot_.c_str(), _ot_.length());
+                                std::string u8str = conv1.to_bytes(part);
+                                u8str.append("\n");
+                                stat_words.write(u8str.c_str(), u8str.length());
+                            }
+                        }
+                        pos = findSemicolon(ait->second.text, ot);
+                    }
+                    if (ot < ot_end)
+                    {
+                        std::wstring part = ait->second.text.substr(ot, ot_end - ot);
+                        std::wstring key(part);
+                        prepareTitle(key, true);
+                        prepareTitle(part);
+                        if (part.length() > 0)
+                        {
+                            if (titles.find(key) == titles.end())
+                            {
+                                titles.insert(std::pair<std::wstring, size_t>(key, 1));
+                                std::string cnt = std::to_string(++count);
+                                cnt.append(" : ");
+                                stat_words.write(cnt.c_str(), cnt.length());
+                                stat_words.write(_ot_.c_str(), _ot_.length());
+                                std::string u8str = conv1.to_bytes(part);
+                                u8str.append("\n");
+                                stat_words.write(u8str.c_str(), u8str.length());
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
     size_t n = 1;
