@@ -1739,5 +1739,7 @@ std::vector<std::wstring> COROSSParser::makeArtWithParenthesesTitles(std::wstrin
         }
         ++rit;
     }
+    if (res.empty())
+        res.push_back(title);
     return res;
 }

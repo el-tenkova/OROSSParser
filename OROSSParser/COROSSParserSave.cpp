@@ -1384,16 +1384,21 @@ void COROSSParser::makeStatisticsTable(const std::locale& loc)
         for (vit; vit != vct.end(); ++vit)
         {
             std::wstring sbstr = ait->second.text.substr(vit->start, vit->len);
+            std::wstring key(sbstr);
+            prepareOrthoKey(key, true);
+            removeParentheses(key);
             prepareTitle(sbstr);
-            if (titles.find(sbstr) == titles.end())
+            if (key.length() == 0)
+                continue;
+            if (titles.find(key) == titles.end())
             {
                 if (ait->second.t_type == article::titleType::titleSya)
                 {
                     count_sya += 1;
-                    titles.insert(std::pair<std::wstring, size_t>(sbstr, 1));
+                    titles.insert(std::pair<std::wstring, size_t>(key, 1));
                     writeSyaToStatistics(stat_words, count, conv1, sbstr);
                 }
-                else if (sbstr.find(L'(') != std::wstring::npos)
+                else if (sbstr.find(L'(') != std::wstring::npos || sbstr.find(L')') != std::wstring::npos)
                 {
                     std::vector<std::wstring> vct = makeArtWithParenthesesTitles(sbstr);
                     auto it = vct.begin();
@@ -1417,7 +1422,7 @@ void COROSSParser::makeStatisticsTable(const std::locale& loc)
                 }
                 else
                 {
-                    titles.insert(std::pair<std::wstring, size_t>(sbstr, 1));
+                    titles.insert(std::pair<std::wstring, size_t>(key, 1));
                     std::string cnt = std::to_string(++count);
                     cnt.append(" : ");
                     stat_words.write(cnt.c_str(), cnt.length());
