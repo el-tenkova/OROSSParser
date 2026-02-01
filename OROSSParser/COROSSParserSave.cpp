@@ -1385,8 +1385,7 @@ void COROSSParser::makeStatisticsTable(const std::locale& loc)
         {
             std::wstring sbstr = ait->second.text.substr(vit->start, vit->len);
             std::wstring key(sbstr);
-            prepareOrthoKey(key, true);
-            removeParentheses(key);
+            prepareTitle(key, true);
             prepareTitle(sbstr);
             if (key.length() == 0)
                 continue;
