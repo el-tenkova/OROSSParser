@@ -273,9 +273,9 @@ long COROSSParser::Terminate()
  //   if (mode == Rebuild)
     {
   //  if (mode != Create && mode != Update) {
-        presaveArticles(SAVE_SEARCH); // SAVE_SEARCH);
+        presaveArticles(LOAD_SEARCH); // SAVE_SEARCH);
         saveDic();
-        saveData(SAVE_SEARCH); // SAVE_SEARCH);
+        saveData(LOAD_SEARCH); // SAVE_SEARCH);
         makeSQL();
     }
 //    saveData(SAVE_SEARCH);
@@ -656,6 +656,7 @@ long COROSSParser::AddOrthogr(const std::wstring& Orthogr, const std::wstring& F
         size_t rule_id = getRuleId(num, rule);
         if (ft->second.rule == 0)
             ft->second.rule = rule_id;
+        ft->second.is_prefix = (size_t)IsPrefix;
     }
     /*    if (wcslen(Rest) > 0) {
     restMap::iterator rit = curPara->second.links.find(Rest);
