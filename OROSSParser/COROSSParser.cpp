@@ -273,9 +273,9 @@ long COROSSParser::Terminate()
  //   if (mode == Rebuild)
     {
   //  if (mode != Create && mode != Update) {
-        presaveArticles(LOAD_SEARCH); // SAVE_SEARCH);
+        presaveArticles(SAVE_SEARCH); // SAVE_SEARCH);
         saveDic();
-        saveData(LOAD_SEARCH); // SAVE_SEARCH);
+        saveData(SAVE_SEARCH); // SAVE_SEARCH);
         makeSQL();
     }
 //    saveData(SAVE_SEARCH);
@@ -1187,7 +1187,7 @@ void COROSSParser::getFormulas(const std::wstring& article, const std::wstring& 
     substMap& substs, dummyVct& index)
 {
     std::string host(config["host"]);
-    std::wstring hoststr(host.begin(), host.end());
+    std::wstring hoststr(L"/");// host.begin(), host.end()); // use relative links
     std::wstring a(pure);
     std::wstring afull(article);
     //    std::locale loc = std::locale(std::locale("C"), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>());
