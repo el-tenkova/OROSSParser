@@ -95,6 +95,12 @@ STDMETHODIMP COROSSParserCOM::AddInfoToRule( BSTR Info, /*[out, retval]*/ long *
     return *hRes;
 }
 
+STDMETHODIMP COROSSParserCOM::AddCommentToRule(BSTR Comment, /*[out, retval]*/ long* hRes)
+{
+    *hRes = pureParser.AddCommentToRule(Comment);
+    return *hRes;
+}
+
 STDMETHODIMP COROSSParserCOM::AddFootNote( long ID, BSTR Text, /*[out, retval]*/ long *hRes )
 {
     *hRes = pureParser.AddFootNote(ID, Text);

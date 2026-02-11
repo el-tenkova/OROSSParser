@@ -203,6 +203,10 @@ EXTERN_C const IID IID_IOROSSParser;
         virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE PreViewArticle( 
             /* [retval][out] */ long *hRes) = 0;
         
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE AddCommentToRule( 
+            BSTR Comment,
+            /* [retval][out] */ long *hRes) = 0;
+        
     };
     
     
@@ -392,6 +396,12 @@ EXTERN_C const IID IID_IOROSSParser;
             IOROSSParser * This,
             /* [retval][out] */ long *hRes);
         
+        DECLSPEC_XFGVIRT(IOROSSParser, AddCommentToRule)
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *AddCommentToRule )( 
+            IOROSSParser * This,
+            BSTR Comment,
+            /* [retval][out] */ long *hRes);
+        
         END_INTERFACE
     } IOROSSParserVtbl;
 
@@ -484,6 +494,9 @@ EXTERN_C const IID IID_IOROSSParser;
 
 #define IOROSSParser_PreViewArticle(This,hRes)	\
     ( (This)->lpVtbl -> PreViewArticle(This,hRes) ) 
+
+#define IOROSSParser_AddCommentToRule(This,Comment,hRes)	\
+    ( (This)->lpVtbl -> AddCommentToRule(This,Comment,hRes) ) 
 
 #endif /* COBJMACROS */
 

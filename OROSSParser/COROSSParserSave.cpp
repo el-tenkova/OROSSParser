@@ -695,6 +695,7 @@ void COROSSParser::makeRuleTable(std::wofstream& result)
     text TEXT NOT NULL,\n\
     info TEXT NOT NULL,\n\
     title TEXT NOT NULL,\n\
+    comment TEXT NOT NULL,\n\
     PRIMARY KEY (id) \n\
     );\n\n");
 
@@ -704,7 +705,7 @@ void COROSSParser::makeRuleTable(std::wofstream& result)
     for (; ruleit != rules.end(); ++ruleit)
     {
         str.clear();
-        str.append(L"INSERT INTO rules (id, id_para, id_parent, num, text, info, title) \n\
+        str.append(L"INSERT INTO rules (id, id_para, id_parent, num, text, info, title, comment) \n\
     VALUES (");
         str.append(std::to_wstring(ruleit->id));
         str.append(L",");
@@ -719,6 +720,8 @@ void COROSSParser::makeRuleTable(std::wofstream& result)
         str.append(ruleit->info);
         str.append(L"','");
         str.append(ruleit->title);
+        str.append(L"','");
+        str.append(ruleit->comment);
         str.append(L"');\n");
         result.write(str.c_str(), str.length());
     }

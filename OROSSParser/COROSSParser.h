@@ -226,6 +226,7 @@ struct rule {
     std::wstring info;
     std::wstring exc_rule;
     std::wstring examples;
+    std::wstring comment;
     std::vector<std::wstring> excVct;
     std::vector<std::wstring> noteVct;
     std::vector<orthogr> orthVct;
@@ -439,6 +440,7 @@ public:
     long AddArticle(size_t key_article, const std::wstring& Title, const std::wstring& Article, const std::wstring& ros_title);
     long AddInfoToRule(const std::wstring& Info);
     long AddFootNote(const long& ID, const std::wstring& Text);
+    long AddCommentToRule(const std::wstring& Comment);
     //
     long LoadArticles(const std::string& Dic);
     long LoadWords(const std::string& Dic);

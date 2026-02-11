@@ -47,7 +47,7 @@
 #include "OROSSParser_i.h"
 
 #define TYPE_FORMAT_STRING_SIZE   53                                
-#define PROC_FORMAT_STRING_SIZE   897                               
+#define PROC_FORMAT_STRING_SIZE   941                               
 #define EXPR_FORMAT_STRING_SIZE   1                                 
 #define TRANSMIT_AS_TABLE_SIZE    0            
 #define WIRE_MARSHAL_TABLE_SIZE   1            
@@ -949,6 +949,44 @@ static const OROSSParser_MIDL_PROC_FORMAT_STRING OROSSParser__MIDL_ProcFormatStr
 /* 894 */	0x8,		/* FC_LONG */
 			0x0,		/* 0 */
 
+	/* Procedure AddCommentToRule */
+
+/* 896 */	0x33,		/* FC_AUTO_HANDLE */
+			0x6c,		/* Old Flags:  object, Oi2 */
+/* 898 */	NdrFcLong( 0x0 ),	/* 0 */
+/* 902 */	NdrFcShort( 0x1a ),	/* 26 */
+/* 904 */	NdrFcShort( 0x20 ),	/* X64 Stack size/offset = 32 */
+/* 906 */	NdrFcShort( 0x0 ),	/* 0 */
+/* 908 */	NdrFcShort( 0x24 ),	/* 36 */
+/* 910 */	0x46,		/* Oi2 Flags:  clt must size, has return, has ext, */
+			0x3,		/* 3 */
+/* 912 */	0xa,		/* 10 */
+			0x45,		/* Ext Flags:  new corr desc, srv corr check, has range on conformance */
+/* 914 */	NdrFcShort( 0x0 ),	/* 0 */
+/* 916 */	NdrFcShort( 0x1 ),	/* 1 */
+/* 918 */	NdrFcShort( 0x0 ),	/* 0 */
+/* 920 */	NdrFcShort( 0x0 ),	/* 0 */
+
+	/* Parameter Comment */
+
+/* 922 */	NdrFcShort( 0x8b ),	/* Flags:  must size, must free, in, by val, */
+/* 924 */	NdrFcShort( 0x8 ),	/* X64 Stack size/offset = 8 */
+/* 926 */	NdrFcShort( 0x26 ),	/* Type Offset=38 */
+
+	/* Parameter hRes */
+
+/* 928 */	NdrFcShort( 0x2150 ),	/* Flags:  out, base type, simple ref, srv alloc size=8 */
+/* 930 */	NdrFcShort( 0x10 ),	/* X64 Stack size/offset = 16 */
+/* 932 */	0x8,		/* FC_LONG */
+			0x0,		/* 0 */
+
+	/* Return value */
+
+/* 934 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
+/* 936 */	NdrFcShort( 0x18 ),	/* X64 Stack size/offset = 24 */
+/* 938 */	0x8,		/* FC_LONG */
+			0x0,		/* 0 */
+
 			0x0
         }
     };
@@ -1057,7 +1095,8 @@ static const unsigned short IOROSSParser_FormatStringOffsetTable[] =
     720,
     764,
     808,
-    858
+    858,
+    896
     };
 
 
@@ -1102,13 +1141,34 @@ namespace {
 
 typedef 
 NDR64_FORMAT_CHAR
-__midl_frag134_t;
-extern const __midl_frag134_t __midl_frag134;
+__midl_frag140_t;
+extern const __midl_frag140_t __midl_frag140;
 
 typedef 
 struct _NDR64_POINTER_FORMAT
-__midl_frag132_t;
-extern const __midl_frag132_t __midl_frag132;
+__midl_frag138_t;
+extern const __midl_frag138_t __midl_frag138;
+
+typedef 
+struct _NDR64_POINTER_FORMAT
+__midl_frag137_t;
+extern const __midl_frag137_t __midl_frag137;
+
+typedef 
+struct _NDR64_USER_MARSHAL_FORMAT
+__midl_frag136_t;
+extern const __midl_frag136_t __midl_frag136;
+
+typedef 
+struct 
+{
+    struct _NDR64_PROC_FORMAT frag1;
+    struct _NDR64_PARAM_FORMAT frag2;
+    struct _NDR64_PARAM_FORMAT frag3;
+    struct _NDR64_PARAM_FORMAT frag4;
+}
+__midl_frag135_t;
+extern const __midl_frag135_t __midl_frag135;
 
 typedef 
 struct 
@@ -1121,16 +1181,6 @@ __midl_frag131_t;
 extern const __midl_frag131_t __midl_frag131;
 
 typedef 
-struct _NDR64_POINTER_FORMAT
-__midl_frag127_t;
-extern const __midl_frag127_t __midl_frag127;
-
-typedef 
-struct _NDR64_USER_MARSHAL_FORMAT
-__midl_frag126_t;
-extern const __midl_frag126_t __midl_frag126;
-
-typedef 
 struct 
 {
     struct _NDR64_PROC_FORMAT frag1;
@@ -1141,17 +1191,6 @@ struct
 }
 __midl_frag123_t;
 extern const __midl_frag123_t __midl_frag123;
-
-typedef 
-struct 
-{
-    struct _NDR64_PROC_FORMAT frag1;
-    struct _NDR64_PARAM_FORMAT frag2;
-    struct _NDR64_PARAM_FORMAT frag3;
-    struct _NDR64_PARAM_FORMAT frag4;
-}
-__midl_frag117_t;
-extern const __midl_frag117_t __midl_frag117;
 
 typedef 
 struct 
@@ -1229,16 +1268,126 @@ NDR64_FORMAT_UINT32
 __midl_frag1_t;
 extern const __midl_frag1_t __midl_frag1;
 
-static const __midl_frag134_t __midl_frag134 =
+static const __midl_frag140_t __midl_frag140 =
 0x5    /* FC64_INT32 */;
 
-static const __midl_frag132_t __midl_frag132 =
+static const __midl_frag138_t __midl_frag138 =
 { 
 /* *long */
     0x20,    /* FC64_RP */
     (NDR64_UINT8) 12 /* 0xc */,
     (NDR64_UINT16) 0 /* 0x0 */,
-    &__midl_frag134
+    &__midl_frag140
+};
+
+static const __midl_frag137_t __midl_frag137 =
+{ 
+/* *FLAGGED_WORD_BLOB */
+    0x21,    /* FC64_UP */
+    (NDR64_UINT8) 0 /* 0x0 */,
+    (NDR64_UINT16) 0 /* 0x0 */,
+    &__midl_frag6
+};
+
+static const __midl_frag136_t __midl_frag136 =
+{ 
+/* wireBSTR */
+    0xa2,    /* FC64_USER_MARSHAL */
+    (NDR64_UINT8) 128 /* 0x80 */,
+    (NDR64_UINT16) 0 /* 0x0 */,
+    (NDR64_UINT16) 7 /* 0x7 */,
+    (NDR64_UINT16) 8 /* 0x8 */,
+    (NDR64_UINT32) 8 /* 0x8 */,
+    (NDR64_UINT32) 0 /* 0x0 */,
+    &__midl_frag137
+};
+
+static const __midl_frag135_t __midl_frag135 =
+{ 
+/* AddCommentToRule */
+    { 
+    /* AddCommentToRule */      /* procedure AddCommentToRule */
+        (NDR64_UINT32) 2883907 /* 0x2c0143 */,    /* auto handle */ /* IsIntrepreted, [object], ClientMustSize, HasReturn, ServerCorrelation */
+        (NDR64_UINT32) 32 /* 0x20 */ ,  /* Stack size */
+        (NDR64_UINT32) 0 /* 0x0 */,
+        (NDR64_UINT32) 40 /* 0x28 */,
+        (NDR64_UINT16) 0 /* 0x0 */,
+        (NDR64_UINT16) 0 /* 0x0 */,
+        (NDR64_UINT16) 3 /* 0x3 */,
+        (NDR64_UINT16) 0 /* 0x0 */
+    },
+    { 
+    /* Comment */      /* parameter Comment */
+        &__midl_frag136,
+        { 
+        /* Comment */
+            1,
+            1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            (NDR64_UINT16) 0 /* 0x0 */,
+            0
+        },    /* MustSize, MustFree, [in], ByValue */
+        (NDR64_UINT16) 0 /* 0x0 */,
+        8 /* 0x8 */,   /* Stack offset */
+    },
+    { 
+    /* hRes */      /* parameter hRes */
+        &__midl_frag140,
+        { 
+        /* hRes */
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            (NDR64_UINT16) 0 /* 0x0 */,
+            1
+        },    /* [out], Basetype, SimpleRef, UseCache */
+        (NDR64_UINT16) 0 /* 0x0 */,
+        16 /* 0x10 */,   /* Stack offset */
+    },
+    { 
+    /* HRESULT */      /* parameter HRESULT */
+        &__midl_frag140,
+        { 
+        /* HRESULT */
+            0,
+            0,
+            0,
+            0,
+            1,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            (NDR64_UINT16) 0 /* 0x0 */,
+            0
+        },    /* [out], IsReturn, Basetype, ByValue */
+        (NDR64_UINT16) 0 /* 0x0 */,
+        24 /* 0x18 */,   /* Stack offset */
+    }
 };
 
 static const __midl_frag131_t __midl_frag131 =
@@ -1257,7 +1406,7 @@ static const __midl_frag131_t __midl_frag131 =
     },
     { 
     /* hRes */      /* parameter hRes */
-        &__midl_frag134,
+        &__midl_frag140,
         { 
         /* hRes */
             0,
@@ -1281,7 +1430,7 @@ static const __midl_frag131_t __midl_frag131 =
     },
     { 
     /* HRESULT */      /* parameter HRESULT */
-        &__midl_frag134,
+        &__midl_frag140,
         { 
         /* HRESULT */
             0,
@@ -1305,28 +1454,6 @@ static const __midl_frag131_t __midl_frag131 =
     }
 };
 
-static const __midl_frag127_t __midl_frag127 =
-{ 
-/* *FLAGGED_WORD_BLOB */
-    0x21,    /* FC64_UP */
-    (NDR64_UINT8) 0 /* 0x0 */,
-    (NDR64_UINT16) 0 /* 0x0 */,
-    &__midl_frag6
-};
-
-static const __midl_frag126_t __midl_frag126 =
-{ 
-/* wireBSTR */
-    0xa2,    /* FC64_USER_MARSHAL */
-    (NDR64_UINT8) 128 /* 0x80 */,
-    (NDR64_UINT16) 0 /* 0x0 */,
-    (NDR64_UINT16) 7 /* 0x7 */,
-    (NDR64_UINT16) 8 /* 0x8 */,
-    (NDR64_UINT32) 8 /* 0x8 */,
-    (NDR64_UINT32) 0 /* 0x0 */,
-    &__midl_frag127
-};
-
 static const __midl_frag123_t __midl_frag123 =
 { 
 /* SaveArticle */
@@ -1343,7 +1470,7 @@ static const __midl_frag123_t __midl_frag123 =
     },
     { 
     /* Title */      /* parameter Title */
-        &__midl_frag126,
+        &__midl_frag136,
         { 
         /* Title */
             1,
@@ -1367,7 +1494,7 @@ static const __midl_frag123_t __midl_frag123 =
     },
     { 
     /* Article */      /* parameter Article */
-        &__midl_frag126,
+        &__midl_frag136,
         { 
         /* Article */
             1,
@@ -1391,7 +1518,7 @@ static const __midl_frag123_t __midl_frag123 =
     },
     { 
     /* hRes */      /* parameter hRes */
-        &__midl_frag134,
+        &__midl_frag140,
         { 
         /* hRes */
             0,
@@ -1415,7 +1542,7 @@ static const __midl_frag123_t __midl_frag123 =
     },
     { 
     /* HRESULT */      /* parameter HRESULT */
-        &__midl_frag134,
+        &__midl_frag140,
         { 
         /* HRESULT */
             0,
@@ -1439,94 +1566,6 @@ static const __midl_frag123_t __midl_frag123 =
     }
 };
 
-static const __midl_frag117_t __midl_frag117 =
-{ 
-/* SaveTitle */
-    { 
-    /* SaveTitle */      /* procedure SaveTitle */
-        (NDR64_UINT32) 2883907 /* 0x2c0143 */,    /* auto handle */ /* IsIntrepreted, [object], ClientMustSize, HasReturn, ServerCorrelation */
-        (NDR64_UINT32) 32 /* 0x20 */ ,  /* Stack size */
-        (NDR64_UINT32) 0 /* 0x0 */,
-        (NDR64_UINT32) 40 /* 0x28 */,
-        (NDR64_UINT16) 0 /* 0x0 */,
-        (NDR64_UINT16) 0 /* 0x0 */,
-        (NDR64_UINT16) 3 /* 0x3 */,
-        (NDR64_UINT16) 0 /* 0x0 */
-    },
-    { 
-    /* Title */      /* parameter Title */
-        &__midl_frag126,
-        { 
-        /* Title */
-            1,
-            1,
-            0,
-            1,
-            0,
-            0,
-            0,
-            1,
-            0,
-            0,
-            0,
-            0,
-            0,
-            (NDR64_UINT16) 0 /* 0x0 */,
-            0
-        },    /* MustSize, MustFree, [in], ByValue */
-        (NDR64_UINT16) 0 /* 0x0 */,
-        8 /* 0x8 */,   /* Stack offset */
-    },
-    { 
-    /* hRes */      /* parameter hRes */
-        &__midl_frag134,
-        { 
-        /* hRes */
-            0,
-            0,
-            0,
-            0,
-            1,
-            0,
-            1,
-            0,
-            1,
-            0,
-            0,
-            0,
-            0,
-            (NDR64_UINT16) 0 /* 0x0 */,
-            1
-        },    /* [out], Basetype, SimpleRef, UseCache */
-        (NDR64_UINT16) 0 /* 0x0 */,
-        16 /* 0x10 */,   /* Stack offset */
-    },
-    { 
-    /* HRESULT */      /* parameter HRESULT */
-        &__midl_frag134,
-        { 
-        /* HRESULT */
-            0,
-            0,
-            0,
-            0,
-            1,
-            1,
-            1,
-            1,
-            0,
-            0,
-            0,
-            0,
-            0,
-            (NDR64_UINT16) 0 /* 0x0 */,
-            0
-        },    /* [out], IsReturn, Basetype, ByValue */
-        (NDR64_UINT16) 0 /* 0x0 */,
-        24 /* 0x18 */,   /* Stack offset */
-    }
-};
-
 static const __midl_frag92_t __midl_frag92 =
 { 
 /* AddFootNote */
@@ -1543,7 +1582,7 @@ static const __midl_frag92_t __midl_frag92 =
     },
     { 
     /* ID */      /* parameter ID */
-        &__midl_frag134,
+        &__midl_frag140,
         { 
         /* ID */
             0,
@@ -1567,7 +1606,7 @@ static const __midl_frag92_t __midl_frag92 =
     },
     { 
     /* Text */      /* parameter Text */
-        &__midl_frag126,
+        &__midl_frag136,
         { 
         /* Text */
             1,
@@ -1591,7 +1630,7 @@ static const __midl_frag92_t __midl_frag92 =
     },
     { 
     /* hRes */      /* parameter hRes */
-        &__midl_frag134,
+        &__midl_frag140,
         { 
         /* hRes */
             0,
@@ -1615,7 +1654,7 @@ static const __midl_frag92_t __midl_frag92 =
     },
     { 
     /* HRESULT */      /* parameter HRESULT */
-        &__midl_frag134,
+        &__midl_frag140,
         { 
         /* HRESULT */
             0,
@@ -1655,7 +1694,7 @@ static const __midl_frag56_t __midl_frag56 =
     },
     { 
     /* Orthogr */      /* parameter Orthogr */
-        &__midl_frag126,
+        &__midl_frag136,
         { 
         /* Orthogr */
             1,
@@ -1679,7 +1718,7 @@ static const __midl_frag56_t __midl_frag56 =
     },
     { 
     /* Formula */      /* parameter Formula */
-        &__midl_frag126,
+        &__midl_frag136,
         { 
         /* Formula */
             1,
@@ -1703,7 +1742,7 @@ static const __midl_frag56_t __midl_frag56 =
     },
     { 
     /* Example */      /* parameter Example */
-        &__midl_frag126,
+        &__midl_frag136,
         { 
         /* Example */
             1,
@@ -1727,7 +1766,7 @@ static const __midl_frag56_t __midl_frag56 =
     },
     { 
     /* Rest */      /* parameter Rest */
-        &__midl_frag126,
+        &__midl_frag136,
         { 
         /* Rest */
             1,
@@ -1751,7 +1790,7 @@ static const __midl_frag56_t __midl_frag56 =
     },
     { 
     /* IsActive */      /* parameter IsActive */
-        &__midl_frag134,
+        &__midl_frag140,
         { 
         /* IsActive */
             0,
@@ -1775,7 +1814,7 @@ static const __midl_frag56_t __midl_frag56 =
     },
     { 
     /* IsPrefix */      /* parameter IsPrefix */
-        &__midl_frag134,
+        &__midl_frag140,
         { 
         /* IsPrefix */
             0,
@@ -1799,7 +1838,7 @@ static const __midl_frag56_t __midl_frag56 =
     },
     { 
     /* hRes */      /* parameter hRes */
-        &__midl_frag134,
+        &__midl_frag140,
         { 
         /* hRes */
             0,
@@ -1823,7 +1862,7 @@ static const __midl_frag56_t __midl_frag56 =
     },
     { 
     /* HRESULT */      /* parameter HRESULT */
-        &__midl_frag134,
+        &__midl_frag140,
         { 
         /* HRESULT */
             0,
@@ -1932,7 +1971,7 @@ static const __midl_frag2_t __midl_frag2 =
     },
     { 
     /* name */      /* parameter name */
-        &__midl_frag134,
+        &__midl_frag140,
         { 
         /* name */
             0,
@@ -1956,7 +1995,7 @@ static const __midl_frag2_t __midl_frag2 =
     },
     { 
     /* config */      /* parameter config */
-        &__midl_frag126,
+        &__midl_frag136,
         { 
         /* config */
             1,
@@ -1980,7 +2019,7 @@ static const __midl_frag2_t __midl_frag2 =
     },
     { 
     /* hRes */      /* parameter hRes */
-        &__midl_frag134,
+        &__midl_frag140,
         { 
         /* hRes */
             0,
@@ -2004,7 +2043,7 @@ static const __midl_frag2_t __midl_frag2 =
     },
     { 
     /* HRESULT */      /* parameter HRESULT */
-        &__midl_frag134,
+        &__midl_frag140,
         { 
         /* HRESULT */
             0,
@@ -2080,23 +2119,24 @@ static const FormatInfoRef IOROSSParser_Ndr64ProcTable[] =
     (FormatInfoRef)(LONG_PTR) -1,
     &__midl_frag2,
     &__midl_frag131,
-    &__midl_frag117,
-    &__midl_frag117,
-    &__midl_frag117,
+    &__midl_frag135,
+    &__midl_frag135,
+    &__midl_frag135,
     &__midl_frag92,
-    &__midl_frag117,
+    &__midl_frag135,
     &__midl_frag123,
     &__midl_frag56,
     &__midl_frag123,
-    &__midl_frag117,
+    &__midl_frag135,
     &__midl_frag123,
     &__midl_frag92,
-    &__midl_frag117,
-    &__midl_frag117,
-    &__midl_frag117,
-    &__midl_frag117,
+    &__midl_frag135,
+    &__midl_frag135,
+    &__midl_frag135,
+    &__midl_frag135,
     &__midl_frag123,
-    &__midl_frag131
+    &__midl_frag131,
+    &__midl_frag135
     };
 
 
@@ -2147,7 +2187,7 @@ static const MIDL_SERVER_INFO IOROSSParser_ServerInfo =
     2,
     (MIDL_SYNTAX_INFO*)IOROSSParser_SyntaxInfo
     };
-CINTERFACE_PROXY_VTABLE(26) _IOROSSParserProxyVtbl = 
+CINTERFACE_PROXY_VTABLE(27) _IOROSSParserProxyVtbl = 
 {
     &IOROSSParser_ProxyInfo,
     &IID_IOROSSParser,
@@ -2176,7 +2216,8 @@ CINTERFACE_PROXY_VTABLE(26) _IOROSSParserProxyVtbl =
     (void *) (INT_PTR) -1 /* IOROSSParser::LoadWords */ ,
     (void *) (INT_PTR) -1 /* IOROSSParser::SaveTitle */ ,
     (void *) (INT_PTR) -1 /* IOROSSParser::SaveArticle */ ,
-    (void *) (INT_PTR) -1 /* IOROSSParser::PreViewArticle */
+    (void *) (INT_PTR) -1 /* IOROSSParser::PreViewArticle */ ,
+    (void *) (INT_PTR) -1 /* IOROSSParser::AddCommentToRule */
 };
 
 
@@ -2204,6 +2245,7 @@ EXTERN_C DECLSPEC_SELECTANY const PRPC_STUB_FUNCTION IOROSSParser_table[] =
     NdrStubCall3,
     NdrStubCall3,
     NdrStubCall3,
+    NdrStubCall3,
     NdrStubCall3
 };
 
@@ -2211,7 +2253,7 @@ CInterfaceStubVtbl _IOROSSParserStubVtbl =
 {
     &IID_IOROSSParser,
     &IOROSSParser_ServerInfo,
-    26,
+    27,
     &IOROSSParser_table[-3],
     CStdStubBuffer_DELEGATING_METHODS
 };

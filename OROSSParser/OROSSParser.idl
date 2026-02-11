@@ -50,6 +50,7 @@ import "ocidl.idl";
         [id(17), helpstring("method SaveTitle")] HRESULT SaveTitle(BSTR Title, [out, retval] long *hRes);
         [id(18), helpstring("method SaveArticle")] HRESULT SaveArticle(BSTR Title, BSTR Article, [out, retval] long *hRes);
         [id(19), helpstring("method PreViewArticle")] HRESULT PreViewArticle([out, retval] long *hRes);
+        [id(20), helpstring("method AddCommentToRule")] HRESULT AddCommentToRule(BSTR Comment, [out, retval] long* hRes);
     };
 
 [

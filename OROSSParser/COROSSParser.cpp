@@ -543,6 +543,15 @@ long COROSSParser::AddInfoToRule(const std::wstring& Info)
     return 0;
 }
 
+long COROSSParser::AddCommentToRule(const std::wstring& Comment)
+{
+    if (rules.size() == 0)
+        return 0;
+    ruleVct::iterator rit = rules.end() - 1;
+    rit->comment.append(Comment);
+    return 0;
+}
+
 long COROSSParser::AddFootNote(const long& ID, const std::wstring& Text)
 {
     std::wstring text(Text);
@@ -573,7 +582,29 @@ long COROSSParser::AddOrthogr(const std::wstring& Orthogr, const std::wstring& F
 
     std::wstring example(Example);
     correctText(example);
-
+    if (example.length() > 0)
+    {
+        size_t bracket = example.rfind(L')');
+        if (bracket != example.length() - 1) // () in ortho or formula
+        {
+            if (form.length() != 0)
+                form.append(example);
+            else
+                ortho.append(example);
+        }
+        else
+        {
+            bracket = example.rfind(L'(');
+            if (bracket > 0)
+            {
+                if (form.length() != 0)
+                    form.append(example.substr(0, bracket));
+                else
+                    ortho.append(example.substr(0, bracket));
+                example = example.substr(bracket);
+            }
+        }
+    }
     std::wstring rest = getRestForPara(Rest, curPara->first);
     correctText(rest);
 

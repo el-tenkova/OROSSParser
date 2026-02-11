@@ -38,6 +38,7 @@ public:
     STDMETHOD(AddArticle)( BSTR Title, BSTR Article, /*[out, retval]*/ long *hRes );
     STDMETHOD(AddInfoToRule)( BSTR Info, /*[out, retval]*/ long *hRes );
     STDMETHOD(AddFootNote)( long ID, BSTR Text, /*[out, retval]*/ long *hRes );
+    STDMETHOD(AddCommentToRule)(BSTR Comment, /*[out, retval]*/ long* hRes);
     //
 //    STDMETHOD(LoadDic)( BSTR Dic, /*[out, retval]*/ long *hRes );
     STDMETHOD(LoadArticles)( BSTR Dic, /*[out, retval]*/ long *hRes );
