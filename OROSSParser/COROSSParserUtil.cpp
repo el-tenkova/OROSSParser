@@ -688,6 +688,7 @@ std::wstring COROSSParser::toRTF(const std::wstring& article) {
         }
     }
     // ссылка в статье
+    std::string host(config["host"]);
     std::vector<std::wstring> hrefvct;
     std::map<std::size_t, std::size_t> replmap;
     size_t link = art.find(L"<a");
@@ -704,8 +705,13 @@ std::wstring COROSSParser::toRTF(const std::wstring& article) {
                 size_t href_l = (*rit)[1].length();
                 std::wstring href(art.substr((*rit).position(1), (*rit)[1].length()));
                 size_t hrefpos = href.find(L"\"");
-                href = href.substr(0, hrefpos);
-                hrefvct.push_back(href);
+                if (href[0] == L'.' && href[1] == '.')
+                    href = href.substr(2, hrefpos);
+                else
+                    href = href.substr(0, hrefpos);
+                std::wstring res(host.begin(), host.end());
+                res.append(href);
+                hrefvct.push_back(res);
             }
             replmap.insert(std::pair<size_t, size_t>(start, len));
             ++rit;
