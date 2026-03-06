@@ -12,7 +12,7 @@ Sub ConvertOROSSArts()
     Set para = theDoc.Paragraphs.Item(1)
     cp = theDoc.Paragraphs.count
     
-    fst.WriteText ("INSERT INTO `oross`.`changes` (`id`, `key_article`, `title`, `text`, `src`, `dic`, `action`, `status`, `chd`, `username`) VALUES ")
+    fst.WriteText ("INSERT INTO `oross-tech`.`changes` (`id`, `key_article`, `title`, `text`, `src`, `dic`, `action`, `status`, `chd`, `username`) VALUES ")
     For i = 1 To cp
         Dim str As String
         If Not para Is Nothing Then
@@ -56,7 +56,7 @@ Sub ConvertROS()
     Set para = theDoc.Paragraphs.Item(1)
     cp = theDoc.Paragraphs.count
     
-    fst.WriteText ("INSERT INTO `orfo`.`changes` (`id`, `key_article`, `title`, `text`, `src`, `dic`, `action`, `status`, `chd`, `username`) VALUES ")
+    fst.WriteText ("INSERT INTO `orfo-tech`.`changes` (`id`, `key_article`, `title`, `text`, `src`, `dic`, `action`, `status`, `chd`, `username`) VALUES ")
     For i = 1 To cp
         Dim str As String
         If Not para Is Nothing Then
