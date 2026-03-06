@@ -582,7 +582,7 @@ long COROSSParser::AddOrthogr(const std::wstring& Orthogr, const std::wstring& F
 
     std::wstring example(Example);
     correctText(example);
-    if (example.length() > 0)
+/*    if (example.length() > 0)
     {
         size_t bracket = example.rfind(L')');
         if (bracket != example.length() - 1) // () in ortho or formula
@@ -604,7 +604,7 @@ long COROSSParser::AddOrthogr(const std::wstring& Orthogr, const std::wstring& F
                 example = example.substr(bracket);
             }
         }
-    }
+    } */
     std::wstring rest = getRestForPara(Rest, curPara->first);
     correctText(rest);
 

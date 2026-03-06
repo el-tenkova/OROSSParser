@@ -709,9 +709,15 @@ std::wstring COROSSParser::toRTF(const std::wstring& article) {
                     href = href.substr(2, hrefpos);
                 else
                     href = href.substr(0, hrefpos);
-                std::wstring res(host.begin(), host.end());
-                res.append(href);
-                hrefvct.push_back(res);
+                size_t http_pos = href.find(L"http"); // http, https - f.e. gramota.ru
+                if (http_pos == std::wstring::npos)
+                {
+                    std::wstring res(host.begin(), host.end());
+                    res.append(href);
+                    hrefvct.push_back(res);
+                }
+                else
+                    hrefvct.push_back(href);
             }
             replmap.insert(std::pair<size_t, size_t>(start, len));
             ++rit;
