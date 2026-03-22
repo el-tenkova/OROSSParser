@@ -706,7 +706,7 @@ std::wstring COROSSParser::toRTF(const std::wstring& article) {
                 std::wstring href(art.substr((*rit).position(1), (*rit)[1].length()));
                 size_t hrefpos = href.find(L"\"");
                 if (href[0] == L'.' && href[1] == '.')
-                    href = href.substr(2, hrefpos);
+                    href = href.substr(2, hrefpos - 2);
                 else
                     href = href.substr(0, hrefpos);
                 size_t http_pos = href.find(L"http"); // http, https - f.e. gramota.ru
