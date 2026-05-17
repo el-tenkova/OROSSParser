@@ -866,7 +866,12 @@ std::wstring COROSSParser::getSpecMarkedArticle(const std::wstring& art, bool sa
     for (it; it != tags.end(); ++it) {
         pos = pure.find(*it);
         while (pos != std::wstring::npos) {
-            pure.replace(pos, (*it).length(), std::wstring((*it).length(), L'_'));
+            if (*it != L"&nbsp;")
+                pure.replace(pos, (*it).length(), std::wstring((*it).length(), L'_'));
+            else {
+                pure.replace(pos, 1, 1, L' ');
+                pure.replace(pos + 1, (*it).length() - 1, std::wstring((*it).length() - 1, L'_'));
+            }
             pos = pure.find(*it, pos + (*it).length());
         }
     }
