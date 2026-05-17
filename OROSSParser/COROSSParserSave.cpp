@@ -795,6 +795,7 @@ void COROSSParser::makeFormulaTable(std::wofstream& result)
     example varchar(256),\n\
     rest varchar(256),\n\
     is_prefix BOOLEAN, \n\
+    is_adjform BOOLEAN, \n\
     art_count int(11), \n\
     PRIMARY KEY (id) \n\
     );\n\n");
@@ -808,7 +809,7 @@ void COROSSParser::makeFormulaTable(std::wofstream& result)
             formMap::iterator ft = ot->second.formulas.begin();
             for (ft; ft != ot->second.formulas.end(); ++ft) {
                 str.clear();
-                str.append(L"INSERT INTO formulas (id, id_ortho, id_para, id_rule, name, rtf, example, rest, is_prefix, art_count) \n\
+                str.append(L"INSERT INTO formulas (id, id_ortho, id_para, id_rule, name, rtf, example, rest, is_prefix, is_adjform, art_count) \n\
                 VALUES (");
                 str.append(std::to_wstring(ft->second.id));
                 str.append(L",");
@@ -827,6 +828,8 @@ void COROSSParser::makeFormulaTable(std::wofstream& result)
                 str.append(ft->second.rest);
                 str.append(L"',");
                 str.append(std::to_wstring(ft->second.is_prefix));
+                str.append(L",");
+                str.append(std::to_wstring(ft->second.is_adjform));
                 str.append(L",");
                 str.append(L"0");
                 str.append(L");\n");
@@ -2481,6 +2484,13 @@ void COROSSParser::addArticlesToIndex() {
                 if (dit->type == fullTitle)
                     continue;
                 size_t pos = interval.find(L' ');
+                size_t pos1 = interval.find(L"&nbsp;");
+                if (pos1 != std::wstring::npos) {
+                    if (pos1 < pos)
+                        pos = pos1;
+                    else
+                        pos1 = std::wstring::npos;
+                }
                 size_t start = 0;
                 size_t utf_len = getUtfLen(ait->second.text, 0, dit->start);
                 size_t number = 1;
@@ -2498,11 +2508,18 @@ void COROSSParser::addArticlesToIndex() {
                             art_words.push_back(*(vw.begin()));
                         }
                     }
-                    start = pos + 1;
+                    start = (pos1 == std::wstring::npos) ? pos + 1 : pos + strlen("&nbsp;");
                     if (start > interval.length())
                         break;
                     start = findNext(interval, start, ait->second.dic);
                     pos = interval.find(L" ", start);
+                    pos1 = interval.find(L"&nbsp;", start);
+                    if (pos1 != std::wstring::npos) {
+                        if (pos1 < pos)
+                            pos = pos1;
+                        else
+                            pos1 = std::wstring::npos;
+                    }
                 }
 //                if (start == 0 && dit->type == TITLE_WORD)
 //                    continue; // do not add title another time

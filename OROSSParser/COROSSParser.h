@@ -190,6 +190,7 @@ struct formula {
     std::wstring example;
     std::wstring rest;
     size_t is_prefix;
+    size_t is_adjform;
     size_t min_len;
     size_t ortho;
     size_t para;
@@ -436,7 +437,7 @@ public:
     long AddExamplesToPara(const std::wstring& Examples);
     long AddRule(const std::wstring& Num, const std::wstring& Rule);
     long AddRuleTitle(const std::wstring& Num, const std::wstring& Title);
-    long AddOrthogr(const std::wstring& Orthogr, const std::wstring& Formula, const std::wstring& Example, const std::wstring& Rest, const long& IsActive, const long& IsPrefix);
+    long AddOrthogr(const std::wstring& Orthogr, const std::wstring& Formula, const std::wstring& Example, const std::wstring& Rest, const long& IsActive, const long& IsPrefix, const long& IsAdjForm);
     long AddArticle(size_t key_article, const std::wstring& Title, const std::wstring& Article, const std::wstring& ros_title);
     long AddInfoToRule(const std::wstring& Info);
     long AddFootNote(const long& ID, const std::wstring& Text);

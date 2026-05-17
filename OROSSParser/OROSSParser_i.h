@@ -158,6 +158,7 @@ EXTERN_C const IID IID_IOROSSParser;
             BSTR Rest,
             long IsActive,
             long IsPrefix,
+            long IsAdjForm,
             /* [retval][out] */ long *hRes) = 0;
         
         virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE AddArticle( 
@@ -331,6 +332,7 @@ EXTERN_C const IID IID_IOROSSParser;
             BSTR Rest,
             long IsActive,
             long IsPrefix,
+            long IsAdjForm,
             /* [retval][out] */ long *hRes);
         
         DECLSPEC_XFGVIRT(IOROSSParser, AddArticle)
@@ -462,8 +464,8 @@ EXTERN_C const IID IID_IOROSSParser;
 #define IOROSSParser_AddRule(This,Num,Rule,hRes)	\
     ( (This)->lpVtbl -> AddRule(This,Num,Rule,hRes) ) 
 
-#define IOROSSParser_AddOrthogr(This,Orthogr,Formula,Example,Rest,IsActive,IsPrefix,hRes)	\
-    ( (This)->lpVtbl -> AddOrthogr(This,Orthogr,Formula,Example,Rest,IsActive,IsPrefix,hRes) ) 
+#define IOROSSParser_AddOrthogr(This,Orthogr,Formula,Example,Rest,IsActive,IsPrefix,IsAdjForm,hRes)	\
+    ( (This)->lpVtbl -> AddOrthogr(This,Orthogr,Formula,Example,Rest,IsActive,IsPrefix,IsAdjForm,hRes) ) 
 
 #define IOROSSParser_AddArticle(This,Title,Article,hRes)	\
     ( (This)->lpVtbl -> AddArticle(This,Title,Article,hRes) ) 

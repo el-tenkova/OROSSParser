@@ -159,13 +159,17 @@ void COROSSParser::prepareTitle(std::wstring& title, bool saveaccent)
     tags.push_back(L"\u00B2");
     tags.push_back(L"\u2026"); */
     tags.push_back(L"\u25ca");
+    tags.push_back(L"&nbsp;");
     if (!saveaccent)
         tags.push_back(L"&#x301;");
     std::vector<std::wstring>::iterator it = tags.begin();
     for (it; it != tags.end(); ++it) {
         size_t pos = title.find(*it);
         while (pos != std::wstring::npos) {
-            title.replace(pos, (*it).length(), L"");
+            if (*it != L"&nbsp;")
+                title.replace(pos, (*it).length(), L"");
+            else
+                title.replace(pos, (*it).length(), L" ");
             pos = title.find(*it);
         }
     }
@@ -849,6 +853,7 @@ std::wstring COROSSParser::getSpecMarkedArticle(const std::wstring& art, bool sa
     tags.push_back(L"<sup>");
     tags.push_back(L"</sup>");
     tags.push_back(L"</a>");
+    tags.push_back(L"&nbsp;");
 
     if (!saveaccent)
         tags.push_back(L"&#x301;");

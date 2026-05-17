@@ -89,7 +89,7 @@ void COROSSParser::loadSearchData(bool loadSearch)
                 size_t para = (size_t)wcstol(parts[0].c_str(), 0, 0);
                 size_t oId = (size_t)wcstol(parts[1].c_str(), 0, 0);
                 size_t fId = (size_t)wcstol(parts[2].c_str(), 0, 0);
-                formula cf = {fId, parts[4], L"", parts[5], L"", L"", 0, 0, oId, para, 0};
+                formula cf = {fId, parts[4], L"", parts[5], L"", L"", 0, 0, 0, oId, para, 0};
 
                 curPara = paras.find(para);
                 if (curPara != paras.end()) {

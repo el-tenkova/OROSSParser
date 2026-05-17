@@ -107,9 +107,9 @@ STDMETHODIMP COROSSParserCOM::AddFootNote( long ID, BSTR Text, /*[out, retval]*/
     return *hRes;
 }
 
-STDMETHODIMP COROSSParserCOM::AddOrthogr( BSTR Orthogr, BSTR Formula, BSTR Example, BSTR Rest, long IsActive, long IsPrefix, /*[out, retval]*/ long *hRes )
+STDMETHODIMP COROSSParserCOM::AddOrthogr( BSTR Orthogr, BSTR Formula, BSTR Example, BSTR Rest, long IsActive, long IsPrefix, long IsAdjForm, /*[out, retval]*/ long *hRes )
 {
-    *hRes = pureParser.AddOrthogr(Orthogr, Formula, Example, Rest, IsActive, IsPrefix);
+    *hRes = pureParser.AddOrthogr(Orthogr, Formula, Example, Rest, IsActive, IsPrefix, IsAdjForm);
     return *hRes;
 }
 

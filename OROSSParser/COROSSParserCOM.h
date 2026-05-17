@@ -34,7 +34,7 @@ public:
     STDMETHOD(AddExamplesToPara)( BSTR Examples, /*[out, retval]*/ long *hRes );
     STDMETHOD(AddRule)( BSTR Num, BSTR Rule, /*[out, retval]*/ long *hRes );
     STDMETHOD(AddRuleTitle)(BSTR Num, BSTR Title, /*[out, retval]*/ long *hRes);
-    STDMETHOD(AddOrthogr)( BSTR Orthogr, BSTR Formula, BSTR Example, BSTR Rest, long IsActive, long IsPrefix, /*[out, retval]*/ long *hRes );
+    STDMETHOD(AddOrthogr)( BSTR Orthogr, BSTR Formula, BSTR Example, BSTR Rest, long IsActive, long IsPrefix, long IsAdjForm, /*[out, retval]*/ long *hRes );
     STDMETHOD(AddArticle)( BSTR Title, BSTR Article, /*[out, retval]*/ long *hRes );
     STDMETHOD(AddInfoToRule)( BSTR Info, /*[out, retval]*/ long *hRes );
     STDMETHOD(AddFootNote)( long ID, BSTR Text, /*[out, retval]*/ long *hRes );

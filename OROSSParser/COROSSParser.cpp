@@ -94,6 +94,8 @@ long COROSSParser::Init(modeName Mode)
     rtfReplacements.push_back(L"}}");
     rtfReplacements.push_back(L"@");
     rtfReplacements.push_back(L"#");
+    rtfReplacements.push_back(L"&nbsp;");
+    rtfReplacements.push_back(L"\\\\~");
 
     tagsTitle.push_back(L"<span class=\"title\" >");
     tagsTitle.push_back(L"</span>");
@@ -213,6 +215,8 @@ long COROSSParser::Init(modeName Mode, const std::string& cfg)
     rtfReplacements.push_back(L"}}");
     rtfReplacements.push_back(L"@");
     rtfReplacements.push_back(L"#");
+    rtfReplacements.push_back(L"&nbsp;");
+    rtfReplacements.push_back(L"\\\\~");
 
     tagsTitle.push_back(L"<span class=\"title\" >");
     tagsTitle.push_back(L"</span>");
@@ -273,9 +277,9 @@ long COROSSParser::Terminate()
  //   if (mode == Rebuild)
     {
   //  if (mode != Create && mode != Update) {
-        presaveArticles(SAVE_SEARCH); // SAVE_SEARCH);
+        presaveArticles(SAVE_SEARCH);
         saveDic();
-        saveData(SAVE_SEARCH); // SAVE_SEARCH);
+        saveData(SAVE_SEARCH);
         makeSQL();
     }
 //    saveData(SAVE_SEARCH);
@@ -572,7 +576,7 @@ long COROSSParser::AddFootNote(const long& ID, const std::wstring& Text)
     return 0;
 }
 
-long COROSSParser::AddOrthogr(const std::wstring& Orthogr, const std::wstring& Formula, const std::wstring& Example, const std::wstring& Rest, const long& IsActive, const long& IsPrefix)
+long COROSSParser::AddOrthogr(const std::wstring& Orthogr, const std::wstring& Formula, const std::wstring& Example, const std::wstring& Rest, const long& IsActive, const long& IsPrefix, const long& IsAdjForm)
 {
     std::wstring ortho(Orthogr);
     correctText(ortho);
@@ -658,7 +662,7 @@ long COROSSParser::AddOrthogr(const std::wstring& Orthogr, const std::wstring& F
     size_t rule_id = getRuleId(num, rule);
     //    formula cf = {formulaId, curPart->second.id != PART_LAST ? form : ortho, example, rest, IsPrefix, ot->second.id, num, rule_id};
     //    formula cf = {formulaId, curPart->second.id != PART_LAST ? form : ortho, prepareForSearch(cf.name), example, Rest, IsPrefix, ot->second.id, num, rule_id};
-    formula cf = { formulaId, L"", L"", L"", example, Rest, (size_t)IsPrefix, 0, ot->second.id, num, rule_id };
+    formula cf = { formulaId, L"", L"", L"", example, Rest, (size_t)IsPrefix, (size_t)IsAdjForm, 0, ot->second.id, num, rule_id };
     if (curPart->second.id != PART_LAST && curPara->second.id != PARA21) {
         cf.name = form;
     }
@@ -1015,6 +1019,7 @@ std::wstring COROSSParser::getPureArticle(const std::wstring& art, bool full)
     tags.push_back(L"</i>");
     tags.push_back(L"<u>");
     tags.push_back(L"</u>");
+    tags.push_back(L"&nbsp;");
 
     std::vector<std::wstring>::iterator it = tags.begin();
     pos = 0;
