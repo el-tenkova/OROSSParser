@@ -215,8 +215,6 @@ long COROSSParser::Init(modeName Mode, const std::string& cfg)
     rtfReplacements.push_back(L"}}");
     rtfReplacements.push_back(L"@");
     rtfReplacements.push_back(L"#");
-    rtfReplacements.push_back(L"&nbsp;");
-    rtfReplacements.push_back(L"\\\\~");
 
     tagsTitle.push_back(L"<span class=\"title\" >");
     tagsTitle.push_back(L"</span>");

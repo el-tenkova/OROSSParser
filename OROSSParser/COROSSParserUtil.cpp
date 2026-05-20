@@ -798,7 +798,14 @@ std::wstring COROSSParser::toRTF(const std::wstring& article) {
             pos = str.find(*it, pos + 1);
         }
     }
-//    size_t pos = str.find("
+    std::wstring nbsp(L"\\\\u38?\\\\u110?\\\\u98?\\\\u115?\\\\u112?\\\\u59?");
+    std::wstring tilda(L"\\\\u0160?");
+    pos = str.find(nbsp);
+    while (pos != std::wstring::npos) {
+        str.replace(pos, nbsp.length(), tilda);
+        pos = str.find(nbsp);
+    }
+
     return str;
 }
 
